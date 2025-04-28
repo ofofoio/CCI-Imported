@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CCIResult, CCIParameter } from '../app/types';
 import { calculateParameterScore, calculateWeightedScore } from '../app/utils/cciCalculator';
+import { exportToMarkdown } from '../app/utils/exportUtils';
 
 interface CCIReportProps {
   result: CCIResult;
   parameters: CCIParameter[];
-  onExportWord?: () => void;
+  onExportMarkdown?: () => void;
 }
 
-const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportWord }) => {
+const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportMarkdown }) => {
+  // Add state for tracking export status
+  const [isExportingMD, setIsExportingMD] = useState<boolean>(false);
+  
   // Helper function to get the color for a score
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-black font-semibold';
@@ -158,13 +162,43 @@ const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportWord 
     return date.toLocaleDateString('en-GB');
   };
 
-  // Handle Word export with fallback
-  const handleExportWord = () => {
-    if (onExportWord) {
-      onExportWord();
-    } else {
-      console.log('Export Word function not provided');
-      alert('Word export function not available');
+  // Add handleExportMarkdown function
+  const handleExportMarkdown = () => {
+    if (!onExportMarkdown) {
+      console.log('Export Markdown function not provided');
+      alert('Markdown export function not available');
+      return;
+    }
+    
+    // Log export attempt with details
+    console.log('Export as Markdown button clicked');
+    console.log(`Exporting report for: ${result.organization}`);
+    
+    // Set loading state
+    setIsExportingMD(true);
+    
+    // Add a timeout to reset if export doesn't complete
+    const timeout = setTimeout(() => {
+      if (isExportingMD) {
+        setIsExportingMD(false);
+        console.error('Markdown export timeout - reset UI state');
+      }
+    }, 30000); // 30 second timeout
+    
+    try {
+      // Execute the export function
+      onExportMarkdown();
+      
+      // Schedule state reset after a short delay
+      setTimeout(() => {
+        setIsExportingMD(false);
+        clearTimeout(timeout);
+        console.log('Markdown export process completed');
+      }, 2000);
+    } catch (error) {
+      console.error('Error during Markdown export:', error);
+      setIsExportingMD(false);
+      clearTimeout(timeout);
     }
   };
 
@@ -173,16 +207,31 @@ const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportWord 
       <div className="p-6 bg-black border-b print:hidden">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold text-white">Detailed SEBI CSCRF Compliance Report</h2>
-          <button 
-            id="export-word-btn"
-            onClick={handleExportWord}
-            className="bg-white hover:bg-gray-100 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4V5h12v10z" clipRule="evenodd" />
-            </svg>
-            Export as Word
-          </button>
+          <div className="flex space-x-3">
+            <button 
+              id="export-markdown-btn"
+              onClick={handleExportMarkdown}
+              disabled={isExportingMD}
+              className={`${isExportingMD ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-100 hover:bg-gray-200'} text-black py-2 px-4 rounded-md transition duration-200 flex items-center`}
+            >
+              {isExportingMD ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm11 1H6v8l4-2 4 2V6z" clipRule="evenodd" />
+                  </svg>
+                  Export as Markdown
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -268,8 +317,8 @@ const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportWord 
                   </th>
                 </tr>
               </thead>
-              {/* Table body with category data */}
-              {categoryScores.map((category, idx) => (
+              {/* Table body with main category data */}
+              {mainCategoryScores.map((category, idx) => (
                 <React.Fragment key={idx}>
                   <tr>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -293,7 +342,7 @@ const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportWord 
           </div>
           
           <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categoryScores.map((category, idx) => (
+            {mainCategoryScores.map((category, idx) => (
               <div key={idx} className={`p-4 rounded-lg ${getScoreBgColor(category.score)} border border-gray-200`}>
                 <div className="flex justify-between items-start mb-2">
                   <h4 className="font-medium">{category.category}</h4>
@@ -301,7 +350,7 @@ const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportWord 
                     {category.score.toFixed(1)}
                   </span>
                 </div>
-                <p className="text-xs mb-2">Weightage: {category.totalWeightage}%</p>
+                <p className="text-xs mb-2">Weightage: {weightageByMainCategory[category.category]}%</p>
                 <div className="mt-2">
                   <div className="text-sm font-medium">Maturity: {category.maturityLevel}</div>
                   <div className="w-full bg-white bg-opacity-50 rounded-full h-2 mt-1">

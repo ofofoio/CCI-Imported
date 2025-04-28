@@ -196,12 +196,12 @@ export default function SBOMManagement() {
     });
   };
 
-  const exportSBOM = (document: SBOMDocument) => {
-    const blob = new Blob([JSON.stringify(document, null, 2)], { type: 'application/json' });
+  const exportSBOM = (sbomDoc: SBOMDocument) => {
+    const blob = new Blob([JSON.stringify(sbomDoc, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `SBOM-${document.name}-${document.version}.json`;
+    a.download = `SBOM-${sbomDoc.name}-${sbomDoc.version}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -264,7 +264,7 @@ export default function SBOMManagement() {
           </button>
           {activeTab === 'document' && (
             <button 
-              className={`px-4 py-2 font-semibold rounded ${activeTab === 'component' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+              className={`px-4 py-2 font-semibold rounded ${(activeTab as string) === 'component' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
               onClick={() => {
                 if (editMode && currentComponent.id) {
                   setActiveTab('component');

@@ -77,7 +77,8 @@ export const initialCCIParameters: CCIParameter[] = [
     selfAssessmentScore: 0,
     controlInfo: 'Information Security Goal: Restrict access to information, systems, and components to individuals or machines that have been authenticated and are identifiable, known and credible.',
     implementationEvidence: '1. Does the organization use automated tools to maintain an up-to-date record that identifies all remote access points?\n2. How many remote access points exist in the organization\'s network?\n3. Does the organisation employ IDS or IPS to monitor traffic traversing remote access points?\n4. Does the organisation collect and review audit logs associated with all remote access points?\n5. Evidence of users who are allowed remote access through MFA, validated through Firewall, AD, or any dedicated system.\n6. Based on reviews of the incident database, IDS/IPS logs and alerts, and/or appropriate remote access point log files, how many access points have been used to gain unauthorized access within the reporting period?',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Protect: Identity Management, Authentication, and Access Control'
   },
   {
     id: 5,
@@ -92,7 +93,8 @@ export const initialCCIParameters: CCIParameter[] = [
     selfAssessmentScore: 0,
     controlInfo: 'Information Security Goal: Create, protect, and retain information system audit records to the extent needed to enable the monitoring, analysis, investigation, and reporting of unlawful, unauthorized, suspicious or abnormal activity.',
     implementationEvidence: '1. Is logging activated on the system?\n2. Does the organization have clearly defined criteria for what constitutes evidence of "suspicious or abnormal" activity within system audit logs?\n3. For reporting period, how many system audit logs have been reviewed for past six months for suspicious or abnormal activity.',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Detect: Continuous Monitoring'
   },
   {
     id: 6,
@@ -107,7 +109,8 @@ export const initialCCIParameters: CCIParameter[] = [
     selfAssessmentScore: 0,
     controlInfo: 'Information Security Goal: Establish and maintain baseline configuration and inventories of organizational information systems (including hardware, software, firmware, and documentation) throughout the respective system development life cycles.',
     implementationEvidence: '1. Does the organization manage configuration changes to information systems using an organizationally approved process?\n2. Does the organization use automated scanning to identify configuration changes that were implemented on its systems and networks?\n3. If yes, how many configuration changes were identified through automated scanning over the last reporting period?\n4. How many change control requests were approved and implemented over the last reporting period?\n5. Cyber audit observation against Standard 3 mentioned in \'Detect: Continuous Security Monitoring\' header in CSCRF Part-I and respective guidelines in Part-II.',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Detect: Continuous Monitoring'
   },
   {
     id: 7,
@@ -122,7 +125,8 @@ export const initialCCIParameters: CCIParameter[] = [
     selfAssessmentScore: 0,
     controlInfo: 'Information Security Goal: Establish, maintain, and effectively implement plans for emergency response, backup operations, and post-disaster recovery of organizational information systems to ensure the availability of critical information resources and continuity of operations in emergency situations.',
     implementationEvidence: '1. How many information systems are in the system inventory?\n2. How many information systems have an approved contingency plan?\n3. How many contingency plans were successfully tested within the past 1 year?\n4. Reports of the contingency plan testing conducted in past one year.',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Respond: Analysis and Mitigation'
   },
   {
     id: 8,
@@ -158,7 +162,8 @@ export const initialCCIParameters: CCIParameter[] = [
     selfAssessmentScore: 0,
     controlInfo: 'Information Security Goal: Track, document, and report incidents to appropriate organizational officials and/or authorities.',
     implementationEvidence: '1. How many incidents were reported during the period?\n2. Of the incidents reported, how many were reported within the prescribed time frame?',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Respond: Communications'
   },
   {
     id: 10,
@@ -173,22 +178,24 @@ export const initialCCIParameters: CCIParameter[] = [
     selfAssessmentScore: 0,
     controlInfo: 'Information Security Goal: Perform periodic and timely maintenance on organizational information systems and provide effective controls on the tools, techniques, mechanisms, and personnel used to conduct information system maintenance.',
     implementationEvidence: '1. Does the system have a planned maintenance schedule?\n2. How many components are contained within the system?\n3. How many components underwent maintenance in accordance with the planned maintenance schedule?',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Protect: Information Protection'
   },
   {
     id: 11,
     measureId: 'PR.AA.S14',
     title: 'Media Sanitization Measure',
-    description: 'Percentage (%) of media that passes sanitization procedures testing.',
-    formula: '(Number of media that passes sanitization procedures testing / total number of media disposed or released for reuse) × 100',
+    description: 'Percentage (%) of media containing sensitive information sanitized or destroyed prior to disposal or reuse.',
+    formula: '(Number of media containing sensitive information sanitized or destroyed prior to disposal or reuse / total number of media) × 100',
     target: 100,
-    weightage: 2,
+    weightage: 1,
     numerator: 0,
     denominator: 1,
     selfAssessmentScore: 0,
     controlInfo: 'Information Security Goal: Sanitize or destroy information system media before disposal or release for reuse.',
     implementationEvidence: '1. Policy/procedure for sanitizing media before it is discarded or reused.\n2. Indicative proof that policy is being followed.\n3. Cyber audit observation against Standard 14 mentioned in \'Protect: Identity Management, Authentication, and Access Control\' header in CSCRF Part-I and respective guidelines in Part-II.',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Protect: Data Security'
   },
   {
     id: 12,
@@ -204,6 +211,7 @@ export const initialCCIParameters: CCIParameter[] = [
     controlInfo: 'Information Security Goal: Integrate physical and information security protection mechanisms to ensure appropriate protection of the organization\'s information resources.',
     implementationEvidence: '1. Policy/procedure ensuring the secure physical access to critical systems?\n2. How many physical security incidents occurred during the specified period?\n3. How many of the physical security incidents allowed unauthorized entry into facilities containing information systems?\n4. Cyber audit Observation against Standard 10 mentioned in \'Protect: Identity Management, Authentication, and Access Control\' header in CSCRF Part-I and respective guidelines in Part-II.',
     auditorComments: '',
+    frameworkCategory: 'Protect: Identity Management, Authentication, and Access Control',
     numeratorHelp: 'Number of physical security incidents that resulted in unauthorized access to facilities housing information systems',
     denominatorHelp: 'Total number of physical security incidents recorded during the assessment period'
   },
@@ -218,9 +226,10 @@ export const initialCCIParameters: CCIParameter[] = [
     numerator: 0,
     denominator: 1,
     selfAssessmentScore: 0,
-    controlInfo: 'Information Security Goal: Develop, document, periodically update, and implement security measures for authorised access to the information systems of the organisation.',
+    controlInfo: 'Information Security Goal: Ensure that organization personnel understand their responsibilities.',
     implementationEvidence: '1. How many users accessed the system?\n2. How many users signed confidentiality and integrity agreement acknowledgements?\n3. How many users have been granted access to the information system only after signing confidentiality and integrity agreement acknowledgements?',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Governance: Roles and Responsibilities'
   },
   {
     id: 14,
@@ -233,9 +242,10 @@ export const initialCCIParameters: CCIParameter[] = [
     numerator: 0,
     denominator: 1,
     selfAssessmentScore: 0,
-    controlInfo: 'Information Security Goal: Ensure that individuals occupying positions of responsibility within organizations are trustworthy and meet established security criteria for those positions.',
+    controlInfo: 'Information Security Goal: Screen individuals before authorizing access to information systems.',
     implementationEvidence: '1. How many individuals have been granted access to organizational information and information systems?\n2. What is the number of individuals who have completed personnel screening?',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Protect: Identity Management, Authentication, and Access Control'
   },
   {
     id: 15,
@@ -271,7 +281,8 @@ export const initialCCIParameters: CCIParameter[] = [
     selfAssessmentScore: 0,
     controlInfo: 'Information Security Goal: Ensure third-party providers employ adequate security measures to protect information, applications, and/or services outsourced by the organization.',
     implementationEvidence: '1. How many active service acquisition contracts does the organization have?\n2. How many active service acquisition contracts include security requirements and specifications?\n3. How many contracts includes integration of systems with SOC technologies?\n4. Whether the acquisition contract includes SLA for vulnerabilities closure and timely implementation of patches?\n5. Contracts for adoption of Cloud includes implementation of \'security of the cloud\', etc.',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Governance: Roles and Responsibilities'
   },
   {
     id: 17,
@@ -286,7 +297,8 @@ export const initialCCIParameters: CCIParameter[] = [
     selfAssessmentScore: 0,
     controlInfo: 'Information Security Goal: Allocate sufficient resources to adequately protect electronic information infrastructure.',
     implementationEvidence: '1. How many mobile computers and devices are used in the organization?\n2. How many mobile computers and devices employ cryptography?\n3. How many mobile computers and devices have cryptography implementation waivers?',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Protect: Data Security'
   },
   {
     id: 18,
@@ -301,7 +313,8 @@ export const initialCCIParameters: CCIParameter[] = [
     selfAssessmentScore: 0,
     controlInfo: 'Based on risk appetite of the organization, cybersecurity risks are identified, analysed, evaluated, prioritized, responded, and monitored.',
     implementationEvidence: '1. Does organization have a cyber-risk management framework?\n2. Has the organization established, communicated, and maintained its risk appetite and risk tolerance statements?\n3. Has organization responded to risk observations based on its risk appetite?',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Governance: Roles and Responsibilities'
   },
   {
     id: 19,
@@ -317,6 +330,7 @@ export const initialCCIParameters: CCIParameter[] = [
     controlInfo: 'Objective of this measure is to ensure identification and management of assets in accordance with their relative importance to the organizational objectives and the organization\'s risk strategy.',
     implementationEvidence: '1. Process to identify and approve the list of critical assets.\n2. List of critical assets identified as per the ID.AM.S1.\n3. Auditors reports on identification of assets as critical/non-critical.',
     auditorComments: '',
+    frameworkCategory: 'Identify: Asset Management',
     numeratorHelp: 'Number of systems formally identified and classified as critical through the organization\'s asset classification process',
     denominatorHelp: 'Total number of IT systems integrated with Security Operations Center (SOC)'
   },
@@ -333,7 +347,8 @@ export const initialCCIParameters: CCIParameter[] = [
     selfAssessmentScore: 0,
     controlInfo: 'Objective of this measure is to mitigate threats upon external IPs.',
     implementationEvidence: '1. Summary report of the events reported by CSK.',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Respond: Analysis and Mitigation'
   },
   {
     id: 21,
@@ -348,14 +363,15 @@ export const initialCCIParameters: CCIParameter[] = [
     selfAssessmentScore: 0,
     controlInfo: 'Develop, document, periodically update, and implement cybersecurity policies and procedures for organizational information systems.',
     implementationEvidence: '1. Cybersecurity Policy document of the organization.\n2. Frequency of the revision of the policy document.\n3. Approval of the policy document.\n4. Cyber audit observation against Standard 1 mentioned in \'Governance: Policy\' header in CSCRF Part-I and respective guidelines in Part-II.',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Governance: Roles and Responsibilities'
   },
   {
     id: 22,
-    measureId: 'SOC efficacy',
-    title: 'SOC efficacy',
-    description: 'How effective is our SOC operational?',
-    formula: 'As specified in SOC efficacy (Annexure-N)',
+    measureId: 'Effectiveness of SOC',
+    title: 'Effectiveness of SOC',
+    description: 'Effectiveness of SOC functions as per the SLAs provided to SOC by the organization.',
+    formula: '(Number of alerts responded as per SLA / Total number of critical alerts) × 100',
     target: 100,
     weightage: 5,
     numerator: 0,
@@ -363,7 +379,8 @@ export const initialCCIParameters: CCIParameter[] = [
     selfAssessmentScore: 0,
     controlInfo: 'Measure the effectiveness of Security Operations Center.',
     implementationEvidence: '1. How effective is the functioning of RE\'s SOC?',
-    auditorComments: ''
+    auditorComments: '',
+    frameworkCategory: 'Detect: Continuous Monitoring'
   },
   {
     id: 23,
@@ -379,6 +396,7 @@ export const initialCCIParameters: CCIParameter[] = [
     controlInfo: 'Develop an automated tool to submit compliance with CSCRF.',
     implementationEvidence: '1. Automated dashboard to get detailed reports of CSCRF standards compliance.',
     auditorComments: '',
+    frameworkCategory: 'Governance: Roles and Responsibilities',
     numeratorHelp: 'Number of CSCRF standards for which compliance tracking has been automated using tools',
     denominatorHelp: 'Total number of standards in the CSCRF framework applicable to the organization'
   }

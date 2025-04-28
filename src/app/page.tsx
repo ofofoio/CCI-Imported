@@ -10,7 +10,7 @@ import SBOMManagement from '../components/SBOMManagement';
 import { initialCCIParameters, generateSampleData } from './data/cciParameters';
 import { CCIParameter, CCIResult, AnnexureKData } from './types';
 import { calculateCCIIndex } from './utils/cciCalculator';
-import { exportToWord } from './utils/exportUtils';
+import { exportToWord, exportToMarkdown } from './utils/exportUtils';
 import DataCollectionForm from '../components/DataCollectionForm';
 import { FormState as AnnexureKFormState } from '../components/AnnexureKForm';
 import { toast } from 'react-hot-toast';
@@ -22,7 +22,8 @@ export default function Home() {
   const [showDataCollection, setShowDataCollection] = useState(false);
   const [showAnnexureK, setShowAnnexureK] = useState<boolean>(false);
   const [showSBOM, setShowSBOM] = useState<boolean>(false);
-  const [organizationName, setOrganizationName] = useState('Your Organization');
+  const [organizationName, setOrganizationName] = useState('Enter Organization Name');
+  const [organizationNameError, setOrganizationNameError] = useState('');
   const [expandedParameter, setExpandedParameter] = useState<number | null>(null);
   const [assessmentDate, setAssessmentDate] = useState<string>(
     new Date().toISOString().split('T')[0]
@@ -47,6 +48,18 @@ export default function Home() {
   };
 
   const handleCalculate = () => {
+    // Validate organization name
+    if (!organizationName || organizationName.trim() === '' || organizationName === 'Enter Organization Name') {
+      setOrganizationNameError('Please enter your organization name');
+      // Focus on the organization name field
+      const orgNameField = document.getElementById('organizationName');
+      if (orgNameField) {
+        orgNameField.focus();
+      }
+      return;
+    }
+    
+    setOrganizationNameError('');
     setShowResults(true);
     setShowReport(false);
     setShowDataCollection(false);
@@ -66,6 +79,8 @@ export default function Home() {
     setShowDataCollection(false);
     setShowAnnexureK(false);
     setShowSBOM(false);
+    setOrganizationName('Enter Organization Name');
+    setOrganizationNameError('');
     setExpandedParameter(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -90,22 +105,95 @@ export default function Home() {
     // Show loading indicator while Word document is being generated
     setIsExporting(true);
     
+    // Log export details at page level
+    console.group('Word Export Process - Started');
+    console.log(`Timestamp: ${new Date().toISOString()}`);
+    console.log(`Organization: ${organizationName}`);
+    console.log(`Assessment Date: ${assessmentDate}`);
+    console.log(`CCI Score: ${cciResult.totalScore.toFixed(2)}%`);
+    console.log(`Parameters Count: ${parameters.length}`);
+    console.log(`Annexure K Data: ${annexureKData ? 'Present' : 'Not available'}`);
+    
+    // Track memory usage
+    if (window.performance && window.performance.memory) {
+      const memory = window.performance.memory as any;
+      console.log(`Memory Usage: ${(memory.usedJSHeapSize / 1048576).toFixed(2)} MB / ${(memory.jsHeapSizeLimit / 1048576).toFixed(2)} MB`);
+    }
+    
+    // Performance measurement
+    const exportStartTime = performance.now();
+    
     try {
       // Export the full detailed report with parameters, result and annexureKData
       exportToWord(parameters, cciResult, annexureKData || undefined)
         .then(() => {
+          // Calculate duration
+          const exportEndTime = performance.now();
+          const exportDuration = (exportEndTime - exportStartTime) / 1000;
+          
+          // Log success details
+          console.log(`Export completed successfully in ${exportDuration.toFixed(2)} seconds`);
+          console.log(`Report file generated for: ${cciResult.organization}`);
+          
+          if (annexureKData) {
+            console.log('Annexure K data included in export:');
+            console.log(`- Entity Type: ${annexureKData.entityType}`);
+            console.log(`- Entity Category: ${annexureKData.entityCategory}`);
+            console.log(`- Assessment Period: ${annexureKData.period}`);
+          }
+          
+          console.groupEnd();
+          
+          // Update UI
           setIsExporting(false);
           toast.success('Word document exported successfully!');
         })
         .catch(error => {
+          // Log error details
           console.error('Error exporting Word document:', error);
+          console.log(`Export failed after ${((performance.now() - exportStartTime) / 1000).toFixed(2)} seconds`);
+          console.groupEnd();
+          
+          // Update UI
           setIsExporting(false);
           toast.error('Failed to export Word document');
         });
     } catch (error) {
+      // Log initialization error
       console.error('Error starting Word export:', error);
+      console.log('Export process failed to start');
+      console.groupEnd();
+      
+      // Update UI
       setIsExporting(false);
       toast.error('Failed to start Word export');
+    }
+  };
+
+  const handleExportMarkdown = () => {
+    // Show loading indicator
+    console.group('Markdown Export Process - Started');
+    console.log(`Timestamp: ${new Date().toISOString()}`);
+    console.log(`Organization: ${organizationName}`);
+    console.log(`Parameters Count: ${parameters.length}`);
+    
+    try {
+      // Export the markdown report
+      exportToMarkdown(parameters, cciResult, annexureKData || undefined)
+        .then(() => {
+          console.log('Markdown export completed successfully');
+          console.log(`Markdown file generated for: ${cciResult.organization}`);
+          console.groupEnd();
+        })
+        .catch(error => {
+          console.error('Error exporting Markdown:', error);
+          console.groupEnd();
+          toast.error('Failed to export Markdown document');
+        });
+    } catch (error) {
+      console.error('Error starting Markdown export:', error);
+      console.groupEnd();
+      toast.error('Failed to start Markdown export');
     }
   };
 
@@ -233,14 +321,29 @@ export default function Home() {
 
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="organization" className="block text-sm font-medium text-gray-300">Organization Name</label>
+            <label htmlFor="organizationName" className="block text-sm font-medium text-gray-300">Organization Name <span className="text-red-500">*</span></label>
             <input 
               type="text" 
-              id="organization" 
+              id="organizationName" 
               value={organizationName} 
-              onChange={(e) => setOrganizationName(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-gray-900 sm:text-sm"
+              onChange={(e) => {
+                setOrganizationName(e.target.value);
+                if (e.target.value.trim() !== '') {
+                  setOrganizationNameError('');
+                }
+              }}
+              onClick={() => {
+                if (organizationName === 'Enter Organization Name') {
+                  setOrganizationName('');
+                }
+              }}
+              className={`mt-1 block w-full rounded-md border ${organizationNameError ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm text-gray-900 ${organizationName === 'Enter Organization Name' ? 'text-gray-500 italic' : ''}`}
+              placeholder="e.g., ABC Securities Ltd."
+              required
             />
+            {organizationNameError && (
+              <p className="mt-1 text-sm text-red-500">{organizationNameError}</p>
+            )}
           </div>
           <div>
             <label htmlFor="assessmentDate" className="block text-sm font-medium text-gray-300">Assessment Date</label>
@@ -321,6 +424,17 @@ export default function Home() {
             {annexureKData ? 'Edit Annexure K' : 'Add Annexure K'}
           </button>
         </div>
+      </div>
+
+      {/* CCI Calculation Explanation Blurb */}
+      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-r-md shadow-sm">
+        <h3 className="text-lg font-semibold text-blue-800 mb-2">How to Calculate Your CCI Score</h3>
+        <p className="text-sm text-blue-900">
+          The Cyber Capability Index (CCI) is calculated based on 23 critical parameters across 6 NIST-aligned domains 
+          (Governance, Identify, Protect, Detect, Respond, and Recover). Each parameter has a specific weightage and target value,
+          with scores determined by the ratio of numerator to denominator values. A score of 61+ ("Developing") meets SEBI CSCRF
+          requirements for Qualified REs, while MIIs need 71+ ("Manageable") for compliance.
+        </p>
       </div>
 
       {!showDataCollection && !showResults && !showReport && (
@@ -412,7 +526,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <CCIReport parameters={parameters} result={cciResult} onExportWord={handleExportWord} />
+          <CCIReport parameters={parameters} result={cciResult} onExportMarkdown={handleExportMarkdown} />
         </div>
       )}
 
