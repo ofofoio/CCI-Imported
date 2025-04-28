@@ -6,6 +6,7 @@ import ParameterInput from '../components/ParameterInput';
 import CCIResults from '../components/CCIResults';
 import CCIReport from '../components/CCIReport';
 import AnnexureKForm from '../components/AnnexureKForm';
+import SBOMManagement from '../components/SBOMManagement';
 import { initialCCIParameters, generateSampleData } from './data/cciParameters';
 import { CCIParameter, CCIResult, AnnexureKData } from './types';
 import { calculateCCIIndex } from './utils/cciCalculator';
@@ -20,6 +21,7 @@ export default function Home() {
   const [showReport, setShowReport] = useState(false);
   const [showDataCollection, setShowDataCollection] = useState(false);
   const [showAnnexureK, setShowAnnexureK] = useState<boolean>(false);
+  const [showSBOM, setShowSBOM] = useState<boolean>(false);
   const [organizationName, setOrganizationName] = useState('Your Organization');
   const [expandedParameter, setExpandedParameter] = useState<number | null>(null);
   const [assessmentDate, setAssessmentDate] = useState<string>(
@@ -63,6 +65,7 @@ export default function Home() {
     setShowReport(false);
     setShowDataCollection(false);
     setShowAnnexureK(false);
+    setShowSBOM(false);
     setExpandedParameter(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -164,6 +167,21 @@ export default function Home() {
     handleViewReport();
   };
 
+  const handleShowSBOM = () => {
+    setShowSBOM(true);
+    setShowResults(false);
+    setShowReport(false);
+    setShowDataCollection(false);
+    setShowAnnexureK(false);
+    // Smooth scroll to SBOM management
+    setTimeout(() => {
+      const sbomElement = document.getElementById('sbom-management');
+      if (sbomElement) {
+        sbomElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
   // Group parameters by category for better organization
   const groupedParameters: Record<string, CCIParameter[]> = {};
   parameters.forEach(param => {
@@ -254,6 +272,15 @@ export default function Home() {
               <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
             </svg>
             Detailed Assessment
+          </button>
+          <button
+            onClick={handleShowSBOM}
+            className="bg-gray-700 hover:bg-gray-800 text-white py-2 px-6 rounded-md transition duration-200 shadow-md flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm11 1H6v8l4-2 4 2V6z" clipRule="evenodd" />
+            </svg>
+            SBOM Management
           </button>
           <a 
             href="https://dakshinrajsiva.github.io/cci/sebi-cscrf" 
@@ -386,6 +413,12 @@ export default function Home() {
             </div>
           </div>
           <CCIReport parameters={parameters} result={cciResult} onExportWord={handleExportWord} />
+        </div>
+      )}
+
+      {showSBOM && (
+        <div id="sbom-management" className="mb-8 animate-fadeIn">
+          <SBOMManagement />
         </div>
       )}
 

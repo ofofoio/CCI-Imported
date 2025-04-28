@@ -991,7 +991,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 gap-6 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                   {/* Numerator Section */}
                   <div ref={numeratorSectionRef} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex justify-between mb-3">
@@ -1008,28 +1008,28 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                       </span>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {paramData.numeratorBreakdown.map((item, index) => (
                         <div key={`num-${index}`} className="bg-gray-50 p-3 rounded">
                           <div className="mb-2">
                             <label className="block text-sm font-medium text-gray-700">
                               {item.question}
-                  </label>
-                  <input
-                    type="number"
+                            </label>
+                            <input
+                              type="number"
                               value={item.value}
                               onChange={(e) => handleDetailedValueChange(param.id, 'numerator', index, Number(e.target.value))}
                               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                    min="0"
-                  />
-                </div>
+                              min="0"
+                            />
+                          </div>
                           <div className="flex justify-end space-x-2">
                             <button
                               type="button"
                               onClick={() => updateQuestionText(param.id, 'numerator', index, item.question)}
                               className="text-xs text-gray-500 hover:text-gray-700"
                             >
-                              Edit Question
+                              Edit
                             </button>
                             <button
                               type="button"
@@ -1069,15 +1069,15 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                       </span>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {paramData.denominatorBreakdown.map((item, index) => (
                         <div key={`den-${index}`} className="bg-gray-50 p-3 rounded">
                           <div className="mb-2">
                             <label className="block text-sm font-medium text-gray-700">
                               {item.question}
-                  </label>
-                  <input
-                    type="number"
+                            </label>
+                            <input
+                              type="number"
                               value={item.value}
                               onChange={(e) => handleDetailedValueChange(param.id, 'denominator', index, Number(e.target.value))}
                               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
@@ -1090,7 +1090,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                               onClick={() => updateQuestionText(param.id, 'denominator', index, item.question)}
                               className="text-xs text-gray-500 hover:text-gray-700"
                             >
-                              Edit Question
+                              Edit
                             </button>
                             <button
                               type="button"
@@ -1347,6 +1347,160 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
           </button>
         </div>
       </form>
+      
+      {/* Score breakdown by category and top improvement areas */}
+      <div className="p-6 border-t border-gray-200">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Score Breakdown by Category */}
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-black p-4">
+              <h3 className="font-medium text-white text-lg">Score Breakdown by Category</h3>
+            </div>
+            <div className="p-4">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {useMemo(() => {
+                    // Calculate scores by category
+                    const categoryScores: { [key: string]: { score: number, totalWeight: number, params: CCIParameter[] } } = {};
+                    const baseCategories = ['Governance', 'Identify', 'Protect', 'Detect', 'Respond', 'Recover'];
+                    
+                    // Initialize all base categories
+                    baseCategories.forEach(cat => {
+                      categoryScores[cat] = { score: 0, totalWeight: 0, params: [] };
+                    });
+                    
+                    // Aggregate parameters by category
+                    formData.forEach(param => {
+                      let category = '';
+                      if (param.frameworkCategory) {
+                        category = param.frameworkCategory.split(':')[0].trim();
+                      } else if (param.measureId) {
+                        if (param.measureId.startsWith('GV')) category = 'Governance';
+                        else if (param.measureId.startsWith('ID')) category = 'Identify';
+                        else if (param.measureId.startsWith('PR')) category = 'Protect';
+                        else if (param.measureId.startsWith('DE')) category = 'Detect';
+                        else if (param.measureId.startsWith('RS')) category = 'Respond';
+                        else if (param.measureId.startsWith('RC')) category = 'Recover';
+                      }
+                      
+                      if (category && baseCategories.includes(category)) {
+                        categoryScores[category].params.push(param);
+                        categoryScores[category].totalWeight += param.weightage || 0;
+                      }
+                    });
+                    
+                    // Calculate weighted scores
+                    Object.keys(categoryScores).forEach(cat => {
+                      if (categoryScores[cat].totalWeight > 0) {
+                        let totalScore = 0;
+                        categoryScores[cat].params.forEach(param => {
+                          totalScore += calculateParameterScore(param) * (param.weightage || 0);
+                        });
+                        categoryScores[cat].score = totalScore / categoryScores[cat].totalWeight;
+                      }
+                    });
+                    
+                    // Get rating for score
+                    const getRating = (score: number) => {
+                      if (score >= 80) return 'Optimal Cybersecurity Maturity';
+                      if (score >= 70) return 'Manageable Cybersecurity Maturity';
+                      if (score >= 60) return 'Developing Cybersecurity Maturity';
+                      if (score >= 40) return 'Vulnerable Cybersecurity Maturity';
+                      return 'Undetermined';
+                    };
+                    
+                    return baseCategories.map(category => {
+                      const { score } = categoryScores[category];
+                      return (
+                        <tr key={category}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{category}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{score.toFixed(2)}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getRating(score)}</td>
+                        </tr>
+                      );
+                    });
+                  }, [formData])}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          {/* Top Improvement Areas */}
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-black p-4">
+              <h3 className="font-medium text-white text-lg">Top Improvement Areas</h3>
+            </div>
+            <div className="p-4">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Measure ID</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Score</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Impact</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {useMemo(() => {
+                    // Calculate impact areas by finding gap between current score and target
+                    // Sort by potential impact (weightage * gap)
+                    
+                    // Calculate current CCI index
+                    const currentCCI = calculateCCIIndex(formData).totalScore;
+                    
+                    // Calculate improvement impact for each parameter
+                    const improvementAreas = formData.map(param => {
+                      const currentScore = calculateParameterScore(param);
+                      const targetScore = param.target || 100;
+                      const gap = Math.max(0, targetScore - currentScore);
+                      
+                      // Clone parameters and calculate CCI with this parameter at target
+                      const paramsWithImprovement = formData.map(p => 
+                        p.id === param.id 
+                          ? { ...p, numerator: (p.denominator * targetScore) / 100 } 
+                          : p
+                      );
+                      
+                      const improvedCCI = calculateCCIIndex(paramsWithImprovement).totalScore;
+                      const impact = improvedCCI - currentCCI;
+                      
+                      return {
+                        id: param.id,
+                        measureId: param.measureId,
+                        title: param.title,
+                        currentScore,
+                        gap,
+                        impact,
+                        weightage: param.weightage || 0
+                      };
+                    });
+                    
+                    // Sort by impact and take top 4
+                    return improvementAreas
+                      .sort((a, b) => b.impact - a.impact)
+                      .slice(0, 4)
+                      .map(area => (
+                        <tr key={area.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{area.measureId}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{area.title}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{area.currentScore.toFixed(2)}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">+{area.impact.toFixed(2)} points</td>
+                        </tr>
+                      ));
+                  }, [formData])}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
       
       {/* Render tooltip component */}
       <Tooltip />

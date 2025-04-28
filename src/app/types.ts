@@ -40,6 +40,39 @@ export interface AnnexureKData {
   designation: string;
 }
 
+// SBOM Interfaces
+export interface SBOMComponent {
+  id: string;
+  name: string;
+  version: string;
+  supplier: string;
+  license: string;
+  cryptographicHash: string;
+  dependencies: string[]; // IDs of dependent components
+  description?: string;
+}
+
+export interface SBOMDocument {
+  id: string;
+  name: string;
+  version: string;
+  supplier: string;
+  dateCreated: string;
+  lastUpdated: string;
+  updateFrequency: string;
+  encryptionUsed: string;
+  accessControl: string;
+  errorHandlingMethod: string;
+  knownUnknowns: string[];
+  components: SBOMComponent[];
+  notes?: string;
+}
+
+export interface SBOMRegistry {
+  sbomDocuments: SBOMDocument[];
+  criticalSystems: string[]; // IDs of critical systems
+}
+
 export const maturityLevels = [
   { min: 91, max: 100, level: 'Exceptional Cybersecurity Maturity' },
   { min: 81, max: 90, level: 'Optimal Cybersecurity Maturity' },
