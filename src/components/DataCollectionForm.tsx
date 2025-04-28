@@ -192,194 +192,356 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
     
     // Generate questions based on parameter type
     switch(param.id) {
-      case 1: // Vulnerability Management Measure
+      case 1: // Vulnerability Management Measure (DE.CM.S5)
         numeratorQuestions = [
-          { question: "How many critical vulnerabilities were remediated within the required timeframe?", value: 0 },
-          { question: "How many high vulnerabilities were remediated within the required timeframe?", value: 0 },
-          { question: "How many medium vulnerabilities were remediated within the required timeframe?", value: 0 }
+          { question: "Critical vulnerabilities remediated within SLA:", value: 0 },
+          { question: "High vulnerabilities remediated within SLA:", value: 0 },
+          { question: "Medium vulnerabilities remediated within SLA:", value: 0 },
+          { question: "Low vulnerabilities remediated within SLA:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of critical vulnerabilities identified during assessment?", value: 0 },
-          { question: "What is the total number of high vulnerabilities identified during assessment?", value: 0 },
-          { question: "What is the total number of medium vulnerabilities identified during assessment?", value: 0 }
+          { question: "Critical vulnerabilities identified:", value: 0 },
+          { question: "High vulnerabilities identified:", value: 0 },
+          { question: "Medium vulnerabilities identified:", value: 0 },
+          { question: "Low vulnerabilities identified:", value: 0 }
         ];
         break;
-      case 2: // Security Training Measure 
+      case 2: // Security Training Measure (PR.AT.S1)
         numeratorQuestions = [
-          { question: "How many security personnel completed role-specific security training?", value: 0 }
+          { question: "Full-time security personnel who completed training:", value: 0 },
+          { question: "IT staff with security responsibilities who completed training:", value: 0 },
+          { question: "Security contractors/consultants who completed training:", value: 0 },
+          { question: "Security managers/leadership who completed training:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of security personnel in your organization?", value: 0 }
+          { question: "Total full-time security personnel:", value: 0 },
+          { question: "Total IT staff with security responsibilities:", value: 0 },
+          { question: "Total security contractors/consultants:", value: 0 },
+          { question: "Total security managers/leadership:", value: 0 }
         ];
         break;
-      case 3: // Security Budget Measure
+      case 3: // Security Budget Measure (GV.RR.S4)
         numeratorQuestions = [
-          { question: "What is your current information security budget (in currency units)?", value: 0 }
+          { question: "Annual expenditure on security hardware and appliances (INR):", value: 0 },
+          { question: "Annual expenditure on security software and licenses (INR):", value: 0 },
+          { question: "Annual expenditure on security personnel salaries and benefits (INR):", value: 0 },
+          { question: "Annual expenditure on security training and awareness (INR):", value: 0 },
+          { question: "Annual expenditure on security assessments and audits (INR):", value: 0 },
+          { question: "Annual expenditure on security consulting services (INR):", value: 0 },
+          { question: "Other security-related expenses (INR):", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is your total IT budget (in the same currency units)?", value: 0 }
+          { question: "Annual expenditure on IT hardware (INR):", value: 0 },
+          { question: "Annual expenditure on IT software and licenses (INR):", value: 0 },
+          { question: "Annual expenditure on IT personnel salaries and benefits (INR):", value: 0 },
+          { question: "Annual expenditure on IT infrastructure (network, data centers) (INR):", value: 0 },
+          { question: "Annual expenditure on cloud services (INR):", value: 0 },
+          { question: "Annual expenditure on IT outsourcing and managed services (INR):", value: 0 },
+          { question: "Other IT-related expenses (INR):", value: 0 }
         ];
         break;
-      case 4: // Risk Assessment Measure
+      case 4: // Remote Access Control Measure (PR.AA.S12)
         numeratorQuestions = [
-          { question: "How many information systems have undergone formal risk assessment in the past year?", value: 0 }
+          { question: "Employees using MFA for remote access:", value: 0 },
+          { question: "Contractors using MFA for remote access:", value: 0 },
+          { question: "Vendors using MFA for remote access:", value: 0 },
+          { question: "Third-party service providers using MFA for remote access:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of information systems in your organization's inventory?", value: 0 }
+          { question: "Total employees with remote access:", value: 0 },
+          { question: "Total contractors with remote access:", value: 0 },
+          { question: "Total vendors with remote access:", value: 0 },
+          { question: "Total third-party service providers with remote access:", value: 0 }
         ];
         break;
-      case 5: // Audit Record Review Measure
+      case 5: // Audit Record Review Measure (DE.CM.S1)
         numeratorQuestions = [
-          { question: "How many critical systems are fully integrated with your SIEM solution?", value: 0 },
-          { question: "How many critical systems have partial SIEM integration?", value: 0 }
+          { question: "Critical production systems integrated with SIEM:", value: 0 },
+          { question: "Critical database systems integrated with SIEM:", value: 0 },
+          { question: "Critical network devices integrated with SIEM:", value: 0 },
+          { question: "Critical security systems integrated with SIEM:", value: 0 },
+          { question: "Other critical systems integrated with SIEM:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of systems classified as critical in your organization?", value: 0 }
+          { question: "Total critical production systems:", value: 0 },
+          { question: "Total critical database systems:", value: 0 },
+          { question: "Total critical network devices:", value: 0 },
+          { question: "Total critical security systems:", value: 0 },
+          { question: "Total other critical systems:", value: 0 }
         ];
         break;
-      case 6: // Configuration Changes Measure
+      case 6: // Configuration Changes Measure (DE.CM.S5)
         numeratorQuestions = [
-          { question: "How many configuration changes were properly approved and implemented?", value: 0 }
+          { question: "Approved and implemented OS configuration changes:", value: 0 },
+          { question: "Approved and implemented application configuration changes:", value: 0 },
+          { question: "Approved and implemented database configuration changes:", value: 0 },
+          { question: "Approved and implemented network device configuration changes:", value: 0 },
+          { question: "Approved and implemented security tool configuration changes:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of configuration changes identified through automated or manual scans?", value: 0 }
+          { question: "Total OS configuration changes detected:", value: 0 },
+          { question: "Total application configuration changes detected:", value: 0 },
+          { question: "Total database configuration changes detected:", value: 0 },
+          { question: "Total network device configuration changes detected:", value: 0 },
+          { question: "Total security tool configuration changes detected:", value: 0 }
         ];
         break;
-      case 7: // Contingency Plan Testing Measure
+      case 7: // Contingency Plan Testing Measure (RS.MA.S3)
         numeratorQuestions = [
-          { question: "How many information systems have conducted contingency plan testing at least once in the past year?", value: 0 }
+          { question: "Production systems with tested contingency plans:", value: 0 },
+          { question: "Database systems with tested contingency plans:", value: 0 },
+          { question: "Network systems with tested contingency plans:", value: 0 },
+          { question: "Security systems with tested contingency plans:", value: 0 },
+          { question: "Other systems with tested contingency plans:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of information systems in the system inventory?", value: 0 }
+          { question: "Total production systems in inventory:", value: 0 },
+          { question: "Total database systems in inventory:", value: 0 },
+          { question: "Total network systems in inventory:", value: 0 },
+          { question: "Total security systems in inventory:", value: 0 },
+          { question: "Total other systems in inventory:", value: 0 }
         ];
         break;
-      case 8: // Privileged Access Management Measure
+      case 8: // User Accounts Measure (PR.AA.S7)
         numeratorQuestions = [
-          { question: "How many systems have privileged access managed through a PIM solution?", value: 0 }
+          { question: "Production systems with privileged access through PIM:", value: 0 },
+          { question: "Database systems with privileged access through PIM:", value: 0 },
+          { question: "Network devices with privileged access through PIM:", value: 0 },
+          { question: "Security systems with privileged access through PIM:", value: 0 },
+          { question: "Cloud services with privileged access through PIM:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of systems that require privileged access?", value: 0 }
+          { question: "Total production systems requiring privileged access:", value: 0 },
+          { question: "Total database systems requiring privileged access:", value: 0 },
+          { question: "Total network devices requiring privileged access:", value: 0 },
+          { question: "Total security systems requiring privileged access:", value: 0 },
+          { question: "Total cloud services requiring privileged access:", value: 0 }
         ];
         break;
-      case 9: // Incident Response Measure
+      case 9: // Incident Response Measure (RS.CO.S2)
         numeratorQuestions = [
-          { question: "How many security incidents were reported within the required timeframe?", value: 0 }
+          { question: "Critical incidents reported on time:", value: 0 },
+          { question: "High severity incidents reported on time:", value: 0 },
+          { question: "Medium severity incidents reported on time:", value: 0 },
+          { question: "Low severity incidents reported on time:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of security incidents that occurred?", value: 0 }
+          { question: "Total critical incidents:", value: 0 },
+          { question: "Total high severity incidents:", value: 0 },
+          { question: "Total medium severity incidents:", value: 0 },
+          { question: "Total low severity incidents:", value: 0 }
         ];
         break;
-      case 10: // Malicious Code Protection Measure
+      case 10: // Maintenance Measure (PR.MA.S1)
         numeratorQuestions = [
-          { question: "How many systems have malware detection tools installed and operational?", value: 0 }
+          { question: "Server hardware components receiving scheduled maintenance:", value: 0 },
+          { question: "Network hardware components receiving scheduled maintenance:", value: 0 },
+          { question: "Security hardware components receiving scheduled maintenance:", value: 0 },
+          { question: "Software systems receiving scheduled maintenance/patching:", value: 0 },
+          { question: "Other components receiving scheduled maintenance:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of systems in the organization?", value: 0 }
+          { question: "Total server hardware components requiring maintenance:", value: 0 },
+          { question: "Total network hardware components requiring maintenance:", value: 0 },
+          { question: "Total security hardware components requiring maintenance:", value: 0 },
+          { question: "Total software systems requiring maintenance/patching:", value: 0 },
+          { question: "Total other components requiring maintenance:", value: 0 }
         ];
         break;
-      case 11: // Remote Access Measure
+      case 11: // Media Sanitization Measure (PR.AA.S14)
         numeratorQuestions = [
-          { question: "How many remote access sessions use multi-factor authentication?", value: 0 }
+          { question: "Hard drives/SSDs passing sanitization testing:", value: 0 },
+          { question: "USB storage devices passing sanitization testing:", value: 0 },
+          { question: "Backup tapes/media passing sanitization testing:", value: 0 },
+          { question: "Mobile devices passing sanitization testing:", value: 0 },
+          { question: "Other media passing sanitization testing:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of remote access sessions?", value: 0 }
+          { question: "Total hard drives/SSDs disposed/reused:", value: 0 },
+          { question: "Total USB storage devices disposed/reused:", value: 0 },
+          { question: "Total backup tapes/media disposed/reused:", value: 0 },
+          { question: "Total mobile devices disposed/reused:", value: 0 },
+          { question: "Total other media disposed/reused:", value: 0 }
         ];
         break;
-      case 12: // Physical Security Incidents Measure
+      case 12: // Physical Security Incidents Measure (PR.AA.S10)
         numeratorQuestions = [
-          { question: "How many physical security incidents resulted in unauthorized access to facilities with information systems?", value: 0 }
+          { question: "Unauthorized access incidents to server rooms:", value: 0 },
+          { question: "Unauthorized access incidents to network closets:", value: 0 },
+          { question: "Unauthorized access incidents to secure workspaces:", value: 0 },
+          { question: "Unauthorized access incidents to other secure areas:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of physical security incidents recorded?", value: 0 }
+          { question: "Total physical security incidents at server rooms:", value: 0 },
+          { question: "Total physical security incidents at network closets:", value: 0 },
+          { question: "Total physical security incidents at secure workspaces:", value: 0 },
+          { question: "Total physical security incidents at other secure areas:", value: 0 }
         ];
         break;
-      case 13: // Planning Measure
+      case 13: // Planning Measure (GV.RR.S5)
         numeratorQuestions = [
-          { question: "How many users signed confidentiality agreements before being granted system access?", value: 0 }
+          { question: "Employees granted access after signing agreements:", value: 0 },
+          { question: "Contractors granted access after signing agreements:", value: 0 },
+          { question: "Vendors granted access after signing agreements:", value: 0 },
+          { question: "Third parties granted access after signing agreements:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of users who were granted system access?", value: 0 }
+          { question: "Total employees granted system access:", value: 0 },
+          { question: "Total contractors granted system access:", value: 0 },
+          { question: "Total vendors granted system access:", value: 0 },
+          { question: "Total third parties granted system access:", value: 0 }
         ];
         break;
-      case 14: // Personnel Security Screening Measure
+      case 14: // Personnel Security Screening Measure (PR.AA.S10)
         numeratorQuestions = [
-          { question: "How many individuals were properly screened before being granted access?", value: 0 }
+          { question: "Employees who underwent screening before access:", value: 0 },
+          { question: "Contractors who underwent screening before access:", value: 0 },
+          { question: "Vendors who underwent screening before access:", value: 0 },
+          { question: "Third parties who underwent screening before access:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of individuals with access to organizational information and systems?", value: 0 }
+          { question: "Total employees with system access:", value: 0 },
+          { question: "Total contractors with system access:", value: 0 },
+          { question: "Total vendors with system access:", value: 0 },
+          { question: "Total third parties with system access:", value: 0 }
         ];
         break;
-      case 15: // Policy Document Measure
+      case 15: // Risk Assessment Measure (ID.RA.S2)
         numeratorQuestions = [
-          { question: "How many required security policies are documented, approved, and current?", value: 0 }
+          { question: "Critical production systems risk-assessed:", value: 0 },
+          { question: "Critical database systems risk-assessed:", value: 0 },
+          { question: "Critical network infrastructure risk-assessed:", value: 0 },
+          { question: "Critical applications risk-assessed:", value: 0 },
+          { question: "Critical data assets risk-assessed:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of required security policies?", value: 0 }
+          { question: "Total critical production systems:", value: 0 },
+          { question: "Total critical database systems:", value: 0 },
+          { question: "Total critical network infrastructure:", value: 0 },
+          { question: "Total critical applications:", value: 0 },
+          { question: "Total critical data assets:", value: 0 }
         ];
         break;
-      case 16: // Service Acquisition Contract Measure
+      case 16: // Service Acquisition Contract Measure (GV.SC.S3)
         numeratorQuestions = [
-          { question: "How many acquisition contracts include specific security requirements?", value: 0 }
+          { question: "Software acquisition contracts with security requirements:", value: 0 },
+          { question: "Hardware acquisition contracts with security requirements:", value: 0 },
+          { question: "Cloud service contracts with security requirements:", value: 0 },
+          { question: "IT service provider contracts with security requirements:", value: 0 },
+          { question: "Other acquisition contracts with security requirements:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of system and service acquisition contracts?", value: 0 }
+          { question: "Total software acquisition contracts:", value: 0 },
+          { question: "Total hardware acquisition contracts:", value: 0 },
+          { question: "Total cloud service contracts:", value: 0 },
+          { question: "Total IT service provider contracts:", value: 0 },
+          { question: "Total other acquisition contracts:", value: 0 }
         ];
         break;
-      case 17: // User Accounts Measure
+      case 17: // System and Communication Protection Measure (PR.DS.S4)
         numeratorQuestions = [
-          { question: "How many user accounts were terminated within the required timeframe?", value: 0 }
+          { question: "Laptops with full cryptographic protection:", value: 0 },
+          { question: "Mobile phones with full cryptographic protection:", value: 0 },
+          { question: "Tablets with full cryptographic protection:", value: 0 },
+          { question: "Other mobile devices with full cryptographic protection:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of users who departed the organization?", value: 0 }
+          { question: "Total laptops in use:", value: 0 },
+          { question: "Total mobile phones in use:", value: 0 },
+          { question: "Total tablets in use:", value: 0 },
+          { question: "Total other mobile devices in use:", value: 0 }
         ];
         break;
-      case 18: // Continuous Monitoring Measure
+      case 18: // Risk Management (GV.RM.S1, GV.RM.S2)
         numeratorQuestions = [
-          { question: "How many controls are continuously monitored?", value: 0 }
+          { question: "Production systems covered by risk management:", value: 0 },
+          { question: "Network infrastructure covered by risk management:", value: 0 },
+          { question: "Applications covered by risk management:", value: 0 },
+          { question: "Data assets covered by risk management:", value: 0 },
+          { question: "Other assets covered by risk management:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of information security controls?", value: 0 }
+          { question: "Total production systems in inventory:", value: 0 },
+          { question: "Total network infrastructure in inventory:", value: 0 },
+          { question: "Total applications in inventory:", value: 0 },
+          { question: "Total data assets in inventory:", value: 0 },
+          { question: "Total other assets in inventory:", value: 0 }
         ];
         break;
-      case 19: // Critical Assets Identified
+      case 19: // Critical Assets Identified (ID.AM.S1, ID.AM.S2)
         numeratorQuestions = [
-          { question: "How many business-critical systems have been identified through formal classification?", value: 0 },
-          { question: "How many supporting systems have been classified as critical?", value: 0 }
+          { question: "Production servers classified as critical:", value: 0 },
+          { question: "Databases classified as critical:", value: 0 },
+          { question: "Network devices classified as critical:", value: 0 },
+          { question: "Applications classified as critical:", value: 0 },
+          { question: "Other systems classified as critical:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of IT systems integrated with your SOC?", value: 0 }
+          { question: "Production servers integrated with SOC:", value: 0 },
+          { question: "Databases integrated with SOC:", value: 0 },
+          { question: "Network devices integrated with SOC:", value: 0 },
+          { question: "Applications integrated with SOC:", value: 0 },
+          { question: "Other systems integrated with SOC:", value: 0 }
         ];
         break;
-      case 20: // CSK Events
+      case 20: // CSK Events (RS.MA.S5)
         numeratorQuestions = [
-          { question: "How many CSK reported events were closed within 15 days?", value: 0 }
+          { question: "Critical CSK events closed within 15 days:", value: 0 },
+          { question: "High CSK events closed within 15 days:", value: 0 },
+          { question: "Medium CSK events closed within 15 days:", value: 0 },
+          { question: "Low CSK events closed within 15 days:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of CSK events reported to your organization?", value: 0 }
+          { question: "Total critical CSK events reported:", value: 0 },
+          { question: "Total high CSK events reported:", value: 0 },
+          { question: "Total medium CSK events reported:", value: 0 },
+          { question: "Total low CSK events reported:", value: 0 }
         ];
         break;
-      case 21: // Password Complexity Measure
+      case 21: // Cybersecurity Policy Document (GV.PO.S1)
         numeratorQuestions = [
-          { question: "How many systems enforce the required password complexity policies?", value: 0 }
+          { question: "Comprehensive cybersecurity policy exists and is documented (Yes=1, No=0):", value: 0 },
+          { question: "Policy approved by senior management within last 12 months (Yes=1, No=0):", value: 0 },
+          { question: "Policy updated within the last 12 months (Yes=1, No=0):", value: 0 },
+          { question: "Policy effectively communicated to all staff (Yes=1, No=0):", value: 0 },
+          { question: "Policy implementation verified through assessments (Yes=1, No=0):", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of systems that require password authentication?", value: 0 }
+          { question: "Total criteria (fixed value):", value: 5 }
         ];
         break;
-      case 22: // Cyber insurance
+      case 22: // SOC Efficacy
         numeratorQuestions = [
-          { question: "Does your organization have cyber insurance coverage? (1 for Yes, 0 for No)", value: 0 }
+          { question: "SOC operational capabilities score (as per Annexure-N):", value: 0 },
+          { question: "SOC monitoring effectiveness score (as per Annexure-N):", value: 0 },
+          { question: "SOC incident response score (as per Annexure-N):", value: 0 },
+          { question: "SOC threat intelligence score (as per Annexure-N):", value: 0 },
+          { question: "SOC maturity score (as per Annexure-N):", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "Total possible count (always 1)", value: 1 }
+          { question: "Maximum possible operational capabilities score:", value: 0 },
+          { question: "Maximum possible monitoring effectiveness score:", value: 0 },
+          { question: "Maximum possible incident response score:", value: 0 },
+          { question: "Maximum possible threat intelligence score:", value: 0 },
+          { question: "Maximum possible maturity score:", value: 0 }
         ];
         break;
       case 23: // Automated compliance with CSCRF
         numeratorQuestions = [
-          { question: "How many CSCRF standards have automated compliance monitoring?", value: 0 }
+          { question: "Governance standards with automated compliance monitoring:", value: 0 },
+          { question: "Identify standards with automated compliance monitoring:", value: 0 },
+          { question: "Protect standards with automated compliance monitoring:", value: 0 },
+          { question: "Detect standards with automated compliance monitoring:", value: 0 },
+          { question: "Respond standards with automated compliance monitoring:", value: 0 },
+          { question: "Recover standards with automated compliance monitoring:", value: 0 }
         ];
         denominatorQuestions = [
-          { question: "What is the total number of applicable CSCRF standards?", value: 0 }
+          { question: "Total applicable Governance standards:", value: 0 },
+          { question: "Total applicable Identify standards:", value: 0 },
+          { question: "Total applicable Protect standards:", value: 0 },
+          { question: "Total applicable Detect standards:", value: 0 },
+          { question: "Total applicable Respond standards:", value: 0 },
+          { question: "Total applicable Recover standards:", value: 0 }
         ];
         break;
       default:
