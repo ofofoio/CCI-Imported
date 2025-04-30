@@ -8,6 +8,7 @@ import CCIReport from '../components/CCIReport';
 import AnnexureKForm from '../components/AnnexureKForm';
 import SBOMManagement from '../components/SBOMManagement';
 import Sidebar from '../components/Sidebar';
+import SEBIInfo from '../components/SEBIInfo';
 import { initialCCIParameters, generateSampleData } from './data/cciParameters';
 import { CCIParameter, CCIResult, AnnexureKData } from './types';
 import { calculateCCIIndex } from './utils/cciCalculator';
@@ -65,6 +66,7 @@ export default function Home() {
   const [showAnnexureK, setShowAnnexureK] = useState<boolean>(false);
   const [showSBOM, setShowSBOM] = useState<boolean>(false);
   const [showOnlyParameterReport, setShowOnlyParameterReport] = useState(false);
+  const [showSEBIInfo, setShowSEBIInfo] = useState(false);
   const [organizationName, setOrganizationName] = useState('Enter Organization Name');
   const [organizationNameError, setOrganizationNameError] = useState('');
   const [expandedParameter, setExpandedParameter] = useState<number | null>(null);
@@ -413,6 +415,23 @@ export default function Home() {
     }, 100);
   };
 
+  const handleShowSEBIInfo = () => {
+    setShowSEBIInfo(true);
+    setShowResults(false);
+    setShowReport(false);
+    setShowDataCollection(false);
+    setShowAnnexureK(false);
+    setShowSBOM(false);
+    setShowOnlyParameterReport(false);
+    // Smooth scroll to SEBI info
+    setTimeout(() => {
+      const infoElement = document.getElementById('sebi-info');
+      if (infoElement) {
+        infoElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
   // Group parameters by category for better organization
   const groupedParameters: Record<string, CCIParameter[]> = {};
   parameters.forEach(param => {
@@ -559,6 +578,7 @@ export default function Home() {
           showAnnexureK={showAnnexureK}
           showSBOM={showSBOM}
           showOnlyParameterReport={showOnlyParameterReport}
+          showSEBIInfo={showSEBIInfo}
           onCalculate={handleCalculate}
           onReset={handleReset}
           onViewReport={handleViewReport}
@@ -566,6 +586,7 @@ export default function Home() {
           onShowDataCollection={handleShowDataCollection}
           onShowAnnexureK={handleShowAnnexureK}
           onShowSBOM={handleShowSBOM}
+          onShowSEBIInfo={handleShowSEBIInfo}
           onExportMarkdown={handleExportMarkdown}
           onExportPdf={handleExportPdf}
           onExportCsv={handleExportCsv}
@@ -575,145 +596,178 @@ export default function Home() {
         />
         
         <main className="md:ml-64 w-full max-w-6xl mx-auto px-4 pb-20">
-          <section aria-labelledby="cci-calculator-heading" className="p-8 mt-4 bg-black text-white rounded-xl shadow-lg mb-8">
-            <h1 id="cci-calculator-heading" className="text-3xl font-bold text-center">
-              Cyber Capability Index Calculator
-            </h1>
-            <p className="mt-2 text-center text-gray-300">
-              SEBI CSCRF Compliance Assessment Tool<br />
-              <span className="bg-white text-black px-2 py-1 mt-1 inline-block rounded-md font-medium text-sm">
-                For Qualified REs & MIIs only | Deadline: June 30, 2025
-              </span>
-            </p>
+          {/* Only show the main calculator UI if not in any special mode */}
+          {!showSEBIInfo && (
+            <>
+              <section aria-labelledby="cci-calculator-heading" className="p-8 mt-4 bg-black text-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-500 mb-8 relative">
+                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),transparent_70%)]"></div>
+                <div className="relative z-10">
+                  <h1 id="cci-calculator-heading" className="text-3xl md:text-5xl font-bold text-white text-center tracking-tight">
+                    Cyber Capability <span className="text-gray-300">Index Calculator</span>
+                  </h1>
+                  <p className="mt-2 text-center text-gray-300">
+                    SEBI CSCRF Compliance Assessment Tool<br />
+                    <span className="bg-white text-black px-3 py-1 mt-2 inline-block rounded-md font-medium text-sm transform transition-all duration-300 hover:scale-105">
+                      For Qualified REs & MIIs only | Deadline: June 30, 2025
+                    </span>
+                  </p>
 
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-              <div className="md:col-span-3">
-                <label htmlFor="organizationName" className="block text-xs font-medium text-gray-300">Organization Name <span className="text-red-500">*</span></label>
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    id="organizationName" 
-                    value={organizationName} 
-                    onChange={(e) => {
-                      setOrganizationName(e.target.value);
-                      if (e.target.value.trim() !== '') {
-                        setOrganizationNameError('');
-                      }
-                    }}
-                    onClick={() => {
-                      if (organizationName === 'Enter Organization Name') {
-                        setOrganizationName('');
-                      }
-                    }}
-                    className={`mt-1 block w-full rounded-md border ${organizationNameError ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-gray-500 focus:ring-gray-500 text-sm h-9 text-gray-900 ${organizationName === 'Enter Organization Name' ? 'text-gray-500 italic' : ''}`}
-                    placeholder="e.g., ABC Securities Ltd."
-                    required
-                  />
-                  {organizationNameError && (
-                    <p className="absolute text-xs text-red-500 -bottom-4">{organizationNameError}</p>
-                  )}
-                </div>
-              </div>
-              <div className="md:col-span-1">
-                <label htmlFor="assessmentDate" className="block text-xs font-medium text-gray-300">Assessment Date</label>
-                <input 
-                  type="date" 
-                  id="assessmentDate" 
-                  value={assessmentDate} 
-                  onChange={(e) => setAssessmentDate(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-gray-900 text-sm h-9"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* CCI Calculation Explanation Blurb */}
-          <section aria-label="CCI Calculation Explanation" className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-r-md shadow-sm">
-            <h3 className="text-lg font-semibold text-blue-800 mb-2">How to Calculate Your CCI Score</h3>
-            <p className="text-sm text-blue-900">
-              The Cyber Capability Index (CCI) is calculated based on 23 critical parameters across 6 NIST-aligned domains 
-              (Governance, Identify, Protect, Detect, Respond, and Recover). Each parameter has a specific weightage and target value,
-              with scores determined by the ratio of numerator to denominator values. A score of 61+ ("Developing") meets SEBI CSCRF
-              requirements for Qualified REs, while MIIs need 71+ ("Manageable") for compliance.
-            </p>
-          </section>
-
-          {/* Progress Bar */}
-          <section aria-label="Progress Tracker" className="my-6 bg-white rounded-xl shadow-md p-6">
-            <div className="mb-3">
-              <h2 className="text-lg font-semibold text-gray-700">Progress Tracker</h2>
-              <p className="text-sm text-gray-500">
-                Complete these steps to generate your SEBI CSCRF report
-                <span className="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full">
-                  For Qualified REs & MIIs only
-                </span>
-              </p>
-            </div>
-            <div className="relative mb-2">
-              <div className="overflow-hidden h-3 mb-6 text-xs flex rounded bg-gray-200">
-                <div style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }} 
-                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-black transition-all duration-500"></div>
-              </div>
-              <div className="flex justify-between">
-                {steps.map((step, index) => (
-                  <div key={index} className={`flex flex-col items-center ${index <= currentStep ? 'text-black' : 'text-gray-400'}`}>
-                    <div className={`flex items-center justify-center h-12 w-12 rounded-full ${index <= currentStep ? 'bg-black text-white' : 'bg-gray-200'} mb-1`}>
-                      {index + 1}
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                    <div className="md:col-span-3">
+                      <label htmlFor="organizationName" className="block text-xs font-medium text-gray-300">Organization Name <span className="text-gray-400">*</span></label>
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          id="organizationName" 
+                          value={organizationName} 
+                          onChange={(e) => {
+                            setOrganizationName(e.target.value);
+                            if (e.target.value.trim() !== '') {
+                              setOrganizationNameError('');
+                            }
+                          }}
+                          onClick={() => {
+                            if (organizationName === 'Enter Organization Name') {
+                              setOrganizationName('');
+                            }
+                          }}
+                          className={`mt-1 block w-full rounded-md border ${organizationNameError ? 'border-gray-400' : 'border-gray-500'} shadow-sm focus:border-white focus:ring-white text-sm h-9 text-gray-900 ${organizationName === 'Enter Organization Name' ? 'text-gray-500 italic' : ''} transition-all duration-300`}
+                          placeholder="e.g., ABC Securities Ltd."
+                          required
+                        />
+                        {organizationNameError && (
+                          <p className="absolute text-xs text-gray-400 -bottom-4">{organizationNameError}</p>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-sm font-medium">{step.name}</div>
-                    <div className="text-xs text-gray-500 text-center">{step.description}</div>
+                    <div className="md:col-span-1">
+                      <label htmlFor="assessmentDate" className="block text-xs font-medium text-gray-300">Assessment Date</label>
+                      <input 
+                        type="date" 
+                        id="assessmentDate" 
+                        value={assessmentDate} 
+                        onChange={(e) => setAssessmentDate(e.target.value)}
+                        className="mt-1 block w-full rounded-md border-gray-500 shadow-sm focus:border-white focus:ring-white text-gray-900 text-sm h-9 transition-all duration-300"
+                      />
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-            <div className="text-sm text-center mt-4 text-gray-600 bg-gray-100 py-3 rounded font-medium">
-              {currentStep === 0 && "Step 1: Fill in your parameters through basic or detailed calculator"}
-              {currentStep === 1 && "Step 2: Review your results and CCI score with detailed analysis"}
-              {currentStep === 2 && "Step 3: Export your completed report in your preferred format"}
-            </div>
-          </section>
+                </div>
+              </section>
 
-          {/* Calculate CCI Button - Centered below progress tracker */}
-          <div className="flex justify-center mb-8">
-            <button
-              onClick={() => {
-                // Check if any parameters have been filled in
-                const hasFilledParameters = parameters.some(param => 
-                  param.numerator !== undefined && param.numerator !== 0 && 
-                  param.denominator !== undefined && param.denominator !== 0
-                );
-                
-                if (!hasFilledParameters) {
-                  toast.error('Please fill in the calculator parameters before proceeding');
-                  
-                  // Highlight a parameter to draw attention
-                  const paramSection = document.querySelector('.space-y-4');
-                  if (paramSection) {
-                    paramSection.scrollIntoView({ behavior: 'smooth' });
+              {/* CCI Calculation Explanation Blurb */}
+              <section aria-label="CCI Calculation Explanation" className="bg-white border-l-4 border-black p-4 mb-8 rounded-r-md shadow-md transform transition-all duration-500 hover:shadow-xl">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-black" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-lg font-bold text-black mb-1">How to Calculate Your CCI Score</h3>
+                    <p className="text-sm text-gray-700">
+                      The Cyber Capability Index (CCI) is calculated based on 23 critical parameters across 6 NIST-aligned domains 
+                      (Governance, Identify, Protect, Detect, Respond, and Recover). Each parameter has a specific weightage and target value,
+                      with scores determined by the ratio of numerator to denominator values. A score of 61+ ("Developing") meets SEBI CSCRF
+                      requirements for Qualified REs, while MIIs need 71+ ("Manageable") for compliance.
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              {/* Progress Bar */}
+              <section aria-label="Progress Tracker" className="my-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-6">
+                <div className="mb-3">
+                  <h2 className="text-lg font-bold text-black">Progress Tracker</h2>
+                  <p className="text-sm text-gray-700">
+                    Complete these steps to generate your SEBI CSCRF report
+                    <span className="ml-2 bg-black text-white text-xs font-medium px-2 py-0.5 rounded-full">
+                      For Qualified REs & MIIs only
+                    </span>
+                  </p>
+                </div>
+                <div className="relative mb-2">
+                  <div className="overflow-hidden h-3 mb-6 text-xs flex rounded bg-gray-200">
+                    <div style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }} 
+                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-black transition-all duration-500"></div>
+                  </div>
+                  <div className="flex justify-between">
+                    {steps.map((step, index) => (
+                      <div key={index} className={`flex flex-col items-center transition-all duration-500 ${index <= currentStep ? 'text-black' : 'text-gray-400'}`}>
+                        <div className={`flex items-center justify-center h-12 w-12 rounded-full transition-all duration-500 ${index <= currentStep ? 'bg-black text-white' : 'bg-gray-200 border border-gray-300'} mb-1`}>
+                          {index + 1}
+                        </div>
+                        <div className="text-sm font-medium">{step.name}</div>
+                        <div className="text-xs text-gray-500 text-center">{step.description}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="text-sm text-center mt-4 text-gray-600 bg-gray-100 py-3 rounded font-medium">
+                  {currentStep === 0 && "Step 1: Fill in your parameters through basic or detailed calculator"}
+                  {currentStep === 1 && "Step 2: Review your results and CCI score with detailed analysis"}
+                  {currentStep === 2 && "Step 3: Export your completed report in your preferred format"}
+                </div>
+              </section>
+
+              {/* Calculate CCI Button - Centered below progress tracker */}
+              <div className="flex justify-center mb-8">
+                <button
+                  onClick={() => {
+                    // Check if any parameters have been filled in
+                    const hasFilledParameters = parameters.some(param => 
+                      param.numerator !== undefined && param.numerator !== 0 && 
+                      param.denominator !== undefined && param.denominator !== 0
+                    );
+                    
+                    if (!hasFilledParameters) {
+                      toast.error('Please fill in the calculator parameters before proceeding');
+                      
+                      // Highlight a parameter to draw attention
+                      const paramSection = document.querySelector('.space-y-4');
+                      if (paramSection) {
+                        paramSection.scrollIntoView({ behavior: 'smooth' });
+                      }
+                      return;
+                    }
+                    
+                    handleCalculate();
+                  }}
+                  className="px-8 py-4 bg-black hover:bg-gray-900 text-white font-semibold rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 flex items-center justify-center text-lg group"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 transform transition-transform duration-300 group-hover:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  <span className="mr-1 transform transition-transform duration-300 group-hover:translate-x-1">Calculate CCI</span>
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* SEBI Info */}
+          {showSEBIInfo && (
+            <section id="sebi-info" aria-label="SEBI CSCRF Information" className="mt-4 animate-fadeIn">
+              <SEBIInfo onCalculate={() => {
+                setShowSEBIInfo(false);
+                setTimeout(() => {
+                  // Focus on organization name input
+                  const orgNameField = document.getElementById('organizationName');
+                  if (orgNameField) {
+                    orgNameField.focus();
                   }
-                  return;
-                }
-                
-                handleCalculate();
-              }}
-              className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-md flex items-center justify-center text-lg"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              Calculate CCI
-            </button>
-          </div>
+                }, 100);
+              }} />
+            </section>
+          )}
 
           {/* Parameters Section */}
-          {!showDataCollection && !showResults && !showReport && !showSBOM && !showAnnexureK && !showOnlyParameterReport && (
-            <section aria-label="CCI Parameters" className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+          {!showDataCollection && !showResults && !showReport && !showSBOM && !showAnnexureK && !showOnlyParameterReport && !showSEBIInfo && (
+            <section aria-label="CCI Parameters" className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden mb-8">
               <div className="p-6 bg-black border-b flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-white">CCI Parameters</h2>
                 <div className="flex space-x-4">
                   <button
                     onClick={handleLoadSample}
-                    className="cci-btn-outline text-sm"
+                    className="px-3 py-1.5 bg-transparent hover:bg-white/10 text-white font-medium rounded-md border border-white/20 transform transition-all duration-300 hover:border-white/40 text-sm flex items-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -722,7 +776,7 @@ export default function Home() {
                   </button>
                   <button 
                     onClick={expandAll}
-                    className="cci-btn-outline text-sm"
+                    className="px-3 py-1.5 bg-transparent hover:bg-white/10 text-white font-medium rounded-md border border-white/20 transform transition-all duration-300 hover:border-white/40 text-sm flex items-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -735,13 +789,14 @@ export default function Home() {
               <div className="p-6">
                 {Object.keys(groupedParameters).map((category, categoryIndex) => (
                   <div key={categoryIndex} className="mb-8">
-                    <h3 className="text-lg font-medium text-black mb-4 pb-2 border-b">
+                    <h3 className="text-lg font-bold text-black mb-4 pb-2 border-b flex items-center">
+                      <div className="w-6 h-6 bg-black text-white rounded-sm flex items-center justify-center mr-3 text-xs font-normal">{categoryIndex + 1}</div>
                       {getCategoryName(category)} Parameters
                     </h3>
                     
                     <div className="space-y-4">
                       {groupedParameters[category].map((param) => (
-                        <div key={param.id} className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow duration-200">
+                        <div key={param.id} className="border border-gray-200 hover:border-black rounded-lg hover:shadow-md transition-all duration-300">
                           <ParameterInput 
                             parameter={param} 
                             onChange={handleParameterChange}
@@ -758,12 +813,12 @@ export default function Home() {
                 <div className="mt-8 flex justify-center">
                   <button
                     onClick={handleCalculate}
-                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-md flex items-center justify-center"
+                    className="px-6 py-3 bg-black hover:bg-gray-900 text-white font-semibold rounded-lg shadow-md transform transition-all duration-300 hover:scale-105 flex items-center justify-center group"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 transform transition-transform duration-300 group-hover:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
-                    Calculate CCI
+                    <span className="mr-1 transform transition-transform duration-300 group-hover:translate-x-1">Calculate CCI</span>
                   </button>
                 </div>
               </div>
@@ -771,7 +826,7 @@ export default function Home() {
           )}
 
           {/* Data Collection Form */}
-          {showDataCollection && (
+          {showDataCollection && !showSEBIInfo && (
             <section id="data-collection" aria-label="Detailed Data Collection" className="mb-8 animate-fadeIn">
               <div className="flex justify-end mb-4">
                 <button
@@ -793,7 +848,7 @@ export default function Home() {
           )}
 
           {/* Results Section */}
-          {showResults && !showReport && !showDataCollection && !showAnnexureK && !showSBOM && !showOnlyParameterReport && (
+          {showResults && !showReport && !showDataCollection && !showAnnexureK && !showSBOM && !showOnlyParameterReport && !showSEBIInfo && (
             <section id="results" aria-label="CCI Results" className="animate-fadeIn">
               <div className="flex justify-end mb-4">
                 <button
@@ -817,7 +872,7 @@ export default function Home() {
           )}
 
           {/* Report Section */}
-          {showReport && !showDataCollection && !showAnnexureK && !showSBOM && !showOnlyParameterReport && (
+          {showReport && !showDataCollection && !showAnnexureK && !showSBOM && !showOnlyParameterReport && !showSEBIInfo && (
             <section id="report" aria-label="CCI Report" className="animate-fadeIn">
               <div className="flex justify-end mb-4">
                 <button
@@ -849,7 +904,7 @@ export default function Home() {
           )}
 
           {/* Only Parameter Report Section */}
-          {showOnlyParameterReport && !showReport && !showDataCollection && !showAnnexureK && !showSBOM && (
+          {showOnlyParameterReport && !showReport && !showDataCollection && !showAnnexureK && !showSBOM && !showSEBIInfo && (
             <section id="parameter-report" aria-label="CCI Parameter Report" className="animate-fadeIn">
               <div className="flex justify-end mb-4">
                 <button
@@ -874,7 +929,7 @@ export default function Home() {
           )}
 
           {/* SBOM Section */}
-          {showSBOM && (
+          {showSBOM && !showSEBIInfo && (
             <section id="sbom-management" aria-label="SBOM Management" className="mb-8 animate-fadeIn">
               <div className="flex justify-end mb-4">
                 <button
@@ -903,7 +958,7 @@ export default function Home() {
           )}
 
           {/* Annexure K Form Section */}
-          {showAnnexureK && (
+          {showAnnexureK && !showSEBIInfo && (
             <section id="annexure-k-form" aria-label="Annexure K Form" className="mb-8 animate-fadeIn">
               <div className="flex justify-end mb-4">
                 <button

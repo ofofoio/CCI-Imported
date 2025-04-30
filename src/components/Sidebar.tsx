@@ -9,6 +9,7 @@ interface SidebarProps {
   showAnnexureK: boolean;
   showSBOM: boolean;
   showOnlyParameterReport?: boolean;
+  showSEBIInfo?: boolean;
   
   // Navigation handlers
   onCalculate: () => void;
@@ -18,6 +19,7 @@ interface SidebarProps {
   onShowDataCollection: () => void;
   onShowAnnexureK: () => void;
   onShowSBOM: () => void;
+  onShowSEBIInfo?: () => void;
   onExportMarkdown: () => void;
   onExportPdf: () => void;
   onExportCsv: () => void;
@@ -33,6 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   showAnnexureK,
   showSBOM,
   showOnlyParameterReport = false,
+  showSEBIInfo = false,
   onCalculate,
   onReset,
   onViewReport,
@@ -40,6 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onShowDataCollection,
   onShowAnnexureK,
   onShowSBOM,
+  onShowSEBIInfo = () => {},
   onExportMarkdown,
   onExportPdf,
   onExportCsv,
@@ -93,6 +97,22 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
         
+        {/* SEBI Information */}
+        <div className="p-4 border-t border-gray-200">
+          <h3 className="text-sm font-medium text-gray-500 mb-2">SEBI CSCRF Information</h3>
+          <div className="space-y-2">
+            <button
+              onClick={onShowSEBIInfo}
+              className={`w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-200 flex items-center ${showSEBIInfo ? 'bg-gray-200 font-medium' : ''}`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              SEBI Framework Guide
+            </button>
+          </div>
+        </div>
+        
         {/* Detailed Data Collection */}
         <div className="p-4 border-t border-gray-200">
           <h3 className="text-sm font-medium text-gray-500 mb-2">CCI Calculator</h3>
@@ -102,7 +122,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 // Go back to the main calculator page
                 onReset();
               }}
-              className={`w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-200 flex items-center ${!showResults && !showReport && !showDataCollection && !showAnnexureK && !showSBOM && !showOnlyParameterReport ? 'bg-gray-200 font-medium' : ''}`}
+              className={`w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-200 flex items-center ${!showResults && !showReport && !showDataCollection && !showAnnexureK && !showSBOM && !showOnlyParameterReport && !showSEBIInfo ? 'bg-gray-200 font-medium' : ''}`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />

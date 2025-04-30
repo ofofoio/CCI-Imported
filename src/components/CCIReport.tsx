@@ -390,70 +390,82 @@ const CCIReport: React.FC<CCIReportProps> = ({
   };
 
   return (
-    <div id="report" className="bg-white rounded-xl shadow-md overflow-hidden animate-scaleIn print:shadow-none print:p-0">
-      <div className="p-6 bg-black border-b print:hidden">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-white">Detailed SEBI CSCRF Compliance Report</h2>
-          <div className="flex space-x-3">
-            <button 
-              id="export-markdown-btn"
-              onClick={handleExportMarkdown}
-              disabled={isExportingMD}
-              title="Export this report as Markdown format for easy sharing and version control"
-              className={`${isExportingMD ? 'bg-gray-400 cursor-not-allowed' : 'cci-btn-outline'}`}
-            >
-              {isExportingMD ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-800" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                  <span className="font-medium">Export as Markdown</span>
-                </>
-              )}
-            </button>
+    <div className="animate-fadeIn">
+      {/* Report Header with black futuristic design */}
+      <div className="bg-black relative overflow-hidden rounded-t-xl shadow-lg">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),transparent_70%)]"></div>
+        <div className="p-6 relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="text-white mb-6 md:mb-0">
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight animate-fadeInUp">
+                SEBI CSCRF <span className="text-gray-300">Report</span>
+              </h2>
+              <p className="text-gray-300 mt-2 animate-fadeInUp animation-delay-100">
+                Cyber Capability Index: {result.totalScore.toFixed(2)} | Maturity Level: {result.maturityLevel}
+              </p>
+            </div>
             
-            <button 
-              id="export-compact-sebi-btn"
-              onClick={handleExportCompactSebiReport}
-              disabled={isExportingCompactSebi}
-              title="Export a SEBI report with only parameter details, excluding the compliance summary (<10 pages)"
-              className={`${isExportingCompactSebi ? 'bg-gray-400 cursor-not-allowed' : 'cci-btn-success'}`}
-            >
-              {isExportingCompactSebi ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-white" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                  </svg>
-                  <span className="font-medium">Parameters-Only Report</span>
-                </>
-              )}
-            </button>
+            <div className="flex flex-wrap justify-center md:justify-end gap-3">
+              <button 
+                id="export-md-btn"
+                onClick={handleExportMarkdown}
+                disabled={isExportingMD}
+                title="Export this report as Markdown format for easy sharing and version control"
+                className="px-4 py-2 bg-white hover:bg-gray-100 text-black rounded-md transition-all duration-300 flex items-center disabled:opacity-70 transform hover:scale-105"
+              >
+                {isExportingMD ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-800" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-medium">Export as Markdown</span>
+                  </>
+                )}
+              </button>
+              
+              <button 
+                id="export-compact-sebi-btn"
+                onClick={handleExportCompactSebiReport}
+                disabled={isExportingCompactSebi}
+                title="Export a SEBI report with only parameter details, excluding the compliance summary (<10 pages)"
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-md transition-all duration-300 flex items-center disabled:opacity-70 border border-white/20"
+              >
+                {isExportingCompactSebi ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-white" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-medium">Parameters-Only Report</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-6 bg-white rounded-b-xl shadow-md">
         {/* Report Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-black">SEBI Cyber Security and Cyber Resilience Framework</h1>
           <h2 className="text-xl mt-1 text-gray-800">Compliance Assessment Report</h2>
-          <div className="mt-6 mb-2 py-3 px-4 bg-gray-50 border border-gray-200 rounded-lg inline-block mx-auto">
+          <div className="mt-6 mb-2 py-3 px-4 bg-gray-50 border border-gray-200 hover:border-black transition-all duration-300 rounded-lg inline-block mx-auto">
             <p className="text-gray-800 text-xl font-semibold">Organization: {result.organization}</p>
             <p className="mt-2 text-gray-700 text-lg">Assessment Date: {formatDate(result.date)}</p>
           </div>
@@ -463,22 +475,22 @@ const CCIReport: React.FC<CCIReportProps> = ({
         <div className="mb-8 print:break-after-page">
           <h3 className="text-lg font-semibold text-black border-b border-gray-300 pb-2 mb-4">Executive Summary</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+            <div className="bg-white border border-gray-200 hover:border-black rounded-lg p-4 shadow-sm transition-all duration-300 transform hover:shadow-lg">
               <h4 className="text-sm font-medium text-gray-500 mb-1">Overall CCI Score</h4>
               <p className="text-2xl font-bold text-black">{result.totalScore.toFixed(2)}/100</p>
               <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="h-2 rounded-full bg-black"
+                  className="h-2 rounded-full bg-black transition-all duration-500 ease-in-out"
                   style={{ width: `${result.totalScore}%` }}
                 ></div>
               </div>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+            <div className="bg-white border border-gray-200 hover:border-black rounded-lg p-4 shadow-sm transition-all duration-300 transform hover:shadow-lg">
               <h4 className="text-sm font-medium text-gray-500 mb-1">Maturity Level</h4>
               <p className="text-xl font-bold text-black">{result.maturityLevel}</p>
               <p className="text-xs text-gray-500 mt-1">{result.maturityDescription}</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+            <div className="bg-white border border-gray-200 hover:border-black rounded-lg p-4 shadow-sm transition-all duration-300 transform hover:shadow-lg">
               <h4 className="text-sm font-medium text-gray-500 mb-1">Compliance Status</h4>
               <p className={`text-xl font-bold ${result.totalScore >= 60 ? 'text-black' : 'text-gray-700'}`}>
                 {result.totalScore >= 60 ? 'Compliant' : 'Non-Compliant'}
@@ -491,7 +503,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
             </div>
           </div>
           
-          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <div className="bg-white border border-gray-200 hover:border-black rounded-lg p-4 shadow-sm transition-all duration-300">
             <h4 className="font-medium text-black mb-2">Assessment Overview</h4>
             <p className="text-gray-700 mb-3">
               This report provides a comprehensive assessment of {result.organization}'s compliance with the Securities and Exchange Board of India (SEBI) Cyber Security and Cyber Resilience Framework (CSCRF). The assessment was conducted on {formatDate(result.date)} using the Cyber Capability Index (CCI) methodology.
@@ -504,23 +516,23 @@ const CCIReport: React.FC<CCIReportProps> = ({
                 `${result.organization} currently does not meet the minimum compliance requirements with a score of ${result.totalScore.toFixed(2)}. Significant improvements are needed across multiple areas to achieve SEBI CSCRF compliance by the June 30, 2025 deadline.`
               }
             </p>
-            <div className="flex items-center justify-center py-2 bg-black text-white text-sm font-medium px-4 mt-4 rounded">
+            <div className="flex items-center justify-center py-2 bg-black text-white text-sm font-medium px-4 mt-4 rounded transform transition-all duration-300 hover:scale-105">
               <span>Compliance Deadline: June 30, 2025</span>
             </div>
           </div>
           
           {/* Markdown Export Info */}
-          <div className="mt-4 bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r text-sm text-blue-700">
+          <div className="mt-4 bg-gray-50 border-l-4 border-black p-4 rounded-r text-sm text-gray-700 transition-all duration-300 hover:shadow-inner">
             <div className="flex items-start">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
               <div>
                 <h4 className="font-semibold mb-1">Export as Markdown</h4>
-                <p className="text-blue-600 mb-1">
+                <p className="text-gray-600 mb-1">
                   This report can be exported as a Markdown (.md) file using the "Export as Markdown" button at the top of the page.
                 </p>
-                <p className="text-blue-600">
+                <p className="text-gray-600">
                   Markdown is a lightweight markup format that's easily readable and can be converted to other formats like PDF or HTML. It's perfect for documentation, GitHub repositories, and sharing with technical teams.
                 </p>
               </div>
@@ -532,7 +544,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
         <div className="mb-8 print:break-after-page">
           <h3 className="text-lg font-semibold text-black border-b border-gray-300 pb-2 mb-4">Category Analysis</h3>
           
-          <div className="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm mb-6">
+          <div className="overflow-hidden bg-white border border-gray-200 hover:border-black rounded-lg shadow-sm mb-6 transition-all duration-300">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-black">
                 <tr>
@@ -551,9 +563,9 @@ const CCIReport: React.FC<CCIReportProps> = ({
                 </tr>
               </thead>
               {/* Table body with main category data */}
-              {mainCategoryScores.map((category, idx) => (
-                <React.Fragment key={idx}>
-                  <tr>
+              <tbody>
+                {mainCategoryScores.map((category, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors duration-200">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{category.category}</div>
                     </td>
@@ -561,22 +573,23 @@ const CCIReport: React.FC<CCIReportProps> = ({
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{category.maturityLevel}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{category.score >= 60 ? 'Low' : 'High'}</td>
                   </tr>
-                </React.Fragment>
-              ))}
+                ))}
+              </tbody>
             </table>
           </div>
         </div>
 
         {/* Category Maturity Dashboard */}
-        <div className="mb-8 bg-white rounded-lg shadow overflow-hidden">
-          <div className="p-4 bg-gray-50 border-b">
-            <h3 className="text-xl font-semibold">Category Maturity Classification</h3>
-            <p className="text-sm text-gray-600">Detailed breakdown of maturity levels by security domain</p>
+        <div className="mb-8 bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-200 hover:border-black">
+          <div className="p-4 bg-black relative">
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1),transparent_70%)]"></div>
+            <h3 className="text-xl font-semibold text-white relative z-10">Category Maturity Classification</h3>
+            <p className="text-sm text-gray-300 relative z-10">Detailed breakdown of maturity levels by security domain</p>
           </div>
           
           <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {mainCategoryScores.map((category, idx) => (
-              <div key={idx} className={`p-4 rounded-lg ${getScoreBgColor(category.score)} border border-gray-200`}>
+              <div key={idx} className={`p-4 rounded-lg ${getScoreBgColor(category.score)} border border-gray-200 hover:border-black transition-all duration-300 hover:shadow-md`}>
                 <div className="flex justify-between items-start mb-2">
                   <h4 className="font-medium">{category.category}</h4>
                   <span className={`px-2 py-1 text-xs rounded-full bg-gray-200 ${getScoreColor(category.score)}`}>
@@ -588,7 +601,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
                   <div className="text-sm font-medium">Maturity: {category.maturityLevel}</div>
                   <div className="w-full bg-white bg-opacity-50 rounded-full h-2 mt-1">
                     <div 
-                      className={category.color} 
+                      className="bg-black transition-all duration-500 ease-in-out" 
                       style={{ width: `${Math.min(100, category.score)}%`, height: '0.5rem' }}
                     ></div>
                   </div>
@@ -601,14 +614,14 @@ const CCIReport: React.FC<CCIReportProps> = ({
         {/* Category sections with parameters */}
         {sortedCategories.map((category, categoryIndex) => (
           <div key={categoryIndex} className="mb-8">
-            <h3 className="text-xl font-semibold mb-4 bg-gray-100 p-3 rounded flex justify-between items-center">
+            <h3 className="text-xl font-semibold mb-4 bg-gray-50 p-3 rounded-lg flex justify-between items-center border border-gray-200 hover:border-black transition-all duration-300">
               <span>{category}</span>
-              <span className={`text-sm px-3 py-1 rounded-full bg-gray-200 ${getScoreColor(categoryScores[categoryIndex].score)}`}>
+              <span className={`text-sm px-3 py-1 rounded-full bg-black text-white`}>
                 Score: {categoryScores[categoryIndex].score.toFixed(1)} - {categoryScores[categoryIndex].maturityLevel}
               </span>
             </h3>
             
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:border-black transition-all duration-300">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -627,7 +640,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
                     
                     return (
                       <React.Fragment key={paramIndex}>
-                        <tr>
+                        <tr className="hover:bg-gray-50 transition-colors duration-200">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">{param.title}</div>
                             <div className="text-xs text-gray-500">{param.measureId}</div>
@@ -689,13 +702,13 @@ const CCIReport: React.FC<CCIReportProps> = ({
           </div>
         ))}
 
-        <div className="mt-10 bg-white p-6 rounded-lg shadow">
+        <div className="mt-10 bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:border-black transition-all duration-300">
           <h3 className="text-xl font-semibold mb-4">Notes & Observations</h3>
           <div className="text-gray-700 space-y-2">
             <p>This report provides a snapshot of the organization's cyber capability maturity based on the assessment date shown above.</p>
             <p>The CCI is calculated based on the 23 parameters across various domains as specified in the SEBI CSCRF guidelines.</p>
             <p>For areas with lower scores, consider developing action plans to enhance controls and improve overall cyber resilience.</p>
-            <div className="mt-4 p-3 bg-gray-100 rounded-lg text-gray-800 text-sm">
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg text-gray-800 text-sm">
               <p className="font-medium mb-1">Maturity Level Classification:</p>
               <ul className="list-disc pl-5 space-y-1">
                 <li><span className="font-medium">Exceptional (91-100.99):</span> Leading-edge security posture with advanced capabilities</li>
@@ -709,11 +722,11 @@ const CCIReport: React.FC<CCIReportProps> = ({
           </div>
         </div>
         
-        <div className="mt-8 flex justify-center space-x-4">
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
           {onReset && (
             <button
               onClick={onReset}
-              className="cci-btn-outline"
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md transition-all duration-300 flex items-center transform hover:scale-105"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
@@ -725,7 +738,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
           <button
             onClick={handleExportMarkdown}
             disabled={isExportingMD}
-            className="cci-btn-primary disabled:opacity-70"
+            className="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-md transition-all duration-300 flex items-center disabled:opacity-70 transform hover:scale-105"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -736,7 +749,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
           <button
             onClick={handleExportPdf}
             disabled={isExportingPDF}
-            className="cci-btn-danger disabled:opacity-70"
+            className="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-md transition-all duration-300 flex items-center disabled:opacity-70 transform hover:scale-105"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
@@ -747,7 +760,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
           <button
             onClick={handleExportCsv}
             disabled={isExportingCSV}
-            className="cci-btn-success disabled:opacity-70"
+            className="px-4 py-2 bg-white hover:bg-gray-100 text-black rounded-md transition-all duration-300 flex items-center disabled:opacity-70 border border-gray-300 transform hover:scale-105"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
@@ -759,10 +772,10 @@ const CCIReport: React.FC<CCIReportProps> = ({
             <button
               onClick={handleExportAnnexureK}
               disabled={isExportingAnnexureK}
-              className="cci-btn-outline disabled:opacity-70"
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-black rounded-md transition-all duration-300 flex items-center disabled:opacity-70 border border-gray-300 transform hover:scale-105"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                 <path d="M8 11a1 1 0 100 2h4a1 1 0 100-2H8z" />
                 <path d="M8 7a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
               </svg>

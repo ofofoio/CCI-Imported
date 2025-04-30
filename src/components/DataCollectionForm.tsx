@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { CCIParameter, CCIResult } from '../app/types';
 import { calculateParameterScore } from '../app/utils/cciCalculator';
 import { calculateCCIIndex } from '../app/utils/cciCalculator';
-import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 interface DataCollectionFormProps {
   parameters: CCIParameter[];
@@ -191,368 +190,458 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
     let numeratorQuestions: { question: string, value: number }[] = [];
     let denominatorQuestions: { question: string, value: number }[] = [];
     
-    // Generate questions based on parameter type
-    switch(param.id) {
-      case 1: // Vulnerability Management Measure (DE.CM.S5)
-        numeratorQuestions = [
-          { question: "Critical vulnerabilities remediated within SLA:", value: 0 },
-          { question: "High vulnerabilities remediated within SLA:", value: 0 },
-          { question: "Medium vulnerabilities remediated within SLA:", value: 0 },
-          { question: "Low vulnerabilities remediated within SLA:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Critical vulnerabilities identified:", value: 0 },
-          { question: "High vulnerabilities identified:", value: 0 },
-          { question: "Medium vulnerabilities identified:", value: 0 },
-          { question: "Low vulnerabilities identified:", value: 0 }
-        ];
-        break;
-      case 2: // Security Training Measure (PR.AT.S1)
-        numeratorQuestions = [
-          { question: "Full-time security personnel who completed training:", value: 0 },
-          { question: "IT staff with security responsibilities who completed training:", value: 0 },
-          { question: "Security contractors/consultants who completed training:", value: 0 },
-          { question: "Security managers/leadership who completed training:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total full-time security personnel:", value: 0 },
-          { question: "Total IT staff with security responsibilities:", value: 0 },
-          { question: "Total security contractors/consultants:", value: 0 },
-          { question: "Total security managers/leadership:", value: 0 }
-        ];
-        break;
-      case 3: // Security Budget Measure (GV.RR.S4)
-        numeratorQuestions = [
-          { question: "Annual expenditure on security hardware and appliances (INR):", value: 0 },
-          { question: "Annual expenditure on security software and licenses (INR):", value: 0 },
-          { question: "Annual expenditure on security personnel salaries and benefits (INR):", value: 0 },
-          { question: "Annual expenditure on security training and awareness (INR):", value: 0 },
-          { question: "Annual expenditure on security assessments and audits (INR):", value: 0 },
-          { question: "Annual expenditure on security consulting services (INR):", value: 0 },
-          { question: "Other security-related expenses (INR):", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Annual expenditure on IT hardware (INR):", value: 0 },
-          { question: "Annual expenditure on IT software and licenses (INR):", value: 0 },
-          { question: "Annual expenditure on IT personnel salaries and benefits (INR):", value: 0 },
-          { question: "Annual expenditure on IT infrastructure (network, data centers) (INR):", value: 0 },
-          { question: "Annual expenditure on cloud services (INR):", value: 0 },
-          { question: "Annual expenditure on IT outsourcing and managed services (INR):", value: 0 },
-          { question: "Other IT-related expenses (INR):", value: 0 }
-        ];
-        break;
-      case 4: // Remote Access Control Measure (PR.AA.S12)
-        numeratorQuestions = [
-          { question: "Employees using MFA for remote access:", value: 0 },
-          { question: "Contractors using MFA for remote access:", value: 0 },
-          { question: "Vendors using MFA for remote access:", value: 0 },
-          { question: "Third-party service providers using MFA for remote access:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total employees with remote access:", value: 0 },
-          { question: "Total contractors with remote access:", value: 0 },
-          { question: "Total vendors with remote access:", value: 0 },
-          { question: "Total third-party service providers with remote access:", value: 0 }
-        ];
-        break;
-      case 5: // Audit Record Review Measure (DE.CM.S1)
-        numeratorQuestions = [
-          { question: "Critical production systems integrated with SIEM:", value: 0 },
-          { question: "Critical database systems integrated with SIEM:", value: 0 },
-          { question: "Critical network devices integrated with SIEM:", value: 0 },
-          { question: "Critical security systems integrated with SIEM:", value: 0 },
-          { question: "Other critical systems integrated with SIEM:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total critical production systems:", value: 0 },
-          { question: "Total critical database systems:", value: 0 },
-          { question: "Total critical network devices:", value: 0 },
-          { question: "Total critical security systems:", value: 0 },
-          { question: "Total other critical systems:", value: 0 }
-        ];
-        break;
-      case 6: // Configuration Changes Measure (DE.CM.S5)
-        numeratorQuestions = [
-          { question: "Approved and implemented OS configuration changes:", value: 0 },
-          { question: "Approved and implemented application configuration changes:", value: 0 },
-          { question: "Approved and implemented database configuration changes:", value: 0 },
-          { question: "Approved and implemented network device configuration changes:", value: 0 },
-          { question: "Approved and implemented security tool configuration changes:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total OS configuration changes detected:", value: 0 },
-          { question: "Total application configuration changes detected:", value: 0 },
-          { question: "Total database configuration changes detected:", value: 0 },
-          { question: "Total network device configuration changes detected:", value: 0 },
-          { question: "Total security tool configuration changes detected:", value: 0 }
-        ];
-        break;
-      case 7: // Contingency Plan Testing Measure (RS.MA.S3)
-        numeratorQuestions = [
-          { question: "Production systems with tested contingency plans:", value: 0 },
-          { question: "Database systems with tested contingency plans:", value: 0 },
-          { question: "Network systems with tested contingency plans:", value: 0 },
-          { question: "Security systems with tested contingency plans:", value: 0 },
-          { question: "Other systems with tested contingency plans:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total production systems in inventory:", value: 0 },
-          { question: "Total database systems in inventory:", value: 0 },
-          { question: "Total network systems in inventory:", value: 0 },
-          { question: "Total security systems in inventory:", value: 0 },
-          { question: "Total other systems in inventory:", value: 0 }
-        ];
-        break;
-      case 8: // User Accounts Measure (PR.AA.S7)
-        numeratorQuestions = [
-          { question: "Production systems with privileged access through PIM:", value: 0 },
-          { question: "Database systems with privileged access through PIM:", value: 0 },
-          { question: "Network devices with privileged access through PIM:", value: 0 },
-          { question: "Security systems with privileged access through PIM:", value: 0 },
-          { question: "Cloud services with privileged access through PIM:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total production systems requiring privileged access:", value: 0 },
-          { question: "Total database systems requiring privileged access:", value: 0 },
-          { question: "Total network devices requiring privileged access:", value: 0 },
-          { question: "Total security systems requiring privileged access:", value: 0 },
-          { question: "Total cloud services requiring privileged access:", value: 0 }
-        ];
-        break;
-      case 9: // Incident Response Measure (RS.CO.S2)
-        numeratorQuestions = [
-          { question: "Critical incidents reported on time:", value: 0 },
-          { question: "High severity incidents reported on time:", value: 0 },
-          { question: "Medium severity incidents reported on time:", value: 0 },
-          { question: "Low severity incidents reported on time:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total critical incidents:", value: 0 },
-          { question: "Total high severity incidents:", value: 0 },
-          { question: "Total medium severity incidents:", value: 0 },
-          { question: "Total low severity incidents:", value: 0 }
-        ];
-        break;
-      case 10: // Maintenance Measure (PR.MA.S1)
-        numeratorQuestions = [
-          { question: "Server hardware components receiving scheduled maintenance:", value: 0 },
-          { question: "Network hardware components receiving scheduled maintenance:", value: 0 },
-          { question: "Security hardware components receiving scheduled maintenance:", value: 0 },
-          { question: "Software systems receiving scheduled maintenance/patching:", value: 0 },
-          { question: "Other components receiving scheduled maintenance:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total server hardware components requiring maintenance:", value: 0 },
-          { question: "Total network hardware components requiring maintenance:", value: 0 },
-          { question: "Total security hardware components requiring maintenance:", value: 0 },
-          { question: "Total software systems requiring maintenance/patching:", value: 0 },
-          { question: "Total other components requiring maintenance:", value: 0 }
-        ];
-        break;
-      case 11: // Media Sanitization Measure (PR.AA.S14)
-        numeratorQuestions = [
-          { question: "Hard drives/SSDs passing sanitization testing:", value: 0 },
-          { question: "USB storage devices passing sanitization testing:", value: 0 },
-          { question: "Backup tapes/media passing sanitization testing:", value: 0 },
-          { question: "Mobile devices passing sanitization testing:", value: 0 },
-          { question: "Other media passing sanitization testing:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total hard drives/SSDs disposed/reused:", value: 0 },
-          { question: "Total USB storage devices disposed/reused:", value: 0 },
-          { question: "Total backup tapes/media disposed/reused:", value: 0 },
-          { question: "Total mobile devices disposed/reused:", value: 0 },
-          { question: "Total other media disposed/reused:", value: 0 }
-        ];
-        break;
-      case 12: // Physical Security Incidents Measure (PR.AA.S10)
-        numeratorQuestions = [
-          { question: "Unauthorized access incidents to server rooms:", value: 0 },
-          { question: "Unauthorized access incidents to network closets:", value: 0 },
-          { question: "Unauthorized access incidents to secure workspaces:", value: 0 },
-          { question: "Unauthorized access incidents to other secure areas:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total physical security incidents at server rooms:", value: 0 },
-          { question: "Total physical security incidents at network closets:", value: 0 },
-          { question: "Total physical security incidents at secure workspaces:", value: 0 },
-          { question: "Total physical security incidents at other secure areas:", value: 0 }
-        ];
-        break;
-      case 13: // Planning Measure (GV.RR.S5)
-        numeratorQuestions = [
-          { question: "Employees granted access after signing agreements:", value: 0 },
-          { question: "Contractors granted access after signing agreements:", value: 0 },
-          { question: "Vendors granted access after signing agreements:", value: 0 },
-          { question: "Third parties granted access after signing agreements:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total employees granted system access:", value: 0 },
-          { question: "Total contractors granted system access:", value: 0 },
-          { question: "Total vendors granted system access:", value: 0 },
-          { question: "Total third parties granted system access:", value: 0 }
-        ];
-        break;
-      case 14: // Personnel Security Screening Measure (PR.AA.S10)
-        numeratorQuestions = [
-          { question: "Employees who underwent screening before access:", value: 0 },
-          { question: "Contractors who underwent screening before access:", value: 0 },
-          { question: "Vendors who underwent screening before access:", value: 0 },
-          { question: "Third parties who underwent screening before access:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total employees with system access:", value: 0 },
-          { question: "Total contractors with system access:", value: 0 },
-          { question: "Total vendors with system access:", value: 0 },
-          { question: "Total third parties with system access:", value: 0 }
-        ];
-        break;
-      case 15: // Risk Assessment Measure (ID.RA.S2)
-        numeratorQuestions = [
-          { question: "Critical production systems risk-assessed:", value: 0 },
-          { question: "Critical database systems risk-assessed:", value: 0 },
-          { question: "Critical network infrastructure risk-assessed:", value: 0 },
-          { question: "Critical applications risk-assessed:", value: 0 },
-          { question: "Critical data assets risk-assessed:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total critical production systems:", value: 0 },
-          { question: "Total critical database systems:", value: 0 },
-          { question: "Total critical network infrastructure:", value: 0 },
-          { question: "Total critical applications:", value: 0 },
-          { question: "Total critical data assets:", value: 0 }
-        ];
-        break;
-      case 16: // Service Acquisition Contract Measure (GV.SC.S3)
-        numeratorQuestions = [
-          { question: "Software acquisition contracts with security requirements:", value: 0 },
-          { question: "Hardware acquisition contracts with security requirements:", value: 0 },
-          { question: "Cloud service contracts with security requirements:", value: 0 },
-          { question: "IT service provider contracts with security requirements:", value: 0 },
-          { question: "Other acquisition contracts with security requirements:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total software acquisition contracts:", value: 0 },
-          { question: "Total hardware acquisition contracts:", value: 0 },
-          { question: "Total cloud service contracts:", value: 0 },
-          { question: "Total IT service provider contracts:", value: 0 },
-          { question: "Total other acquisition contracts:", value: 0 }
-        ];
-        break;
-      case 17: // System and Communication Protection Measure (PR.DS.S4)
-        numeratorQuestions = [
-          { question: "Laptops with full cryptographic protection:", value: 0 },
-          { question: "Mobile phones with full cryptographic protection:", value: 0 },
-          { question: "Tablets with full cryptographic protection:", value: 0 },
-          { question: "Other mobile devices with full cryptographic protection:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total laptops in use:", value: 0 },
-          { question: "Total mobile phones in use:", value: 0 },
-          { question: "Total tablets in use:", value: 0 },
-          { question: "Total other mobile devices in use:", value: 0 }
-        ];
-        break;
-      case 18: // Risk Management (GV.RM.S1, GV.RM.S2)
-        numeratorQuestions = [
-          { question: "Production systems covered by risk management:", value: 0 },
-          { question: "Network infrastructure covered by risk management:", value: 0 },
-          { question: "Applications covered by risk management:", value: 0 },
-          { question: "Data assets covered by risk management:", value: 0 },
-          { question: "Other assets covered by risk management:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total production systems in inventory:", value: 0 },
-          { question: "Total network infrastructure in inventory:", value: 0 },
-          { question: "Total applications in inventory:", value: 0 },
-          { question: "Total data assets in inventory:", value: 0 },
-          { question: "Total other assets in inventory:", value: 0 }
-        ];
-        break;
-      case 19: // Critical Assets Identified (ID.AM.S1, ID.AM.S2)
-        numeratorQuestions = [
-          { question: "Production servers classified as critical:", value: 0 },
-          { question: "Databases classified as critical:", value: 0 },
-          { question: "Network devices classified as critical:", value: 0 },
-          { question: "Applications classified as critical:", value: 0 },
-          { question: "Other systems classified as critical:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Production servers integrated with SOC:", value: 0 },
-          { question: "Databases integrated with SOC:", value: 0 },
-          { question: "Network devices integrated with SOC:", value: 0 },
-          { question: "Applications integrated with SOC:", value: 0 },
-          { question: "Other systems integrated with SOC:", value: 0 }
-        ];
-        break;
-      case 20: // CSK Events (RS.MA.S5)
-        numeratorQuestions = [
-          { question: "Critical CSK events closed within 15 days:", value: 0 },
-          { question: "High CSK events closed within 15 days:", value: 0 },
-          { question: "Medium CSK events closed within 15 days:", value: 0 },
-          { question: "Low CSK events closed within 15 days:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total critical CSK events reported:", value: 0 },
-          { question: "Total high CSK events reported:", value: 0 },
-          { question: "Total medium CSK events reported:", value: 0 },
-          { question: "Total low CSK events reported:", value: 0 }
-        ];
-        break;
-      case 21: // Cybersecurity Policy Document (GV.PO.S1)
-        numeratorQuestions = [
-          { question: "Comprehensive cybersecurity policy exists and is documented (Yes=1, No=0):", value: 0 },
-          { question: "Policy approved by senior management within last 12 months (Yes=1, No=0):", value: 0 },
-          { question: "Policy updated within the last 12 months (Yes=1, No=0):", value: 0 },
-          { question: "Policy effectively communicated to all staff (Yes=1, No=0):", value: 0 },
-          { question: "Policy implementation verified through assessments (Yes=1, No=0):", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total criteria (fixed value):", value: 5 }
-        ];
-        break;
-      case 22: // SOC Efficacy
-        numeratorQuestions = [
-          { question: "SOC operational capabilities score (as per Annexure-N):", value: 0 },
-          { question: "SOC monitoring effectiveness score (as per Annexure-N):", value: 0 },
-          { question: "SOC incident response score (as per Annexure-N):", value: 0 },
-          { question: "SOC threat intelligence score (as per Annexure-N):", value: 0 },
-          { question: "SOC maturity score (as per Annexure-N):", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Maximum possible operational capabilities score:", value: 0 },
-          { question: "Maximum possible monitoring effectiveness score:", value: 0 },
-          { question: "Maximum possible incident response score:", value: 0 },
-          { question: "Maximum possible threat intelligence score:", value: 0 },
-          { question: "Maximum possible maturity score:", value: 0 }
-        ];
-        break;
-      case 23: // Automated compliance with CSCRF
-        numeratorQuestions = [
-          { question: "Governance standards with automated compliance monitoring:", value: 0 },
-          { question: "Identify standards with automated compliance monitoring:", value: 0 },
-          { question: "Protect standards with automated compliance monitoring:", value: 0 },
-          { question: "Detect standards with automated compliance monitoring:", value: 0 },
-          { question: "Respond standards with automated compliance monitoring:", value: 0 },
-          { question: "Recover standards with automated compliance monitoring:", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: "Total applicable Governance standards:", value: 0 },
-          { question: "Total applicable Identify standards:", value: 0 },
-          { question: "Total applicable Protect standards:", value: 0 },
-          { question: "Total applicable Detect standards:", value: 0 },
-          { question: "Total applicable Respond standards:", value: 0 },
-          { question: "Total applicable Recover standards:", value: 0 }
-        ];
-        break;
-      default:
-        // Default pattern if no specific questions are defined
-        numeratorQuestions = [
-          { question: param.numeratorHelp || "Enter the numerator value for this parameter", value: 0 }
-        ];
-        denominatorQuestions = [
-          { question: param.denominatorHelp || "Enter the denominator value for this parameter", value: 0 }
-        ];
+    // REFACTORED APPROACH: Prioritize measure ID over parameter ID
+    // First check for specific measure IDs
+    
+    // Security Budget Measure
+    if (param.measureId === 'GV.RR.S4' || param.title.includes('Security Budget')) {
+      numeratorQuestions = [
+        { question: "Annual expenditure on security hardware and appliances (₹):", value: 0 },
+        { question: "Annual expenditure on security software and licenses (₹):", value: 0 },
+        { question: "Annual expenditure on security personnel salaries and benefits (₹):", value: 0 },
+        { question: "Annual expenditure on security training and awareness (₹):", value: 0 },
+        { question: "Annual expenditure on security assessments and audits (₹):", value: 0 },
+        { question: "Annual expenditure on security consulting services (₹):", value: 0 },
+        { question: "Other security-related expenses (₹):", value: 0 }
+      ];
+      denominatorQuestions = [
+        { question: "Annual expenditure on IT hardware (₹):", value: 0 },
+        { question: "Annual expenditure on IT software and licenses (₹):", value: 0 },
+        { question: "Annual expenditure on IT personnel salaries and benefits (₹):", value: 0 },
+        { question: "Annual expenditure on IT infrastructure (network, data centers) (₹):", value: 0 },
+        { question: "Annual expenditure on cloud services (₹):", value: 0 },
+        { question: "Annual expenditure on IT outsourcing and managed services (₹):", value: 0 },
+        { question: "Other IT-related expenses (₹):", value: 0 }
+      ];
+    } 
+    // Security Training Measure
+    else if (param.measureId === 'PR.AT.S1' || param.title.includes('Security Training')) {
+      numeratorQuestions = [
+        { question: "Full-time security personnel who completed training:", value: 0 },
+        { question: "IT staff with security responsibilities who completed training:", value: 0 },
+        { question: "Security contractors/consultants who completed training:", value: 0 },
+        { question: "Security managers/leadership who completed training:", value: 0 }
+      ];
+      denominatorQuestions = [
+        { question: "Total full-time security personnel:", value: 0 },
+        { question: "Total IT staff with security responsibilities:", value: 0 },
+        { question: "Total security contractors/consultants:", value: 0 },
+        { question: "Total security managers/leadership:", value: 0 }
+      ];
+    }
+    // Vulnerability Management Measure
+    else if (param.measureId === 'DE.CM.S5' || param.title.includes('Vulnerability Management')) {
+      numeratorQuestions = [
+        { question: "Critical vulnerabilities remediated within SLA:", value: 0 },
+        { question: "High vulnerabilities remediated within SLA:", value: 0 },
+        { question: "Medium vulnerabilities remediated within SLA:", value: 0 },
+        { question: "Low vulnerabilities remediated within SLA:", value: 0 }
+      ];
+      denominatorQuestions = [
+        { question: "Critical vulnerabilities identified:", value: 0 },
+        { question: "High vulnerabilities identified:", value: 0 },
+        { question: "Medium vulnerabilities identified:", value: 0 },
+        { question: "Low vulnerabilities identified:", value: 0 }
+      ];
+    }
+    // Remote Access Control Measure
+    else if (param.measureId === 'PR.AA.S12' || param.title.includes('Remote Access') || param.title.includes('MFA')) {
+      numeratorQuestions = [
+        { question: "Employees using MFA for remote access:", value: 0 },
+        { question: "Contractors using MFA for remote access:", value: 0 },
+        { question: "Vendors using MFA for remote access:", value: 0 },
+        { question: "Third-party service providers using MFA for remote access:", value: 0 }
+      ];
+      denominatorQuestions = [
+        { question: "Total employees with remote access:", value: 0 },
+        { question: "Total contractors with remote access:", value: 0 },
+        { question: "Total vendors with remote access:", value: 0 },
+        { question: "Total third-party service providers with remote access:", value: 0 }
+      ];
+    }
+    // Audit Record Review Measure (SIEM)
+    else if (param.measureId === 'DE.CM.S1' || param.title.includes('Audit Record') || param.title.includes('SIEM')) {
+      numeratorQuestions = [
+        { question: "Critical production systems integrated with SIEM:", value: 0 },
+        { question: "Critical database systems integrated with SIEM:", value: 0 },
+        { question: "Critical network devices integrated with SIEM:", value: 0 },
+        { question: "Critical security systems integrated with SIEM:", value: 0 },
+        { question: "Other critical systems integrated with SIEM:", value: 0 }
+      ];
+      denominatorQuestions = [
+        { question: "Total critical production systems:", value: 0 },
+        { question: "Total critical database systems:", value: 0 },
+        { question: "Total critical network devices:", value: 0 },
+        { question: "Total critical security systems:", value: 0 },
+        { question: "Total other critical systems:", value: 0 }
+      ];
+    }
+    // If no specific measure ID match, fall back to parameter ID
+    else {
+      switch(param.id) {
+        case 1: // Vulnerability Management Measure (DE.CM.S5)
+          numeratorQuestions = [
+            { question: "Critical vulnerabilities remediated within SLA:", value: 0 },
+            { question: "High vulnerabilities remediated within SLA:", value: 0 },
+            { question: "Medium vulnerabilities remediated within SLA:", value: 0 },
+            { question: "Low vulnerabilities remediated within SLA:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Critical vulnerabilities identified:", value: 0 },
+            { question: "High vulnerabilities identified:", value: 0 },
+            { question: "Medium vulnerabilities identified:", value: 0 },
+            { question: "Low vulnerabilities identified:", value: 0 }
+          ];
+          break;
+        case 2: // Security Training Measure (PR.AT.S1)
+          numeratorQuestions = [
+            { question: "Full-time security personnel who completed training:", value: 0 },
+            { question: "IT staff with security responsibilities who completed training:", value: 0 },
+            { question: "Security contractors/consultants who completed training:", value: 0 },
+            { question: "Security managers/leadership who completed training:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total full-time security personnel:", value: 0 },
+            { question: "Total IT staff with security responsibilities:", value: 0 },
+            { question: "Total security contractors/consultants:", value: 0 },
+            { question: "Total security managers/leadership:", value: 0 }
+          ];
+          break;
+        case 3: // Security Budget Measure (GV.RR.S4)
+          numeratorQuestions = [
+            { question: "Annual expenditure on security hardware and appliances (₹):", value: 0 },
+            { question: "Annual expenditure on security software and licenses (₹):", value: 0 },
+            { question: "Annual expenditure on security personnel salaries and benefits (₹):", value: 0 },
+            { question: "Annual expenditure on security training and awareness (₹):", value: 0 },
+            { question: "Annual expenditure on security assessments and audits (₹):", value: 0 },
+            { question: "Annual expenditure on security consulting services (₹):", value: 0 },
+            { question: "Other security-related expenses (₹):", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Annual expenditure on IT hardware (₹):", value: 0 },
+            { question: "Annual expenditure on IT software and licenses (₹):", value: 0 },
+            { question: "Annual expenditure on IT personnel salaries and benefits (₹):", value: 0 },
+            { question: "Annual expenditure on IT infrastructure (network, data centers) (₹):", value: 0 },
+            { question: "Annual expenditure on cloud services (₹):", value: 0 },
+            { question: "Annual expenditure on IT outsourcing and managed services (₹):", value: 0 },
+            { question: "Other IT-related expenses (₹):", value: 0 }
+          ];
+          break;
+        case 4: // Remote Access Control Measure (PR.AA.S12)
+          numeratorQuestions = [
+            { question: "Employees using MFA for remote access:", value: 0 },
+            { question: "Contractors using MFA for remote access:", value: 0 },
+            { question: "Vendors using MFA for remote access:", value: 0 },
+            { question: "Third-party service providers using MFA for remote access:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total employees with remote access:", value: 0 },
+            { question: "Total contractors with remote access:", value: 0 },
+            { question: "Total vendors with remote access:", value: 0 },
+            { question: "Total third-party service providers with remote access:", value: 0 }
+          ];
+          break;
+        case 5: // Audit Record Review Measure (DE.CM.S1)
+          numeratorQuestions = [
+            { question: "Critical production systems integrated with SIEM:", value: 0 },
+            { question: "Critical database systems integrated with SIEM:", value: 0 },
+            { question: "Critical network devices integrated with SIEM:", value: 0 },
+            { question: "Critical security systems integrated with SIEM:", value: 0 },
+            { question: "Other critical systems integrated with SIEM:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total critical production systems:", value: 0 },
+            { question: "Total critical database systems:", value: 0 },
+            { question: "Total critical network devices:", value: 0 },
+            { question: "Total critical security systems:", value: 0 },
+            { question: "Total other critical systems:", value: 0 }
+          ];
+          break;
+        case 6: // Configuration Changes Measure (DE.CM.S5)
+          numeratorQuestions = [
+            { question: "Approved and implemented OS configuration changes:", value: 0 },
+            { question: "Approved and implemented application configuration changes:", value: 0 },
+            { question: "Approved and implemented database configuration changes:", value: 0 },
+            { question: "Approved and implemented network device configuration changes:", value: 0 },
+            { question: "Approved and implemented security tool configuration changes:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total OS configuration changes detected:", value: 0 },
+            { question: "Total application configuration changes detected:", value: 0 },
+            { question: "Total database configuration changes detected:", value: 0 },
+            { question: "Total network device configuration changes detected:", value: 0 },
+            { question: "Total security tool configuration changes detected:", value: 0 }
+          ];
+          break;
+        case 7: // Contingency Plan Testing Measure (RS.MA.S3)
+          numeratorQuestions = [
+            { question: "Production systems with tested contingency plans:", value: 0 },
+            { question: "Database systems with tested contingency plans:", value: 0 },
+            { question: "Network systems with tested contingency plans:", value: 0 },
+            { question: "Security systems with tested contingency plans:", value: 0 },
+            { question: "Other systems with tested contingency plans:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total production systems in inventory:", value: 0 },
+            { question: "Total database systems in inventory:", value: 0 },
+            { question: "Total network systems in inventory:", value: 0 },
+            { question: "Total security systems in inventory:", value: 0 },
+            { question: "Total other systems in inventory:", value: 0 }
+          ];
+          break;
+        case 8: // User Accounts Measure (PR.AA.S7)
+          numeratorQuestions = [
+            { question: "Production systems with privileged access through PIM:", value: 0 },
+            { question: "Database systems with privileged access through PIM:", value: 0 },
+            { question: "Network devices with privileged access through PIM:", value: 0 },
+            { question: "Security systems with privileged access through PIM:", value: 0 },
+            { question: "Cloud services with privileged access through PIM:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total production systems requiring privileged access:", value: 0 },
+            { question: "Total database systems requiring privileged access:", value: 0 },
+            { question: "Total network devices requiring privileged access:", value: 0 },
+            { question: "Total security systems requiring privileged access:", value: 0 },
+            { question: "Total cloud services requiring privileged access:", value: 0 }
+          ];
+          break;
+        case 9: // Incident Response Measure (RS.CO.S2)
+          numeratorQuestions = [
+            { question: "Critical incidents reported on time:", value: 0 },
+            { question: "High severity incidents reported on time:", value: 0 },
+            { question: "Medium severity incidents reported on time:", value: 0 },
+            { question: "Low severity incidents reported on time:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total critical incidents:", value: 0 },
+            { question: "Total high severity incidents:", value: 0 },
+            { question: "Total medium severity incidents:", value: 0 },
+            { question: "Total low severity incidents:", value: 0 }
+          ];
+          break;
+        case 10: // Maintenance Measure (PR.MA.S1)
+          numeratorQuestions = [
+            { question: "Server hardware components receiving scheduled maintenance:", value: 0 },
+            { question: "Network hardware components receiving scheduled maintenance:", value: 0 },
+            { question: "Security hardware components receiving scheduled maintenance:", value: 0 },
+            { question: "Software systems receiving scheduled maintenance/patching:", value: 0 },
+            { question: "Other components receiving scheduled maintenance:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total server hardware components requiring maintenance:", value: 0 },
+            { question: "Total network hardware components requiring maintenance:", value: 0 },
+            { question: "Total security hardware components requiring maintenance:", value: 0 },
+            { question: "Total software systems requiring maintenance/patching:", value: 0 },
+            { question: "Total other components requiring maintenance:", value: 0 }
+          ];
+          break;
+        case 11: // Media Sanitization Measure (PR.AA.S14)
+          numeratorQuestions = [
+            { question: "Hard drives/SSDs passing sanitization testing:", value: 0 },
+            { question: "USB storage devices passing sanitization testing:", value: 0 },
+            { question: "Backup tapes/media passing sanitization testing:", value: 0 },
+            { question: "Mobile devices passing sanitization testing:", value: 0 },
+            { question: "Other media passing sanitization testing:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total hard drives/SSDs disposed/reused:", value: 0 },
+            { question: "Total USB storage devices disposed/reused:", value: 0 },
+            { question: "Total backup tapes/media disposed/reused:", value: 0 },
+            { question: "Total mobile devices disposed/reused:", value: 0 },
+            { question: "Total other media disposed/reused:", value: 0 }
+          ];
+          break;
+        case 12: // Physical Security Incidents Measure (PR.AA.S10)
+          numeratorQuestions = [
+            { question: "Detected and resolved unauthorized access incidents to server rooms:", value: 0 },
+            { question: "Detected and resolved unauthorized access incidents to network closets:", value: 0 },
+            { question: "Detected and resolved unauthorized access incidents to secure workspaces:", value: 0 },
+            { question: "Detected and resolved unauthorized access incidents to other secure areas:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total physical security incidents at server rooms:", value: 0 },
+            { question: "Total physical security incidents at network closets:", value: 0 },
+            { question: "Total physical security incidents at secure workspaces:", value: 0 },
+            { question: "Total physical security incidents at other secure areas:", value: 0 }
+          ];
+          break;
+        case 13: // Planning Measure (GV.RR.S5)
+          numeratorQuestions = [
+            { question: "Employees granted access after signing agreements:", value: 0 },
+            { question: "Contractors granted access after signing agreements:", value: 0 },
+            { question: "Vendors granted access after signing agreements:", value: 0 },
+            { question: "Third parties granted access after signing agreements:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total employees granted system access:", value: 0 },
+            { question: "Total contractors granted system access:", value: 0 },
+            { question: "Total vendors granted system access:", value: 0 },
+            { question: "Total third parties granted system access:", value: 0 }
+          ];
+          break;
+        case 14: // Personnel Security Screening Measure (PR.AA.S10)
+          numeratorQuestions = [
+            { question: "Employees who underwent screening before access:", value: 0 },
+            { question: "Contractors who underwent screening before access:", value: 0 },
+            { question: "Vendors who underwent screening before access:", value: 0 },
+            { question: "Third parties who underwent screening before access:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total employees with system access:", value: 0 },
+            { question: "Total contractors with system access:", value: 0 },
+            { question: "Total vendors with system access:", value: 0 },
+            { question: "Total third parties with system access:", value: 0 }
+          ];
+          break;
+        case 15: // Risk Assessment Measure (ID.RA.S2)
+          numeratorQuestions = [
+            { question: "Critical production systems risk-assessed:", value: 0 },
+            { question: "Critical database systems risk-assessed:", value: 0 },
+            { question: "Critical network infrastructure risk-assessed:", value: 0 },
+            { question: "Critical applications risk-assessed:", value: 0 },
+            { question: "Critical data assets risk-assessed:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total critical production systems:", value: 0 },
+            { question: "Total critical database systems:", value: 0 },
+            { question: "Total critical network infrastructure:", value: 0 },
+            { question: "Total critical applications:", value: 0 },
+            { question: "Total critical data assets:", value: 0 }
+          ];
+          break;
+        case 16: // Service Acquisition Contract Measure (GV.SC.S3)
+          numeratorQuestions = [
+            { question: "Software acquisition contracts with security requirements:", value: 0 },
+            { question: "Hardware acquisition contracts with security requirements:", value: 0 },
+            { question: "Cloud service contracts with security requirements:", value: 0 },
+            { question: "IT service provider contracts with security requirements:", value: 0 },
+            { question: "Other acquisition contracts with security requirements:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total software acquisition contracts:", value: 0 },
+            { question: "Total hardware acquisition contracts:", value: 0 },
+            { question: "Total cloud service contracts:", value: 0 },
+            { question: "Total IT service provider contracts:", value: 0 },
+            { question: "Total other acquisition contracts:", value: 0 }
+          ];
+          break;
+        case 17: // System and Communication Protection Measure (PR.DS.S4)
+          numeratorQuestions = [
+            { question: "Laptops with full-disk encryption implemented:", value: 0 },
+            { question: "Mobile phones with encrypted storage and communications:", value: 0 },
+            { question: "Tablets with encrypted storage and communications:", value: 0 },
+            { question: "Sensitive data transfers using encrypted protocols:", value: 0 },
+            { question: "Data storage systems with encryption at rest:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total laptops in use:", value: 0 },
+            { question: "Total mobile phones in use:", value: 0 },
+            { question: "Total tablets in use:", value: 0 },
+            { question: "Total sensitive data transfer channels:", value: 0 },
+            { question: "Total data storage systems containing sensitive data:", value: 0 }
+          ];
+          break;
+        case 18: // Risk Management (GV.RM.S1, GV.RM.S2)
+          numeratorQuestions = [
+            { question: "Production systems covered by risk management:", value: 0 },
+            { question: "Network infrastructure covered by risk management:", value: 0 },
+            { question: "Applications covered by risk management:", value: 0 },
+            { question: "Data assets covered by risk management:", value: 0 },
+            { question: "Other assets covered by risk management:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total production systems in inventory:", value: 0 },
+            { question: "Total network infrastructure in inventory:", value: 0 },
+            { question: "Total applications in inventory:", value: 0 },
+            { question: "Total data assets in inventory:", value: 0 },
+            { question: "Total other assets in inventory:", value: 0 }
+          ];
+          break;
+        case 19: // Critical Assets Identified (ID.AM.S1, ID.AM.S2)
+          numeratorQuestions = [
+            { question: "Production servers classified as critical:", value: 0 },
+            { question: "Databases classified as critical:", value: 0 },
+            { question: "Network devices classified as critical:", value: 0 },
+            { question: "Applications classified as critical:", value: 0 },
+            { question: "Other systems classified as critical:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total production servers in inventory:", value: 0 },
+            { question: "Total databases in inventory:", value: 0 },
+            { question: "Total network devices in inventory:", value: 0 },
+            { question: "Total applications in inventory:", value: 0 },
+            { question: "Total other systems in inventory:", value: 0 }
+          ];
+          break;
+        case 20: // CSK Events (RS.MA.S5)
+          numeratorQuestions = [
+            { question: "Critical CSK events closed within 15 days:", value: 0 },
+            { question: "High CSK events closed within 15 days:", value: 0 },
+            { question: "Medium CSK events closed within 15 days:", value: 0 },
+            { question: "Low CSK events closed within 15 days:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total critical CSK events reported:", value: 0 },
+            { question: "Total high CSK events reported:", value: 0 },
+            { question: "Total medium CSK events reported:", value: 0 },
+            { question: "Total low CSK events reported:", value: 0 }
+          ];
+          break;
+        case 21: // Cybersecurity Policy Document (GV.PO.S1)
+          numeratorQuestions = [
+            { question: "Comprehensive cybersecurity policy exists and is documented (Yes=1, No=0):", value: 0 },
+            { question: "Policy approved by senior management within last 12 months (Yes=1, No=0):", value: 0 },
+            { question: "Policy reviewed and updated within the last 12 months (Yes=1, No=0):", value: 0 },
+            { question: "Policy effectively communicated to all staff with acknowledgment (Yes=1, No=0):", value: 0 },
+            { question: "Policy implementation verified through independent assessments (Yes=1, No=0):", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total criteria (fixed value):", value: 5 }
+          ];
+          break;
+        case 22: // SOC Efficacy
+          numeratorQuestions = [
+            { question: "SOC operational capabilities score (as per Annexure-N):", value: 0 },
+            { question: "SOC monitoring effectiveness score (as per Annexure-N):", value: 0 },
+            { question: "SOC incident response score (as per Annexure-N):", value: 0 },
+            { question: "SOC threat intelligence score (as per Annexure-N):", value: 0 },
+            { question: "SOC maturity score (as per Annexure-N):", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Maximum possible operational capabilities score:", value: 0 },
+            { question: "Maximum possible monitoring effectiveness score:", value: 0 },
+            { question: "Maximum possible incident response score:", value: 0 },
+            { question: "Maximum possible threat intelligence score:", value: 0 },
+            { question: "Maximum possible maturity score:", value: 0 }
+          ];
+          break;
+        case 23: // Automated compliance with CSCRF
+          numeratorQuestions = [
+            { question: "Governance standards with automated compliance monitoring:", value: 0 },
+            { question: "Identify standards with automated compliance monitoring:", value: 0 },
+            { question: "Protect standards with automated compliance monitoring:", value: 0 },
+            { question: "Detect standards with automated compliance monitoring:", value: 0 },
+            { question: "Respond standards with automated compliance monitoring:", value: 0 },
+            { question: "Recover standards with automated compliance monitoring:", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: "Total applicable Governance standards:", value: 0 },
+            { question: "Total applicable Identify standards:", value: 0 },
+            { question: "Total applicable Protect standards:", value: 0 },
+            { question: "Total applicable Detect standards:", value: 0 },
+            { question: "Total applicable Respond standards:", value: 0 },
+            { question: "Total applicable Recover standards:", value: 0 }
+          ];
+          break;
+        default:
+          // Default pattern if no specific questions are defined
+          numeratorQuestions = [
+            { question: param.numeratorHelp || "Enter the numerator value for this parameter", value: 0 }
+          ];
+          denominatorQuestions = [
+            { question: param.denominatorHelp || "Enter the denominator value for this parameter", value: 0 }
+          ];
+      }
     }
     
     setDetailedData(prev => ({
@@ -900,7 +989,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
     
     return (
       <div
-        className="fixed z-50 bg-white shadow-xl rounded-lg p-4 border border-gray-200 w-300"
+        className="fixed z-50 bg-black text-white shadow-xl rounded-lg p-4 border border-gray-700 w-300 animate-fadeIn"
         style={{
           top: `${tooltipPosition.top}px`,
           left: `${tooltipPosition.left}px`,
@@ -908,26 +997,26 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
         }}
       >
         <div className="font-bold text-lg mb-2">{step.title}</div>
-        <p className="text-gray-600 mb-4">{step.content}</p>
+        <p className="text-gray-300 mb-4">{step.content}</p>
         <div className="flex justify-between items-center">
           <div>
             <button
               onClick={prevStep}
               disabled={currentStep === 0}
-              className="text-sm px-3 py-1 rounded border border-gray-300 mr-2 disabled:opacity-50"
+              className="text-sm px-3 py-1 rounded border border-gray-600 mr-2 disabled:opacity-50 hover:border-white transition-colors duration-300"
             >
               Previous
             </button>
             <button
               onClick={nextStep}
-              className="text-sm px-3 py-1 rounded bg-black text-white"
+              className="text-sm px-3 py-1 rounded bg-white text-black hover:bg-gray-200 transition-colors duration-300"
             >
               {currentStep === walkthroughSteps.length - 1 ? 'Finish' : 'Next'}
             </button>
           </div>
           <button
             onClick={closeWalkthrough}
-            className="text-sm text-gray-500 hover:text-gray-700"
+            className="text-sm text-gray-400 hover:text-white transition-colors duration-300"
           >
             Skip
           </button>
@@ -939,15 +1028,16 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
   // Function to get color class based on score
   const getScoreColorClass = (score: number) => {
     if (score >= 80) return 'bg-black';
-    if (score >= 60) return 'bg-gray-600';
-    if (score >= 40) return 'bg-gray-400';
+    if (score >= 60) return 'bg-gray-700';
+    if (score >= 40) return 'bg-gray-500';
     return 'bg-gray-300';
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden">
-      <div className="p-6 bg-black border-b">
-        <div className="flex justify-between items-center" ref={parameterHeaderRef}>
+    <div className="bg-white rounded-xl shadow-md overflow-hidden animate-fadeIn">
+      <div className="p-6 bg-black border-b relative">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),transparent_70%)]"></div>
+        <div className="flex justify-between items-center relative z-10" ref={parameterHeaderRef}>
           <h2 className="text-xl font-semibold text-white">CCI Detailed Calculator</h2>
           <div className="flex space-x-3">
             <button
@@ -955,7 +1045,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
               onClick={handleExportPDF}
               disabled={isExporting}
               ref={exportButtonRef}
-              className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition duration-200 flex items-center disabled:opacity-70"
+              className="bg-white hover:bg-gray-100 text-black py-2 px-4 rounded-md transition-all duration-300 flex items-center disabled:opacity-70 transform hover:scale-105"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
@@ -963,7 +1053,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
               {isExporting ? 'Generating PDF...' : 'Export as PDF'}
             </button>
             <button
-              className="px-3 py-1 bg-black hover:bg-gray-800 text-white rounded-md text-sm flex items-center"
+              className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-md text-sm flex items-center transition-all duration-300 border border-white/20"
               onClick={handleLoadSampleData}
               disabled={isLoadingSample}
             >
@@ -973,7 +1063,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
               {isLoadingSample ? 'Loading...' : 'Load Sample Data'}
             </button>
             <button
-              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md text-sm flex items-center"
+              className="px-3 py-1 bg-transparent hover:bg-white/10 text-white rounded-md text-sm flex items-center transition-all duration-300 border border-white/20"
               onClick={startWalkthrough}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -999,63 +1089,37 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
             };
             
             return (
-            <div key={param.id} className="border border-gray-200 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-black mb-2">{param.measureId}: {param.title}</h3>
-                <p className="text-gray-600 mb-2">{param.description}</p>
-                
-                {param.frameworkCategory && (
-                  <div className="mb-2">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      param.frameworkCategory.startsWith('Governance') ? 'bg-purple-100 text-purple-800' :
-                      param.frameworkCategory.startsWith('Identify') ? 'bg-blue-100 text-blue-800' :
-                      param.frameworkCategory.startsWith('Protect') ? 'bg-green-100 text-green-800' :
-                      param.frameworkCategory.startsWith('Detect') ? 'bg-yellow-100 text-yellow-800' :
-                      param.frameworkCategory.startsWith('Respond') ? 'bg-orange-100 text-orange-800' :
-                      param.frameworkCategory.startsWith('Recover') ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {/* Icon based on category */}
-                      {param.frameworkCategory.startsWith('Governance') && (
-                        <svg className="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                      {param.frameworkCategory.startsWith('Identify') && (
-                        <svg className="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                          <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                      {param.frameworkCategory.startsWith('Protect') && (
-                        <svg className="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                          <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                      {param.frameworkCategory.startsWith('Detect') && (
-                        <svg className="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                      {param.frameworkCategory.startsWith('Respond') && (
-                        <svg className="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                      {param.frameworkCategory.startsWith('Recover') && (
-                        <svg className="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                          <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                      {param.frameworkCategory}
-                    </span>
+              <div key={param.id} className="border border-gray-200 hover:border-black rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="flex flex-col sm:flex-row justify-between mb-4 gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-black">{param.title}</h3>
+                    <p className="text-gray-600 text-sm mt-1">{param.description}</p>
                   </div>
-                )}
+                  
+                  <div className="flex items-start sm:items-center space-x-6">
+                    {param.measureId && (
+                      <div className="bg-black text-white px-3 py-1.5 rounded-md text-sm font-medium transition-transform duration-300 hover:scale-105">
+                        <span className="font-bold">
+                          {param.measureId}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {param.frameworkCategory && (
+                      <div className="bg-gray-100 text-gray-900 px-3 py-1.5 rounded-md text-sm transition-all duration-300 hover:bg-gray-200">
+                        <span>
+                          {param.frameworkCategory}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 
                 <div className="text-sm text-gray-500 mb-4">
                   <strong>Formula:</strong> {param.formula}
                 </div>
                 
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg hover:shadow-inner transition-all duration-300">
                   <div className="flex justify-between items-center">
                     <div className="text-sm">
                       <span className="font-medium">Current Score:</span> {score.toFixed(2)}%
@@ -1066,7 +1130,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                   </div>
                   <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
                     <div 
-                      className={`h-2.5 rounded-full ${getScoreColorClass(score)}`} 
+                      className={`h-2.5 rounded-full ${getScoreColorClass(score)} transition-all duration-500 ease-in-out`} 
                       style={{ width: `${Math.min(score, 100)}%` }}
                     ></div>
                   </div>
@@ -1074,7 +1138,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                   {/* Numerator Section */}
-                  <div ref={numeratorSectionRef} className="border border-gray-200 rounded-lg p-4">
+                  <div ref={numeratorSectionRef} className="border border-gray-200 hover:border-black rounded-lg p-4 transition-all duration-300 hover:shadow-md">
                     <div className="flex justify-between mb-3">
                       <h4 className="font-medium">
                         Numerator Questions 
@@ -1091,7 +1155,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {paramData.numeratorBreakdown.map((item, index) => (
-                        <div key={`num-${index}`} className="bg-gray-50 p-3 rounded">
+                        <div key={`num-${index}`} className="bg-gray-50 p-3 rounded hover:bg-gray-100 transition-all duration-300">
                           <div className="mb-2">
                             <label className="block text-sm font-medium text-gray-700">
                               {item.question}
@@ -1108,14 +1172,14 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                             <button
                               type="button"
                               onClick={() => updateQuestionText(param.id, 'numerator', index, item.question)}
-                              className="text-xs text-gray-500 hover:text-gray-700"
+                              className="text-xs text-gray-500 hover:text-black transition-colors"
                             >
                               Edit
                             </button>
                             <button
                               type="button"
                               onClick={() => removeQuestion(param.id, 'numerator', index)}
-                              className="text-xs text-red-500 hover:text-red-700"
+                              className="text-xs text-gray-500 hover:text-black transition-colors"
                             >
                               Remove
                             </button>
@@ -1127,7 +1191,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                         type="button"
                         ref={addQuestionButtonRef}
                         onClick={() => addCustomQuestion(param.id, 'numerator')}
-                        className="mt-2 inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+                        className="mt-2 inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-all duration-300 hover:border-black"
                       >
                         + Add Custom Question
                       </button>
@@ -1135,7 +1199,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                   </div>
                   
                   {/* Denominator Section */}
-                  <div ref={denominatorSectionRef} className="border border-gray-200 rounded-lg p-4">
+                  <div ref={denominatorSectionRef} className="border border-gray-200 hover:border-black rounded-lg p-4 transition-all duration-300 hover:shadow-md">
                     <div className="flex justify-between mb-3">
                       <h4 className="font-medium">
                         Denominator Questions
@@ -1152,7 +1216,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {paramData.denominatorBreakdown.map((item, index) => (
-                        <div key={`den-${index}`} className="bg-gray-50 p-3 rounded">
+                        <div key={`den-${index}`} className="bg-gray-50 p-3 rounded hover:bg-gray-100 transition-all duration-300">
                           <div className="mb-2">
                             <label className="block text-sm font-medium text-gray-700">
                               {item.question}
@@ -1169,14 +1233,14 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                             <button
                               type="button"
                               onClick={() => updateQuestionText(param.id, 'denominator', index, item.question)}
-                              className="text-xs text-gray-500 hover:text-gray-700"
+                              className="text-xs text-gray-500 hover:text-black transition-colors"
                             >
                               Edit
                             </button>
                             <button
                               type="button"
                               onClick={() => removeQuestion(param.id, 'denominator', index)}
-                              className="text-xs text-red-500 hover:text-red-700"
+                              className="text-xs text-gray-500 hover:text-black transition-colors"
                             >
                               Remove
                             </button>
@@ -1187,226 +1251,244 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                       <button
                         type="button"
                         onClick={() => addCustomQuestion(param.id, 'denominator')}
-                        className="mt-2 inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+                        className="mt-2 inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-all duration-300 hover:border-black"
                       >
                         + Add Custom Question
                       </button>
                     </div>
+                  </div>
                 </div>
-              </div>
-              
+                
                 <div ref={evidenceSectionRef} className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Implementation Evidence</label>
-                <div className="mb-2 bg-blue-50 border border-blue-200 rounded-md p-3 text-xs text-blue-700">
-                  <p className="font-medium mb-1">Suggested Evidence:</p>
-                  {param.id === 1 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Vulnerability scan reports from the last assessment period</li>
-                      <li>Remediation tracking documentation showing timeline of fixes</li>
-                      <li>Change management records for vulnerability patches</li>
-                      <li>Screenshots of vulnerability management dashboard</li>
-                    </ul>
-                  )}
-                  {param.id === 2 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Training completion certificates for security personnel</li>
-                      <li>Training attendance logs with dates and content covered</li>
-                      <li>Skills assessment results for role-specific security training</li>
-                      <li>Training program documentation showing role-specific modules</li>
-                    </ul>
-                  )}
-                  {param.id === 3 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Annual budget allocation documents showing security budget</li>
-                      <li>Financial reports showing actual security expenditures</li>
-                      <li>Budget comparison documents showing IT vs security allocations</li>
-                      <li>Purchase orders for security tools, services, and personnel</li>
-                    </ul>
-                  )}
-                  {param.id === 4 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Risk assessment reports with dates and system coverage</li>
-                      <li>System inventory documentation</li>
-                      <li>Risk assessment methodology documentation</li>
-                      <li>Screenshots of risk register or GRC tool</li>
-                    </ul>
-                  )}
-                  {param.id === 5 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>SIEM architecture diagrams showing connected systems</li>
-                      <li>Log collection/forwarding configuration files</li>
-                      <li>Documentation of critical systems inventory</li>
-                      <li>Screenshots of SIEM dashboard showing system coverage</li>
-                    </ul>
-                  )}
-                  {param.id === 6 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Change management records showing approved configuration changes</li>
-                      <li>Screenshots of configuration management database</li>
-                      <li>Baseline configuration documentation</li>
-                      <li>Audit logs showing configuration drift detection</li>
-                    </ul>
-                  )}
-                  {param.id === 7 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Contingency plan test records and after-action reports</li>
-                      <li>BCP/DR exercise documentation</li>
-                      <li>Test schedule showing systems covered</li>
-                      <li>Screenshots of test execution or exercise logs</li>
-                    </ul>
-                  )}
-                  {param.id === 8 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Privileged access management system inventory reports</li>
-                      <li>PIM solution architecture diagrams</li>
-                      <li>Privileged account inventory documentation</li>
-                      <li>Screenshots of privileged session recordings</li>
-                    </ul>
-                  )}
-                  {param.id === 9 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Incident response logs with timestamps</li>
-                      <li>Security incident reports with reporting timeline</li>
-                      <li>Screenshots from incident management system</li>
-                      <li>Incident classification documentation</li>
-                    </ul>
-                  )}
-                  {param.id === 10 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Anti-malware deployment inventory reports</li>
-                      <li>Configuration settings for malware protection tools</li>
-                      <li>System coverage reports for anti-malware solutions</li>
-                      <li>Screenshots of management console showing coverage</li>
-                    </ul>
-                  )}
-                  {param.id === 11 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>MFA configuration documentation for remote access systems</li>
-                      <li>VPN session logs showing authentication methods</li>
-                      <li>Remote access policy documentation</li>
-                      <li>Screenshots of MFA enrollment status for users</li>
-                    </ul>
-                  )}
-                  {param.id === 12 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Physical security incident reports</li>
-                      <li>Access control logs for physical entry points</li>
-                      <li>Badge system reports for unauthorized access attempts</li>
-                      <li>CCTV footage or records of physical security events</li>
-                    </ul>
-                  )}
-                  {param.id === 13 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Signed confidentiality agreements</li>
-                      <li>System access request forms showing agreement requirements</li>
-                      <li>User onboarding process documentation</li>
-                      <li>HR records of agreement completion</li>
-                    </ul>
-                  )}
-                  {param.id === 14 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Background check records for personnel</li>
-                      <li>Security clearance documentation</li>
-                      <li>Screening policy documentation</li>
-                      <li>Personnel security verification records</li>
-                    </ul>
-                  )}
-                  {param.id === 15 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Policy document inventory with approval signatures and dates</li>
-                      <li>Policy review schedule and completion records</li>
-                      <li>Documentation of policy approval workflow</li>
-                      <li>Screenshots of policy management system</li>
-                    </ul>
-                  )}
-                  {param.id === 16 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Contract language samples showing security requirements</li>
-                      <li>Vendor assessment documentation</li>
-                      <li>Procurement policy showing security requirement integration</li>
-                      <li>Third-party security agreement examples</li>
-                    </ul>
-                  )}
-                  {param.id === 17 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>User termination records with timestamps</li>
-                      <li>Account deactivation logs</li>
-                      <li>HR/IT coordination documentation for departures</li>
-                      <li>Screenshots of offboarding workflow system</li>
-                    </ul>
-                  )}
-                  {param.id === 18 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Continuous monitoring strategy documentation</li>
-                      <li>Automated control testing reports</li>
-                      <li>Dashboard screenshots showing control monitoring</li>
-                      <li>Continuous assessment workflow documentation</li>
-                    </ul>
-                  )}
-                  {param.id === 19 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Asset classification documentation</li>
-                      <li>Critical asset inventory reports</li>
-                      <li>Business impact analysis records</li>
-                      <li>System dependency mappings for critical assets</li>
-                    </ul>
-                  )}
-                  {param.id === 20 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>CSK event logs with resolution timestamps</li>
-                      <li>Event management system screenshots</li>
-                      <li>CSK report handling procedures</li>
-                      <li>SLA documentation for event resolution</li>
-                    </ul>
-                  )}
-                  {param.id === 21 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Password policy documentation</li>
-                      <li>System configuration screenshots showing password settings</li>
-                      <li>Compliance reports for password complexity</li>
-                      <li>Group policy objects or equivalent settings</li>
-                    </ul>
-                  )}
-                  {param.id === 22 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Cyber insurance policy documentation</li>
-                      <li>Coverage details showing limits and inclusions</li>
-                      <li>Insurance renewal documentation</li>
-                      <li>Cyber coverage assessment reports</li>
-                    </ul>
-                  )}
-                  {param.id === 23 && (
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Automated compliance monitoring tool configuration</li>
-                      <li>Documentation showing CSCRF mapping to automated controls</li>
-                      <li>Compliance dashboard screenshots</li>
-                      <li>Automated assessment reports for CSCRF standards</li>
-                    </ul>
-                  )}
-                  {param.id > 23 && (
-                    <p>Provide relevant documentation, screenshots, logs, or other evidence that demonstrates your compliance with this control requirement.</p>
-                  )}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Implementation Evidence</label>
+                  <div className="mb-2 bg-gray-50 border-l-4 border-black rounded-md p-3 text-xs text-gray-700 transition-all duration-300 hover:shadow-inner">
+                    <p className="font-medium mb-1">Suggested Evidence:</p>
+                    {param.id === 1 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Vulnerability scan reports from the last assessment period</li>
+                        <li>Remediation tracking documentation showing timeline of fixes</li>
+                        <li>Change management records for vulnerability patches</li>
+                        <li>Screenshots of vulnerability management dashboard</li>
+                      </ul>
+                    )}
+                    {param.id === 2 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Training completion certificates for security personnel</li>
+                        <li>Training attendance logs with dates and content covered</li>
+                        <li>Skills assessment results for role-specific security training</li>
+                        <li>Training program documentation showing role-specific modules</li>
+                      </ul>
+                    )}
+                    {param.id === 3 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Annual budget allocation documents showing security budget</li>
+                        <li>Financial reports showing actual security expenditures</li>
+                        <li>Budget comparison documents showing IT vs security allocations</li>
+                        <li>Purchase orders for security tools, services, and personnel</li>
+                      </ul>
+                    )}
+                    {param.measureId === 'GV.RR.S4' && param.id !== 3 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Annual budget allocation documents showing security budget</li>
+                        <li>Financial reports showing actual security expenditures</li>
+                        <li>Budget comparison documents showing IT vs security allocations</li>
+                        <li>Purchase orders for security tools, services, and personnel</li>
+                        <li>Approval Document from Competent Authority</li>
+                      </ul>
+                    )}
+                    {param.measureId === 'PR.AT.S1' && param.id !== 2 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Training completion certificates for security personnel</li>
+                        <li>Training attendance logs with dates and content covered</li>
+                        <li>Skills assessment results for role-specific security training</li>
+                        <li>Training program documentation showing role-specific modules</li>
+                        <li>Details of the training/awareness sessions scheduled within the past 1 year</li>
+                      </ul>
+                    )}
+                    {param.id === 4 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Risk assessment reports with dates and system coverage</li>
+                        <li>System inventory documentation</li>
+                        <li>Risk assessment methodology documentation</li>
+                        <li>Screenshots of risk register or GRC tool</li>
+                      </ul>
+                    )}
+                    {param.id === 5 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>SIEM architecture diagrams showing connected systems</li>
+                        <li>Log collection/forwarding configuration files</li>
+                        <li>Documentation of critical systems inventory</li>
+                        <li>Screenshots of SIEM dashboard showing system coverage</li>
+                      </ul>
+                    )}
+                    {param.id === 6 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Change management records showing approved configuration changes</li>
+                        <li>Screenshots of configuration management database</li>
+                        <li>Baseline configuration documentation</li>
+                        <li>Audit logs showing configuration drift detection</li>
+                      </ul>
+                    )}
+                    {param.id === 7 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Contingency plan test records and after-action reports</li>
+                        <li>BCP/DR exercise documentation</li>
+                        <li>Test schedule showing systems covered</li>
+                        <li>Screenshots of test execution or exercise logs</li>
+                      </ul>
+                    )}
+                    {param.id === 8 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Privileged access management system inventory reports</li>
+                        <li>PIM solution architecture diagrams</li>
+                        <li>Privileged account inventory documentation</li>
+                        <li>Screenshots of privileged session recordings</li>
+                      </ul>
+                    )}
+                    {param.id === 9 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Incident response logs with timestamps</li>
+                        <li>Security incident reports with reporting timeline</li>
+                        <li>Screenshots from incident management system</li>
+                        <li>Incident classification documentation</li>
+                      </ul>
+                    )}
+                    {param.id === 10 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Anti-malware deployment inventory reports</li>
+                        <li>Configuration settings for malware protection tools</li>
+                        <li>System coverage reports for anti-malware solutions</li>
+                        <li>Screenshots of management console showing coverage</li>
+                      </ul>
+                    )}
+                    {param.id === 11 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>MFA configuration documentation for remote access systems</li>
+                        <li>VPN session logs showing authentication methods</li>
+                        <li>Remote access policy documentation</li>
+                        <li>Screenshots of MFA enrollment status for users</li>
+                      </ul>
+                    )}
+                    {param.id === 12 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Physical security incident reports</li>
+                        <li>Access control logs for physical entry points</li>
+                        <li>Badge system reports for unauthorized access attempts</li>
+                        <li>CCTV footage or records of physical security events</li>
+                      </ul>
+                    )}
+                    {param.id === 13 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Signed confidentiality agreements</li>
+                        <li>System access request forms showing agreement requirements</li>
+                        <li>User onboarding process documentation</li>
+                        <li>HR records of agreement completion</li>
+                      </ul>
+                    )}
+                    {param.id === 14 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Background check records for personnel</li>
+                        <li>Security clearance documentation</li>
+                        <li>Screening policy documentation</li>
+                        <li>Personnel security verification records</li>
+                      </ul>
+                    )}
+                    {param.id === 15 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Policy document inventory with approval signatures and dates</li>
+                        <li>Policy review schedule and completion records</li>
+                        <li>Documentation of policy approval workflow</li>
+                        <li>Screenshots of policy management system</li>
+                      </ul>
+                    )}
+                    {param.id === 16 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Contract language samples showing security requirements</li>
+                        <li>Vendor assessment documentation</li>
+                        <li>Procurement policy showing security requirement integration</li>
+                        <li>Third-party security agreement examples</li>
+                      </ul>
+                    )}
+                    {param.id === 17 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>User termination records with timestamps</li>
+                        <li>Account deactivation logs</li>
+                        <li>HR/IT coordination documentation for departures</li>
+                        <li>Screenshots of offboarding workflow system</li>
+                      </ul>
+                    )}
+                    {param.id === 18 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Continuous monitoring strategy documentation</li>
+                        <li>Automated control testing reports</li>
+                        <li>Dashboard screenshots showing control monitoring</li>
+                        <li>Continuous assessment workflow documentation</li>
+                      </ul>
+                    )}
+                    {param.id === 19 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Asset classification documentation</li>
+                        <li>Critical asset inventory reports</li>
+                        <li>Business impact analysis records</li>
+                        <li>System dependency mappings for critical assets</li>
+                      </ul>
+                    )}
+                    {param.id === 20 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>CSK event logs with resolution timestamps</li>
+                        <li>Event management system screenshots</li>
+                        <li>CSK report handling procedures</li>
+                        <li>SLA documentation for event resolution</li>
+                      </ul>
+                    )}
+                    {param.id === 21 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Password policy documentation</li>
+                        <li>System configuration screenshots showing password settings</li>
+                        <li>Compliance reports for password complexity</li>
+                        <li>Group policy objects or equivalent settings</li>
+                      </ul>
+                    )}
+                    {param.id === 22 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Cyber insurance policy documentation</li>
+                        <li>Coverage details showing limits and inclusions</li>
+                        <li>Insurance renewal documentation</li>
+                        <li>Cyber coverage assessment reports</li>
+                      </ul>
+                    )}
+                    {param.id === 23 && (
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Automated compliance monitoring tool configuration</li>
+                        <li>Documentation showing CSCRF mapping to automated controls</li>
+                        <li>Compliance dashboard screenshots</li>
+                        <li>Automated assessment reports for CSCRF standards</li>
+                      </ul>
+                    )}
+                    {param.id > 23 && (
+                      <p>Provide relevant documentation, screenshots, logs, or other evidence that demonstrates your compliance with this control requirement.</p>
+                    )}
+                  </div>
+                  <textarea
+                    value={param.implementationEvidence || ''}
+                    onChange={(e) => handleChange(param.id, 'implementationEvidence', e.target.value)}
+                    rows={3}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                    placeholder="Provide evidence of implementation..."
+                  />
                 </div>
-                <textarea
-                  value={param.implementationEvidence || ''}
-                  onChange={(e) => handleChange(param.id, 'implementationEvidence', e.target.value)}
-                  rows={3}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                  placeholder="Provide evidence of implementation..."
-                />
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Auditor Comments</label>
+                  <textarea
+                    value={param.auditorComments || ''}
+                    onChange={(e) => handleChange(param.id, 'auditorComments', e.target.value)}
+                    rows={2}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                    placeholder="Auditor comments..."
+                  />
+                </div>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Auditor Comments</label>
-                <textarea
-                  value={param.auditorComments || ''}
-                  onChange={(e) => handleChange(param.id, 'auditorComments', e.target.value)}
-                  rows={2}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                  placeholder="Auditor comments..."
-                />
-              </div>
-            </div>
             );
           })}
         </div>
@@ -1430,12 +1512,13 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
       </form>
       
       {/* Score breakdown by category and top improvement areas */}
-      <div className="p-6 border-t border-gray-200">
+      <div className="p-6 border-t border-gray-200 bg-gray-50">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Score Breakdown by Category */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-            <div className="bg-black p-4">
-              <h3 className="font-medium text-white text-lg">Score Breakdown by Category</h3>
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-black">
+            <div className="bg-black p-4 relative">
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1),transparent_70%)]"></div>
+              <h3 className="font-medium text-white text-lg relative z-10">Score Breakdown by Category</h3>
             </div>
             <div className="p-4">
               <table className="min-w-full divide-y divide-gray-200">
@@ -1514,9 +1597,10 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
           </div>
           
           {/* Top Improvement Areas */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-            <div className="bg-black p-4">
-              <h3 className="font-medium text-white text-lg">Top Improvement Areas</h3>
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-black">
+            <div className="bg-black p-4 relative">
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1),transparent_70%)]"></div>
+              <h3 className="font-medium text-white text-lg relative z-10">Top Improvement Areas</h3>
             </div>
             <div className="p-4">
               <table className="min-w-full divide-y divide-gray-200">
