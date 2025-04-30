@@ -1,8 +1,9 @@
-import { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, TextRun, BorderStyle, AlignmentType, TableOfContents, PageBreak, ExternalHyperlink, Packer, SectionType, ISectionOptions } from 'docx';
 import { saveAs } from 'file-saver';
-import { CCIParameter, CCIResult, AnnexureKData } from '../types';
+import { CCIResult, CCIParameter, AnnexureKData } from '../types';
+import toast from 'react-hot-toast';
 import { calculateParameterScore, calculateWeightedScore } from './cciCalculator';
-import { toast } from 'react-hot-toast';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 /**
  * Convert table data to markdown-style text format
@@ -67,1017 +68,7 @@ const getFormattedMaturityLevel = (score: number, maturityLevel: string): string
 };
 
 /**
- * Generate and export SEBI CSCRF report in Word format
- * 
- * @param parameters The complete set of CCIParameters with values
- * @param result The calculated CCIResult with scores
- * @param annexureKData Optional Annexure K form data
- */
-export const exportToWord = async (
-  parameters: CCIParameter[],
-  result: CCIResult,
-  annexureKData?: AnnexureKData
-) => {
-  try {
-    // Display loading indicator
-    toast('Generating Word document...', { 
-      id: 'word-export',
-      duration: 10000
-    });
-
-    // Initialize logging for export process with timing
-    console.group('SEBI CSCRF Report Export Process');
-    const exportStart = performance.now();
-    console.log(`Export initiated at: ${new Date().toISOString()}`);
-    console.log(`Generating report for: ${result.organization}`);
-    console.log(`Building document with ${parameters.length} parameters`);
-    console.log(`Document maturity level: ${result.maturityLevel}`);
-    console.log(`Document maturity description: ${result.maturityDescription}`);
-    
-    // Using type assertion for Chrome-specific performance.memory API
-    interface MemoryInfo {
-      usedJSHeapSize: number;
-      jsHeapSizeLimit: number;
-    }
-
-    const performanceExt = window.performance as any;
-    if (performanceExt && performanceExt.memory) {
-      const memory = performanceExt.memory as MemoryInfo;
-      console.log(`Initial Memory: ${(memory.usedJSHeapSize / 1048576).toFixed(2)}MB / ${(memory.jsHeapSizeLimit / 1048576).toFixed(2)}MB`);
-    }
-
-  // Show loading indicator for large reports
-  if (parameters.length > 10) {
-    console.log('Generating detailed Word report, please wait...');
-  }
-  
-  // Group parameters by framework category
-  const paramsByCategory: Record<string, CCIParameter[]> = {};
-  parameters.forEach(param => {
-    const category = param.frameworkCategory || 'Uncategorized';
-    if (!paramsByCategory[category]) {
-      paramsByCategory[category] = [];
-    }
-    paramsByCategory[category].push(param);
-  });
-    
-    console.log(`Parameters grouped into ${Object.keys(paramsByCategory).length} categories`);
-    
-    // Track progress stages
-    console.log('Building document skeleton...');
-  
-  // Generate report content
-  const children = [
-    // Cover Page
-    new Paragraph({
-      text: "SEBI CSCRF",
-      heading: HeadingLevel.HEADING_1,
-      alignment: AlignmentType.CENTER,
-      spacing: {
-        before: 3000, // Position vertically in the middle of the page
-      },
-    }),
-    new Paragraph({
-      text: "Compliance Report",
-      heading: HeadingLevel.HEADING_1,
-      alignment: AlignmentType.CENTER,
-      spacing: {
-        after: 1000,
-      },
-    }),
-    new Paragraph({
-      text: `Organization: ${result.organization}`,
-      alignment: AlignmentType.CENTER,
-    }),
-    new Paragraph({
-      text: `Assessment Date: ${new Date(result.date).toLocaleDateString('en-GB')}`,
-      alignment: AlignmentType.CENTER,
-    }),
-    new Paragraph({
-      text: `Maturity Level: ${result.maturityLevel}`,
-      alignment: AlignmentType.CENTER,
-      spacing: {
-        before: 500,
-      },
-        run: {
-          bold: true
-        }
-      }),
-      new Paragraph({
-        text: result.maturityDescription,
-        alignment: AlignmentType.CENTER,
-        spacing: {
-          after: 200,
-        }
-    }),
-    new Paragraph({
-      text: `Total CCI Score: ${result.totalScore.toFixed(2)}%`,
-      alignment: AlignmentType.CENTER,
-    }),
-      new Paragraph({
-        text: `Compliance Status: ${result.totalScore >= 60 ? 'Compliant' : 'Non-Compliant'}`,
-        alignment: AlignmentType.CENTER,
-        spacing: {
-          after: 200,
-        },
-      }),
-    new Paragraph({
-      text: "Confidential - For Internal Use Only",
-      alignment: AlignmentType.CENTER,
-      spacing: {
-        before: 2000,
-      },
-    }),
-    new PageBreak(),
-    
-    // Table of Contents
-    new Paragraph({
-      text: "Table of Contents",
-      heading: HeadingLevel.HEADING_1,
-      alignment: AlignmentType.CENTER,
-    }),
-    new TableOfContents("Table of Contents"),
-    new PageBreak(),
-    
-    // Executive Summary
-    new Paragraph({
-      text: "Executive Summary",
-      heading: HeadingLevel.HEADING_1,
-    }),
-    new Paragraph({
-      text: "Organization Details",
-      heading: HeadingLevel.HEADING_3,
-    }),
-    new Paragraph(`Organization: ${result.organization}`),
-    new Paragraph(`Assessment Date: ${new Date(result.date).toLocaleDateString('en-GB')}`),
-    new Paragraph(`Maturity Level: ${result.maturityLevel}`),
-      new Paragraph({
-        text: result.maturityDescription,
-        spacing: {
-          after: 200,
-        },
-      }),
-    new Paragraph(`Total CCI Score: ${result.totalScore.toFixed(2)}%`),
-    new Paragraph({
-      text: `Compliance Status: ${result.totalScore >= 60 ? 'Compliant' : 'Non-Compliant'}`,
-      spacing: {
-        after: 400,
-      },
-    }),
-      
-      // Main NIST Framework Categories
-      new Paragraph({
-        text: "Main Framework Categories",
-        heading: HeadingLevel.HEADING_3,
-      }),
-      
-      // Add paragraph describing the 5 main categories
-      new Paragraph({
-        text: "The SEBI CSCRF follows the NIST Cybersecurity Framework structure with five main categories:",
-        spacing: {
-          after: 200,
-        },
-      }),
-      
-      // Add main category as markdown text instead of table
-      new Paragraph({
-        text: convertTableToMarkdown(
-          ["Main Category", "Score (%)", "Maturity Level"],
-          ['Governance', 'Identify', 'Protect', 'Detect', 'Respond'].map(mainCat => {
-            // Calculate scores for main category
-            const relevantParams = parameters.filter(param => {
-              if (!param.frameworkCategory) return false;
-              return param.frameworkCategory.startsWith(mainCat);
-            });
-            
-            if (relevantParams.length === 0) {
-              return [mainCat, "N/A", "N/A"];
-            }
-            
-            const totalWeightage = relevantParams.reduce((sum, param) => sum + param.weightage, 0);
-            const weightedSum = relevantParams.reduce((sum, param) => sum + calculateWeightedScore(param), 0);
-            const score = totalWeightage > 0 ? (weightedSum / totalWeightage) * 100 : 0;
-            
-            // Determine maturity level
-            let maturityLevel = "Insufficient";
-            if (score >= 91) maturityLevel = "Exceptional";
-            else if (score >= 81) maturityLevel = "Optimal";
-            else if (score >= 71) maturityLevel = "Manageable";
-            else if (score >= 61) maturityLevel = "Developing";
-            else if (score >= 51) maturityLevel = "Bare Minimum";
-            
-            return [mainCat, score.toFixed(2), maturityLevel];
-          })
-        )
-      }),
-      
-      new Paragraph({
-        text: "Maturity Level Description:",
-        spacing: {
-          before: 200,
-        },
-        run: {
-          bold: true
-        }
-      }),
-      new Paragraph("• Exceptional (91-100): Leading-edge security posture with advanced capabilities"),
-      new Paragraph("• Optimal (81-90): Robust security program with well-integrated controls"),
-      new Paragraph("• Manageable (71-80): Established security program with consistent implementation"),
-      new Paragraph("• Developing (61-70): Basic security controls with some gaps in implementation"),
-      new Paragraph("• Bare Minimum (51-60): Minimal security controls meeting basic requirements"),
-      new Paragraph("• Insufficient (0-50): Inadequate security controls requiring significant improvements"),
-      
-      new PageBreak(),
-    
-    // Framework Category Scores
-    new Paragraph({
-        text: "Detailed Framework Category Scores",
-        heading: HeadingLevel.HEADING_1,
-    }),
-  ];
-  
-    // Category score as markdown text
-  const categoryScores = Object.keys(paramsByCategory).map(category => {
-    const params = paramsByCategory[category];
-    const totalWeightage = params.reduce((sum: number, param: CCIParameter) => sum + param.weightage, 0);
-    const weightedSum = params.reduce((sum: number, param: CCIParameter) => sum + calculateWeightedScore(param), 0);
-    const categoryScore = totalWeightage > 0 ? (weightedSum / totalWeightage) * 100 : 0;
-      
-      // Get maturity level - needed for proper "Fail" display
-      let maturityLevelText = "Insufficient";
-      if (categoryScore >= 91) maturityLevelText = "Exceptional";
-      else if (categoryScore >= 81) maturityLevelText = "Optimal";
-      else if (categoryScore >= 71) maturityLevelText = "Manageable";
-      else if (categoryScore >= 61) maturityLevelText = "Developing";
-      else if (categoryScore >= 51) maturityLevelText = "Bare Minimum";
-    
-    return {
-      category,
-      score: categoryScore.toFixed(2),
-        weightage: totalWeightage,
-        maturityLevel: maturityLevelText
-    };
-  });
-  
-    // Add category scores as markdown text
-    children.push(
-      new Paragraph({
-        text: convertTableToMarkdown(
-          ["Framework Category", "Score (%)", "Weightage (%)"],
-          categoryScores.map(cs => [cs.category, cs.score, cs.weightage.toString()])
-        )
-      })
-    );
-    
-  children.push(new PageBreak());
-  
-  // Implementation Evidence Summary
-  children.push(
-    new Paragraph({
-      text: "Implementation Evidence Summary",
-      heading: HeadingLevel.HEADING_1,
-    }),
-    new Paragraph({
-      text: "This section summarizes all implementation evidence required for each parameter.",
-      spacing: {
-        after: 300,
-      },
-    })
-  );
-  
-  // Add implementation evidence by category
-  Object.keys(paramsByCategory).forEach(category => {
-    children.push(
-      new Paragraph({
-        text: category,
-        heading: HeadingLevel.HEADING_2,
-      })
-    );
-    
-    paramsByCategory[category].forEach(param => {
-      children.push(
-        new Paragraph({
-          text: `${param.measureId}: ${param.title}`,
-          heading: HeadingLevel.HEADING_3,
-        }),
-        new Paragraph({
-          text: param.implementationEvidence || "No evidence details provided.",
-          spacing: {
-            after: 200,
-          },
-        })
-      );
-    });
-  });
-  
-  children.push(new PageBreak());
-  
-  // Detailed Parameter Assessments
-  children.push(
-    new Paragraph({
-      text: "Detailed Parameter Assessments",
-      heading: HeadingLevel.HEADING_1,
-    })
-  );
-  
-  // Add category and parameters details
-  Object.keys(paramsByCategory).forEach(category => {
-    children.push(
-      new Paragraph({
-        text: category,
-        heading: HeadingLevel.HEADING_2,
-      })
-    );
-    
-      // Parameter summary as markdown
-      const tableData = paramsByCategory[category].map(param => {
-        const score = calculateParameterScore(param);
-        const weightedScore = calculateWeightedScore(param);
-        
-        return [
-          param.measureId,
-          param.title,
-          `${score.toFixed(2)}%`,
-          `${param.weightage}%`,
-          weightedScore.toFixed(2)
-        ];
-      });
-      
-      children.push(
-        new Paragraph({
-          text: convertTableToMarkdown(
-            ["ID", "Parameter", "Score", "Weightage", "Weighted Score"],
-            tableData
-          )
-        })
-      );
-      
-      // Add detailed parameter information
-      paramsByCategory[category].forEach(param => {
-        const score = calculateParameterScore(param);
-        const weightedScore = calculateWeightedScore(param);
-        
-        // Add parameter detail section with spacing
-        children.push(new Paragraph({ text: " " })); // Add spacing
-        
-        // Parameter Title with ID
-        children.push(
-          new Paragraph({
-            text: `${param.title} (${param.measureId})`,
-            heading: HeadingLevel.HEADING_3,
-            spacing: {
-              before: 300,
-            },
-          })
-        );
-        
-        // Create parameter details as markdown text
-        children.push(
-          new Paragraph({ 
-            text: "Description",
-            run: {
-              bold: true
-            }
-          }),
-          new Paragraph({ text: param.description }),
-          new Paragraph({ text: " " }),
-          
-          new Paragraph({ 
-            text: "Formula",
-            run: {
-              bold: true
-            }
-          }),
-          new Paragraph({ text: param.formula }),
-          new Paragraph({ text: " " }),
-          
-          new Paragraph({ 
-            text: "Current Values",
-            run: {
-              bold: true
-            }
-          }),
-          new Paragraph({ text: `Numerator: ${param.numerator}` }),
-          new Paragraph({ text: `Denominator: ${param.denominator}` }),
-          new Paragraph({ text: `Score: ${score.toFixed(2)}%` }),
-          new Paragraph({ text: `Weighted Score: ${weightedScore.toFixed(2)}` }),
-          new Paragraph({ text: " " }),
-          
-          new Paragraph({ 
-            text: "Control Information",
-            run: {
-              bold: true
-            }
-          }),
-          new Paragraph({ text: param.controlInfo }),
-          new Paragraph({ text: " " }),
-          
-          new Paragraph({ 
-            text: "Implementation Evidence",
-            run: {
-              bold: true
-            }
-          })
-        );
-        
-        // Split evidence by newlines to make it more readable
-        param.implementationEvidence.split('\n').forEach(line => {
-          children.push(new Paragraph({ text: line }));
-        });
-        
-        // Add optional details
-        if (param.standardContext) {
-          children.push(
-            new Paragraph({ text: " " }),
-            new Paragraph({ 
-              text: "Standard Context",
-              run: {
-                bold: true
-              }
-            }),
-            new Paragraph({ text: param.standardContext })
-          );
-        }
-        
-        if (param.bestPractices) {
-          children.push(
-            new Paragraph({ text: " " }),
-            new Paragraph({ 
-              text: "Best Practices",
-              run: {
-                bold: true
-              }
-            })
-          );
-          
-          param.bestPractices.split('\n').forEach(line => {
-            children.push(new Paragraph({ text: line }));
-          });
-        }
-        
-        if (param.regulatoryGuidelines) {
-          children.push(
-            new Paragraph({ text: " " }),
-            new Paragraph({ 
-              text: "Regulatory Guidelines",
-              run: {
-                bold: true
-              }
-            }),
-            new Paragraph({ text: param.regulatoryGuidelines })
-          );
-        }
-        
-        if (param.auditorComments) {
-          children.push(
-            new Paragraph({ text: " " }),
-            new Paragraph({ 
-              text: "Auditor Comments",
-              run: {
-                bold: true
-              }
-            }),
-            new Paragraph({ text: param.auditorComments })
-          );
-        }
-        
-        // Add a page break after each parameter for better readability
-        children.push(new PageBreak());
-      });
-    });
-    
-    // Add Annexure K if provided
-    if (annexureKData) {
-      children.push(
-        new PageBreak(),
-        new Paragraph({
-          text: "Annexure K - Self Assessment Form",
-          heading: HeadingLevel.HEADING_1,
-          alignment: AlignmentType.CENTER,
-          spacing: {
-            before: 500,
-            after: 400,
-          },
-        }),
-        new Paragraph({
-          text: "As required under SEBI CSCRF Guidelines",
-          alignment: AlignmentType.CENTER,
-          spacing: {
-            after: 400,
-          },
-        }),
-        new Paragraph({
-          text: "Entity Information",
-          heading: HeadingLevel.HEADING_2,
-          spacing: {
-            before: 300,
-            after: 200,
-          },
-        }),
-        
-        // Entity details in clear format
-        new Paragraph({ 
-          text: "Entity Name:", 
-          spacing: { after: 100 },
-          run: {
-            bold: true
-          }
-        }),
-        new Paragraph({ 
-          text: annexureKData.organization || result.organization,
-          spacing: { after: 200 }
-        }),
-        
-        new Paragraph({ 
-          text: "Entity Type:", 
-          spacing: { after: 100 },
-          run: {
-            bold: true
-          }
-        }),
-        new Paragraph({ 
-          text: annexureKData.entityType || 'Not specified',
-          spacing: { after: 200 }
-        }),
-        
-        new Paragraph({ 
-          text: "Entity Category:", 
-          spacing: { after: 100 },
-          run: {
-            bold: true
-          }
-        }),
-        new Paragraph({ 
-          text: annexureKData.entityCategory || 'Not specified',
-          spacing: { after: 200 }
-        }),
-        
-        new Paragraph({ 
-          text: "Assessment Period:", 
-          spacing: { after: 100 },
-          run: {
-            bold: true
-          }
-        }),
-        new Paragraph({ 
-          text: annexureKData.period || 'Not specified',
-          spacing: { after: 200 }
-        }),
-        
-        new Paragraph({ 
-          text: "Auditing Organization:", 
-          spacing: { after: 100 },
-          run: {
-            bold: true
-          }
-        }),
-        new Paragraph({
-          text: annexureKData.auditingOrganization || 'Not specified',
-          spacing: { after: 300 }
-        }),
-        
-        // Signatory Information
-        new Paragraph({
-          text: "Signatory Information",
-          heading: HeadingLevel.HEADING_2,
-          spacing: {
-            before: 300,
-            after: 200,
-          },
-        }),
-        
-        new Paragraph({ 
-          text: "Name of the Signatory:", 
-          spacing: { after: 100 },
-          run: {
-            bold: true
-          }
-        }),
-        new Paragraph({ 
-          text: annexureKData.signatoryName || 'Not specified',
-          spacing: { after: 200 }
-        }),
-        
-        new Paragraph({ 
-          text: "Designation:", 
-          spacing: { after: 100 },
-          run: {
-            bold: true
-          }
-        }),
-        new Paragraph({
-          text: annexureKData.designation || 'Not specified',
-          spacing: { after: 300 }
-        }),
-        
-        // Assessment Summary with more detailed formatting
-        new Paragraph({
-          text: "Assessment Summary",
-          heading: HeadingLevel.HEADING_2,
-          spacing: {
-            before: 300,
-            after: 200,
-          },
-        }),
-        
-        new Paragraph({ 
-          text: "Rationale for self-assessment:", 
-          spacing: { after: 100 },
-          run: {
-            bold: true
-          }
-        }),
-        new Paragraph({
-          text: annexureKData.rationale || 'Not provided',
-          spacing: { after: 300 }
-        }),
-        
-        // Summary of assessment result
-        new Paragraph({
-          text: "Assessment Results",
-          heading: HeadingLevel.HEADING_2,
-          spacing: {
-            before: 300,
-            after: 200,
-          },
-        }),
-        
-        new Paragraph({ 
-          text: `Overall Score: ${result.totalScore.toFixed(2)}%`, 
-          spacing: { after: 100 },
-          run: {
-            bold: true
-          }
-        }),
-        
-      new Paragraph({
-          text: `Maturity Level: ${result.maturityLevel}`, 
-          spacing: { after: 100 },
-          run: {
-            bold: true
-          }
-        }),
-        
-      new Paragraph({
-          text: `Assessment Date: ${new Date(result.date).toLocaleDateString('en-GB')}`, 
-          spacing: { after: 400 },
-          run: {
-            bold: true
-          }
-        }),
-        
-        // Signature line
-      new Paragraph({
-          text: "Signature: ____________________________",
-          spacing: {
-            before: 500,
-            after: 100,
-          },
-        }),
-        
-      new Paragraph({
-          text: `Date: ${new Date().toLocaleDateString('en-GB')}`,
-          spacing: {
-            after: 300,
-          },
-        }),
-        
-        // Verification marker (hidden)
-        new Paragraph({
-          text: `Annexure K data verified - ${new Date().toISOString()}`,
-          alignment: AlignmentType.RIGHT,
-          style: "Hidden"
-        })
-      );
-    }
-    
-    console.log('Document structure created');
-  
-  // Create a new Document with proper typing for sections
-  const doc = new Document({
-    sections: [{
-      properties: {
-        type: SectionType.CONTINUOUS
-      },
-      children: children
-    } as ISectionOptions],
-    styles: {
-      paragraphStyles: [
-        {
-          id: "Heading1",
-          name: "Heading 1",
-          basedOn: "Normal",
-          next: "Normal",
-          quickFormat: true,
-          run: {
-            size: 28,
-            bold: true,
-            color: "0033CC", // SEBI blue
-          },
-          paragraph: {
-            spacing: {
-              after: 120,
-            },
-          },
-        },
-        {
-          id: "Heading2",
-          name: "Heading 2",
-          basedOn: "Normal",
-          next: "Normal",
-          quickFormat: true,
-          run: {
-            size: 24,
-            bold: true,
-            color: "0033CC", // SEBI blue
-          },
-          paragraph: {
-            spacing: {
-              before: 240,
-              after: 120,
-            },
-          },
-        },
-        {
-          id: "Heading3",
-          name: "Heading 3",
-          basedOn: "Normal",
-          next: "Normal",
-          quickFormat: true,
-          run: {
-            size: 20,
-            bold: true,
-          },
-          paragraph: {
-            spacing: {
-              before: 240,
-              after: 120,
-            },
-          },
-        },
-          {
-            id: "Hidden",
-            name: "Hidden Text",
-            basedOn: "Normal",
-            next: "Normal",
-            run: {
-              size: 8,
-              color: "EEEEEE"
-            }
-          }
-      ],
-    },
-  });
-  
-    console.log('Cover page added');
-    
-    // Add Cover Page
-    const displayOrgName = result.organization && result.organization.trim() !== '' 
-      ? result.organization 
-      : 'Not Specified';
-
-    (doc as any).addSection({
-      properties: {
-        type: SectionType.NEXT_PAGE,
-      },
-      children: [
-        new Paragraph({
-          text: 'CYBER SECURITY AND CYBER RESILIENCE FRAMEWORK',
-          heading: HeadingLevel.TITLE,
-          alignment: AlignmentType.CENTER,
-          spacing: {
-            after: 400,
-          },
-        }),
-        new Paragraph({
-          text: 'Assessment Report for',
-          heading: HeadingLevel.HEADING_1,
-          alignment: AlignmentType.CENTER,
-          spacing: {
-            after: 200,
-          },
-        }),
-        new Paragraph({
-          text: displayOrgName,
-          heading: HeadingLevel.HEADING_1,
-          alignment: AlignmentType.CENTER,
-          spacing: {
-            after: 400,
-          },
-        }),
-      ]
-    });
-    
-    console.log('Document numbering fixed');
-    
-    // Set document properties/metadata for better identification
-    (doc as any).properties = {
-      title: `SEBI CSCRF Assessment Report - ${result.organization}`,
-      subject: "Cyber Security and Cyber Resilience Framework Assessment",
-      creator: "CCI Report Generator",
-      description: `SEBI CSCRF Assessment for ${result.organization} with score ${result.totalScore.toFixed(2)}%`,
-      lastModifiedBy: "CCI Calculator Tool",
-      revision: "1",
-      createdAt: new Date()
-    };
-    
-    console.log('Document properties set');
-
-    // Add additional verification for Annexure K content
-    if (annexureKData) {
-      console.log('Verifying Annexure K data inclusion:');
-      console.log(`- Entity Type: ${annexureKData.entityType || 'Not specified'}`);
-      console.log(`- Entity Category: ${annexureKData.entityCategory || 'Not specified'}`);
-      console.log(`- Period: ${annexureKData.period || 'Not specified'}`);
-      console.log(`- Signatory: ${annexureKData.signatoryName || 'Not specified'}`);
-      
-      // Add special marker section to verify annexure data inclusion
-      children.push(
-        new Paragraph({
-          text: `--- Annexure K Verification Hash: ${Date.now()} ---`,
-          alignment: AlignmentType.CENTER,
-          style: "Hidden"
-        })
-      );
-    }
-    
-    // Log document statistics for debugging
-    const sectionCount = (doc as any).sections.length;
-    const paragraphCount = children.filter(child => child instanceof Paragraph).length;
-    console.log(`Document statistics before export:`);
-    console.log(`- Sections: ${sectionCount}`);
-    console.log(`- Paragraphs: ${paragraphCount}`);
-    console.log(`- Organization: ${result.organization}`);
-    console.log(`- Assessment Date: ${result.date}`);
-    console.log(`- Score: ${result.totalScore.toFixed(2)}%`);
-    console.log(`- Maturity Level: ${result.maturityLevel}`);
-  
-  // Convert to blob and save
-  try {
-      console.log('Converting document to buffer...');
-      console.time('docx-packing');
-    const buffer = await Packer.toBuffer(doc);
-      console.timeEnd('docx-packing');
-      
-      console.log(`Buffer size: ${(buffer.byteLength / 1024 / 1024).toFixed(2)} MB`);
-      
-      const blob = new Blob([buffer], { 
-        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      });
-      
-      console.log('Main document blob created');
-      
-      // Create a backup blob with simplified formatting - this provides redundancy
-      console.log('Creating backup document...');
-      const backupDoc = new Document({
-        sections: [{
-          children: [
-            new Paragraph({
-              text: "SEBI CSCRF Report - Backup Copy",
-              heading: HeadingLevel.HEADING_1,
-              alignment: AlignmentType.CENTER,
-            }),
-            new Paragraph({
-              text: `Organization: ${result.organization}`,
-              alignment: AlignmentType.CENTER,
-            }),
-            new Paragraph({
-              text: `Date: ${result.date}`,
-              alignment: AlignmentType.CENTER,
-            }),
-            new Paragraph({
-              text: `Score: ${result.totalScore.toFixed(2)}%`,
-              alignment: AlignmentType.CENTER,
-            }),
-            
-            // Data validation section
-            new Paragraph({
-              text: "Data Validation Section",
-              heading: HeadingLevel.HEADING_2,
-            }),
-            
-            // Add parameter count and validation
-            new Paragraph({
-              text: `Parameter Count: ${parameters.length}`,
-            }),
-            
-            // Add annexure K data if available
-            ...(annexureKData ? [
-              new Paragraph({
-                text: "Annexure K Data Backup",
-                heading: HeadingLevel.HEADING_2,
-              }),
-              new Paragraph({
-                text: `Entity Name: ${annexureKData.organization || 'Not specified'}`,
-              }),
-              new Paragraph({
-                text: `Entity Type: ${annexureKData.entityType || 'Not specified'}`,
-              }),
-              new Paragraph({
-                text: `Entity Category: ${annexureKData.entityCategory || 'Not specified'}`,
-              }),
-              new Paragraph({
-                text: `Assessment Period: ${annexureKData.period || 'Not specified'}`,
-              }),
-              new Paragraph({
-                text: `Signatory: ${annexureKData.signatoryName || 'Not specified'}`,
-              }),
-              new Paragraph({
-                text: `Rationale: ${annexureKData.rationale || 'Not provided'}`,
-              }),
-            ] : []),
-          ]
-        }]
-      });
-      
-      console.log('Backup document structure created');
-      console.time('backup-packing');
-      const backupBuffer = await Packer.toBuffer(backupDoc);
-      console.timeEnd('backup-packing');
-      
-      const backupBlob = new Blob([backupBuffer], {
-        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      });
-      
-      console.log('Backup document blob created');
-      
-      // Final validation check of all parameters
-      const validationReport = parameters.map(p => `${p.measureId}: N=${p.numerator}, D=${p.denominator}`).join('\n');
-      console.log('Export validation summary:');
-      console.log(`Total parameters: ${parameters.length}`);
-      console.log(`Organization name length: ${result.organization.length} characters`);
-      console.log(`Annexure K included: ${annexureKData ? 'Yes' : 'No'}`);
-      
-      // Generate and save the document
-      const timestamp = new Date().toISOString().split('T')[0];
-      const sanitizedOrgName = sanitizeFilename(result.organization);
-      const filename = `SEBI_CSCRF_Detailed_Report_${sanitizedOrgName}_${timestamp}.docx`;
-      
-      // Fix for Word document numbering issue
-      try {
-        // Use type assertion to access private properties
-        const docAny = doc as any;
-        if (docAny.numbering && docAny.numbering.concreteNumberingMap) {
-          for (const [key, value] of docAny.numbering.concreteNumberingMap.entries()) {
-            if (value.numId === 0) {
-              value.numId = 1;
-              if (value.root && value.root.length > 0 && value.root[0].root) {
-                value.root[0].root.numId = 1;
-              }
-            }
-          }
-        }
-        console.log('Document numbering fixed');
-      } catch (error) {
-        console.log('Note: Could not fix document numbering, but document will still be generated');
-      }
-      
-      // Save both files - main and backup
-      console.log(`Saving document as: ${filename}`);
-    saveAs(blob, filename);
-      
-      // If Annexure K data is included, create a backup copy
-      if (annexureKData) {
-        const backupFilename = `BACKUP_${sanitizeFilename(result.organization)}_${timestamp}.docx`;
-        saveAs(backupBlob, backupFilename);
-        console.log(`Backup report saved as ${backupFilename}`);
-      }
-      
-      // Calculate and log total export time
-      const exportEnd = performance.now();
-      const exportDuration = (exportEnd - exportStart) / 1000;
-    console.log(`Word report exported successfully as ${filename}`);
-      console.log(`Total export process took ${exportDuration.toFixed(2)} seconds`);
-      
-      // Log final memory usage
-      if (performanceExt && performanceExt.memory) {
-        const memory = performanceExt.memory as MemoryInfo;
-        console.log(`Final Memory: ${(memory.usedJSHeapSize / 1048576).toFixed(2)}MB / ${(memory.jsHeapSizeLimit / 1048576).toFixed(2)}MB`);
-      }
-      
-      console.groupEnd();
-      
-      // Dismiss loading toast
-      toast.dismiss('word-export');
-      
-    return Promise.resolve();
-    } catch (packingError) {
-      console.error('Error packing the document:', packingError);
-      console.log(`Document packing failed after ${((performance.now() - exportStart) / 1000).toFixed(2)} seconds`);
-      console.groupEnd();
-      
-      toast.dismiss('word-export');
-      return Promise.reject(packingError);
-    }
-  } catch (error) {
-    console.error('Error generating Word document:', error);
-    console.groupEnd();
-    return Promise.reject(error);
-  }
-};
-
-/**
- * Export SEBI CSCRF report as Markdown format
+ * Generate and export SEBI CSCRF report in Markdown format
  * 
  * @param parameters The complete set of CCIParameters with values
  * @param result The calculated CCIResult with scores
@@ -1099,29 +90,66 @@ export const exportToMarkdown = (
     let markdown = '';
     
     // Add title and header
-    markdown += `# Detailed SEBI CSCRF Compliance Report\n\n`;
-    
-    // Add organization and date
-    markdown += `## ${result.organization}\n`;
+    markdown += `# SEBI CSCRF Compliance Report\n\n`;
+    markdown += `## Organization: ${result.organization}\n`;
     markdown += `Assessment Date: ${new Date(result.date).toLocaleDateString('en-GB')}\n\n`;
     
     // Add Executive Summary
     markdown += `## Executive Summary\n\n`;
-    markdown += `**Overall CCI Score:** ${result.totalScore.toFixed(2)}/100\n\n`;
-    markdown += `**Maturity Level:** ${result.maturityLevel}\n\n`;
-    markdown += `**Maturity Description:** ${result.maturityDescription}\n\n`;
-    markdown += `**Compliance Status:** ${result.totalScore >= 60 ? 'Compliant' : 'Non-Compliant'}\n\n`;
+    markdown += `| Metric | Value |\n`;
+    markdown += `| ------ | ----- |\n`;
+    markdown += `| **Overall CCI Score** | ${result.totalScore.toFixed(2)}/100 |\n`;
+    markdown += `| **Maturity Level** | ${result.maturityLevel} |\n`;
+    markdown += `| **Compliance Status** | ${result.totalScore >= 60 ? '✅ Compliant' : '❌ Non-Compliant'} |\n\n`;
     
-    // Group parameters by framework category
-    const paramsByCategory: Record<string, CCIParameter[]> = {};
-    parameters.forEach(param => {
-      const category = param.frameworkCategory || 'Uncategorized';
-      if (!paramsByCategory[category]) {
-        paramsByCategory[category] = [];
-      }
-      paramsByCategory[category].push(param);
-    });
+    markdown += `### Maturity Description\n\n`;
+    markdown += `${result.maturityDescription}\n\n`;
     
+    // Add Annexure K - SEBI format
+    markdown += `## Annexure-K: Cyber Capability Index (CCI)\n\n`;
+    markdown += `**REPORTING FORMAT FOR MIIs AND QUALIFIED REs TO SUBMIT THEIR CCI SCORE**\n\n`;
+    markdown += `**NAME OF THE ORGANISATION:** ${result.organization}\n\n`;
+    markdown += `**ENTITY TYPE:** ${annexureKData?.entityType || '<Intermediary Type>'}\n\n`;
+    markdown += `**ENTITY CATEGORY:** ${annexureKData?.entityCategory || '<Category of the RE as per CSCRF>'}\n\n`;
+    markdown += `**RATIONALE FOR THE CATEGORY:** ${annexureKData?.rationale || '<Rationale>'}\n\n`;
+    markdown += `**PERIOD:** ${annexureKData?.period || '<Assessment Period>'}\n\n`;
+    
+    if (annexureKData?.auditingOrganization) {
+      markdown += `**NAME OF THE AUDITING ORGANISATION (applicable for MIIs):** ${annexureKData.auditingOrganization}\n\n`;
+    } else {
+      markdown += `**NAME OF THE AUDITING ORGANISATION (applicable for MIIs):** <Name>\n\n`;
+    }
+    
+    markdown += `**RE's Authorised signatory declaration:**\n\n`;
+    markdown += `I/ We hereby confirm that Cyber Capability Index (CCI) has been verified by me/ us and I/ We shall take the responsibility and ownership of the CCI report.\n\n`;
+    markdown += `**Signature:** _______________________\n\n`;
+    markdown += `**Name of the signatory:** ${annexureKData?.signatoryName || '<Name>'}\n\n`;
+    markdown += `**Designation (choose whichever applicable):** ${annexureKData?.designation || '<MD/ CEO/ Board member/ Partners/ Proprietor>'}\n\n`;
+    markdown += `**Company stamp:** _______________________\n\n`;
+    
+    markdown += `### Annexures:\n`;
+    markdown += `1. CCI report as per the format given in Table 27 and CCI score\n\n`;
+    
+    markdown += `### Cyber Capability Index (CCI)\n\n`;
+    markdown += `**A. Background-**\n\n`;
+    markdown += `CCI is an index-framework to rate the preparedness and resilience of the cybersecurity framework of the Market Infrastructure Institutions (MIIs) and Qualified REs. While MIIs are required to conduct third-party assessment of their cyber resilience on a half-yearly basis, Qualified REs are directed to conduct self-assessment of their cyber resilience on an annual basis.\n\n`;
+    
+    markdown += `**B. Index Calculation Methodology-**\n\n`;
+    markdown += `1. The index is calculated on the basis of 23 parameters. These parameters have been given different weightages.\n`;
+    markdown += `2. Implementation evidence to be submitted to SEBI only on demand.\n`;
+    markdown += `3. All implementation evidences shall be verified by the auditor for conducting third-party assessment of MIIs.\n`;
+    markdown += `4. The list of CCI parameters, their corresponding target and weightages in the index, is as follows:\n\n`;
+  
+  // Group parameters by framework category
+  const paramsByCategory: Record<string, CCIParameter[]> = {};
+  parameters.forEach(param => {
+    const category = param.frameworkCategory || 'Uncategorized';
+    if (!paramsByCategory[category]) {
+      paramsByCategory[category] = [];
+    }
+    paramsByCategory[category].push(param);
+  });
+  
     // Define the standard NIST CSF categories and their display order
     const categoryOrder = [
       'Governance',
@@ -1134,11 +162,11 @@ export const exportToMarkdown = (
     ];
     
     // Calculate and organize category scores
-    const categoryScores = Object.keys(paramsByCategory).map(category => {
-      const params = paramsByCategory[category];
+  const categoryScores = Object.keys(paramsByCategory).map(category => {
+    const params = paramsByCategory[category];
       const totalWeightage = params.reduce((sum, param) => sum + param.weightage, 0);
       const weightedSum = params.reduce((sum, param) => sum + calculateWeightedScore(param), 0);
-      const categoryScore = totalWeightage > 0 ? (weightedSum / totalWeightage) * 100 : 0;
+    const categoryScore = totalWeightage > 0 ? (weightedSum / totalWeightage) * 100 : 0;
       
       // Get main category (extract first part before colon)
       const mainCategory = category.split(':')[0]?.trim() || category;
@@ -1150,17 +178,17 @@ export const exportToMarkdown = (
       else if (categoryScore >= 71) maturityLevel = "Manageable";
       else if (categoryScore >= 61) maturityLevel = "Developing";
       else if (categoryScore >= 51) maturityLevel = "Bare Minimum";
-      
-      return {
-        category,
+    
+    return {
+      category,
         mainCategory,
         score: categoryScore,
         maturityLevel,
         totalWeightage,
         weightedScore: weightedSum
-      };
-    });
-    
+    };
+  });
+  
     // Sort categories according to the predefined order
     const sortedCategoryScores = categoryScores.sort((a, b) => {
       const indexA = categoryOrder.indexOf(a.category);
@@ -1210,22 +238,50 @@ export const exportToMarkdown = (
       };
     });
     
-    // Main category order
+    // Main category order - only show the 6 specified categories
     const mainCategoryOrder = ['Governance', 'Identify', 'Protect', 'Detect', 'Respond', 'Recover'];
+    
+    // CCI Table (Table 27 format)
+    markdown += `### Table 27: CCI parameters with corresponding measure, implementation evidence, target, and weightage\n\n`;
+    markdown += `| S No | Measure ID | Goal/Objective | Measure | Measure Type | Formula | Target | Implementation Evidence | Weightage | Self-assessment score | Auditor comments w.r.t. cyber audit (for MIIs) |\n`;
+    markdown += `| ---- | ---------- | -------------- | ------- | ------------ | ------- | ------ | ----------------------- | --------- | --------------------- | -------------------------------------------- |\n`;
+    
+    // Add parameters in Table 27 format
+    parameters.forEach((param, index) => {
+      const score = calculateParameterScore(param);
+      const formattedScore = score.toFixed(1);
+      
+      markdown += `| ${index + 1} | ${param.measureId} | ${param.description || 'N/A'} | ${param.title} | ${'Effectiveness'} | ${param.formula || 'N/A'} | ${param.target || '100%'} | ${param.implementationEvidence || 'N/A'} | ${param.weightage}% | ${formattedScore} | ${param.auditorComments || ''} |\n`;
+    });
+    
+    markdown += `\n### Based on the value of the index, the cybersecurity maturity level is determined as follows:\n\n`;
+    markdown += `| SN. | Rating | Index Score Rating |\n`;
+    markdown += `| --- | ------ | ----------------- |\n`;
+    markdown += `| 1 | Exceptional Cybersecurity Maturity | 100-91 |\n`;
+    markdown += `| 2 | Optimal Cybersecurity Maturity | 90-81 |\n`;
+    markdown += `| 3 | Manageable Cybersecurity Maturity | 80-71 |\n`;
+    markdown += `| 4 | Developing Cybersecurity Maturity | 70-61 |\n`;
+    markdown += `| 5 | Bare Minimum Cybersecurity Maturity | 60-51 |\n`;
+    markdown += `| 6 | Fail | <=50 |\n\n`;
+    
+    markdown += `**Note:** The RE has scored below the cut-off in at least one domain/sub-domain if marked as Fail.\n\n`;
+    markdown += `MIIs and Qualified REs shall strive for building an automated tool and suitable dashboards (preferably integrated with log aggregator) for submitting compliance. A dashboard shall be available at the time of cyber audit, onsite inspection/audit by SEBI or any agency appointed by SEBI.\n\n`;
     
     // Add Category Analysis
     markdown += `## Category Analysis\n\n`;
     
     // Create category table
-    markdown += `| Category | Score | Compliance Status | Priority |\n`;
-    markdown += `| -------- | ----- | ----------------- | -------- |\n`;
+    markdown += `| Category | Score | Maturity Level | Compliance Status | Priority |\n`;
+    markdown += `| -------- | ----- | -------------- | ----------------- | -------- |\n`;
     
-    // Add main categories in the specified order
+    // Add main categories in the specified order with emoji indicators
     mainCategoryOrder.forEach(main => {
       if (mainCategoryScores[main]) {
         const score = mainCategoryScores[main].score;
         const maturityLevel = mainCategoryScores[main].maturityLevel;
-        markdown += `| ${main} | ${score.toFixed(1)} | ${maturityLevel} | ${score >= 60 ? 'Low' : 'High'} |\n`;
+        const complianceStatus = score >= 60 ? '✅ Compliant' : '❌ Non-Compliant';
+        const priority = score >= 60 ? 'Low' : 'High';
+        markdown += `| ${main} | ${score.toFixed(1)} | ${maturityLevel} | ${complianceStatus} | ${priority} |\n`;
       }
     });
     
@@ -1233,17 +289,28 @@ export const exportToMarkdown = (
     markdown += `\n## Category Maturity Classification\n`;
     markdown += `Detailed breakdown of maturity levels by security domain\n\n`;
     
-    // Add each main category with its score and weightage
+    // Add each main category with its score and weightage in card-like format
     mainCategoryOrder.forEach(main => {
       if (mainCategoryScores[main]) {
         const score = mainCategoryScores[main].score;
         const maturityLevel = mainCategoryScores[main].maturityLevel;
         const weightage = mainCategoryScores[main].totalWeightage;
         
-        markdown += `### ${main}\n`;
+        markdown += `### ${main}\n\n`;
         markdown += `**Score:** ${score.toFixed(1)}\n\n`;
         markdown += `**Weightage:** ${weightage}%\n\n`;
-        markdown += `**Maturity:** ${maturityLevel}\n\n`;
+        markdown += `**Maturity Level:** ${maturityLevel}\n\n`;
+        
+        // Add emoji indicators based on score
+        if (score >= 80) {
+          markdown += `**Status:** 🟢 Strong controls\n\n`;
+        } else if (score >= 60) {
+          markdown += `**Status:** 🟡 Adequate controls\n\n`;
+        } else {
+          markdown += `**Status:** 🔴 Needs improvement\n\n`;
+        }
+        
+        markdown += `---\n\n`;
       }
     });
     
@@ -1253,30 +320,39 @@ export const exportToMarkdown = (
     // Add parameter details by category
     sortedCategoryScores.forEach(categoryScore => {
       const category = categoryScore.category;
-      markdown += `### ${category}\n`;
-      markdown += `**Score:** ${categoryScore.score.toFixed(1)} - ${categoryScore.maturityLevel}\n\n`;
+      markdown += `### ${category}\n\n`;
+      markdown += `**Category Score:** ${categoryScore.score.toFixed(1)} - ${categoryScore.maturityLevel}\n\n`;
       
       // Parameter table
       markdown += `| Parameter | Numerator | Denominator | Weightage | Score | Weighted Score |\n`;
-      markdown += `| --------- | --------- | ----------- | --------- | ----- | ------------- |\n`;
+      markdown += `| --------- | :-------: | :---------: | :-------: | :---: | :-----------: |\n`;
       
-      paramsByCategory[category].forEach(param => {
-        const score = calculateParameterScore(param);
-        const weightedScore = calculateWeightedScore(param);
-        
-        markdown += `| ${param.title}\n${param.measureId} | ${param.numerator} | ${param.denominator} | ${param.weightage}% | ${score.toFixed(2)} | ${weightedScore.toFixed(2)} |\n`;
+    paramsByCategory[category].forEach(param => {
+      const score = calculateParameterScore(param);
+      const weightedScore = calculateWeightedScore(param);
+      
+        markdown += `| **${param.title}** (${param.measureId}) | ${param.numerator} | ${param.denominator} | ${param.weightage}% | ${score.toFixed(2)} | ${weightedScore.toFixed(2)} |\n`;
       });
       
       markdown += `\n`;
       
-      // Add parameter details
+      // Add parameter details with better separation
       paramsByCategory[category].forEach(param => {
         const score = calculateParameterScore(param);
         
-        markdown += `#### ${param.title}\n${param.measureId}\n\n`;
-        markdown += `**Description:**\n\n${param.description}\n\n`;
-        markdown += `**Control Information:**\n\n${param.controlInfo}\n\n`;
-        markdown += `**Implementation Evidence:**\n\n${param.implementationEvidence}\n\n`;
+        markdown += `#### ${param.title} (${param.measureId})\n\n`;
+        
+        // Add scoring information
+        markdown += `| Metric | Value |\n`;
+        markdown += `| ------ | ----- |\n`;
+        markdown += `| Score | ${score.toFixed(2)} |\n`;
+        markdown += `| Numerator | ${param.numerator} |\n`;
+        markdown += `| Denominator | ${param.denominator} |\n`;
+        markdown += `| Weightage | ${param.weightage}% |\n\n`;
+        
+        markdown += `**Description:**\n\n${param.description || 'No description provided.'}\n\n`;
+        markdown += `**Control Information:**\n\n${param.controlInfo || 'No control information provided.'}\n\n`;
+        markdown += `**Implementation Evidence:**\n\n${param.implementationEvidence || 'No implementation evidence provided.'}\n\n`;
         
         if (param.standardContext) {
           markdown += `**Standard Context:**\n\n${param.standardContext}\n\n`;
@@ -1298,31 +374,25 @@ export const exportToMarkdown = (
       });
     });
     
-    // Add Annexure K if provided
-    if (annexureKData) {
-      markdown += `## Annexure K - Self Assessment Form\n\n`;
-      markdown += `**Entity Name:** ${annexureKData.organization || result.organization}\n\n`;
-      markdown += `**Entity Type:** ${annexureKData.entityType || 'Not specified'}\n\n`;
-      markdown += `**Entity Category:** ${annexureKData.entityCategory || 'Not specified'}\n\n`;
-      markdown += `**Assessment Period:** ${annexureKData.period || 'Not specified'}\n\n`;
-      markdown += `**Rationale for self-assessment:** ${annexureKData.rationale || 'Not provided'}\n\n`;
-      markdown += `**Signatory Name:** ${annexureKData.signatoryName || 'Not specified'}\n\n`;
-      markdown += `**Designation:** ${annexureKData.designation || 'Not specified'}\n\n`;
-    }
-    
     // Add notes and observations
     markdown += `## Notes & Observations\n\n`;
     markdown += `This report provides a snapshot of the organization's cyber capability maturity based on the assessment date shown above.\n\n`;
     markdown += `The CCI is calculated based on the 23 parameters across various domains as specified in the SEBI CSCRF guidelines.\n\n`;
     markdown += `For areas with lower scores, consider developing action plans to enhance controls and improve overall cyber resilience.\n\n`;
     
-    markdown += `### Maturity Level Classification:\n\n`;
-    markdown += `- **Exceptional (91-100):** Leading-edge security posture with advanced capabilities\n`;
-    markdown += `- **Optimal (81-90):** Robust security program with well-integrated controls\n`;
-    markdown += `- **Manageable (71-80):** Established security program with consistent implementation\n`;
-    markdown += `- **Developing (61-70):** Basic security controls with some gaps in implementation\n`;
-    markdown += `- **Bare Minimum (51-60):** Minimal security controls meeting basic requirements\n`;
-    markdown += `- **Insufficient (0-50):** Inadequate security controls requiring significant improvements\n\n`;
+    markdown += `### Maturity Level Classification\n\n`;
+    markdown += `| Level | Score Range | Description |\n`;
+    markdown += `| ----- | ----------- | ----------- |\n`;
+    markdown += `| **Exceptional** | 91-100 | Leading-edge security posture with advanced capabilities |\n`;
+    markdown += `| **Optimal** | 81-90 | Robust security program with well-integrated controls |\n`;
+    markdown += `| **Manageable** | 71-80 | Established security program with consistent implementation |\n`;
+    markdown += `| **Developing** | 61-70 | Basic security controls with some gaps in implementation |\n`;
+    markdown += `| **Bare Minimum** | 51-60 | Minimal security controls meeting basic requirements |\n`;
+    markdown += `| **Insufficient** | 0-50 | Inadequate security controls requiring significant improvements |\n\n`;
+    
+    // Add footer with generation info
+    markdown += `---\n\n`;
+    markdown += `*Report generated on ${new Date().toLocaleString()} using CCI Calculator*\n`;
     
     // Create and save the file
     const blob = new Blob([markdown], { type: 'text/markdown' });
@@ -1342,5 +412,1199 @@ export const exportToMarkdown = (
     toast.dismiss('markdown-export');
     toast.error('Failed to export Markdown document');
     return Promise.reject(error);
+  }
+};
+
+/**
+ * Generate and export SEBI CSCRF report in PDF format optimized for SEBI submission
+ * 
+ * @param parameters The complete set of CCIParameters with values
+ * @param result The calculated CCIResult with scores
+ * @param annexureKData Optional Annexure K form data
+ */
+export const exportToPdf = async (
+  parameters: CCIParameter[],
+  result: CCIResult,
+  annexureKData?: AnnexureKData
+) => {
+  try {
+    // Display loading indicator
+    toast('Generating compact SEBI submission report (under 10 pages)...', { 
+      id: 'pdf-export',
+      duration: 15000 // Increased duration since the report is more comprehensive now
+    });
+
+    // Create new PDF document - A4 format
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
+    
+    // Set properties for official document
+    doc.setProperties({
+      title: `SEBI CSCRF Report - ${result.organization}`,
+      subject: 'Cyber Capability Index Assessment',
+      author: result.organization,
+      keywords: 'SEBI, CSCRF, Cybersecurity, Compliance',
+      creator: 'CCI Calculator'
+    });
+    
+    // Define constants for page layout
+    const pageHeight = doc.internal.pageSize.height;
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = { left: 14, right: 14 };
+    const contentWidth = pageWidth - margin.left - margin.right;
+    
+    // Add header
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SEBI CSCRF Compliance Report', 105, 15, { align: 'center' });
+    
+    // Organization details in larger, more prominent format
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Organization: ${result.organization}`, 14, 25);
+    doc.setFontSize(12);
+    doc.text(`Assessment Date: ${new Date(result.date).toLocaleDateString('en-GB')}`, 14, 32);
+    doc.text(`Report Generated: ${new Date().toLocaleDateString('en-GB')}`, 14, 38);
+    
+    // Executive summary - more compact
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Executive Summary', 14, 48);
+    
+    // Summary table - more compact
+    autoTable(doc, {
+      startY: 48,
+      head: [['Metric', 'Value']],
+      body: [
+        ['Overall CCI Score', `${result.totalScore.toFixed(2)}%`],
+        ['Maturity Level', result.maturityLevel],
+        ['Compliance Status', result.totalScore >= 60 ? 'Compliant' : 'Non-Compliant']
+      ],
+      headStyles: { 
+        fillColor: [50, 50, 50],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 10
+      },
+      bodyStyles: {
+        fontSize: 9
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 40 }
+      },
+      margin: margin,
+    });
+    
+    // Group parameters by framework category
+    const paramsByCategory: Record<string, CCIParameter[]> = {};
+    parameters.forEach(param => {
+      const category = param.frameworkCategory || 'Uncategorized';
+      if (!paramsByCategory[category]) {
+        paramsByCategory[category] = [];
+      }
+      paramsByCategory[category].push(param);
+    });
+    
+    // Define standard categories
+    const mainCategoryOrder = ['Governance', 'Identify', 'Protect', 'Detect', 'Respond', 'Recover'];
+    
+    // Calculate main category scores - we'll use this in multiple places
+    const mainCategoryScores: Record<string, { score: number, maturityLevel: string, totalWeightage: number, compliant: boolean }> = {};
+    
+    mainCategoryOrder.forEach(mainCat => {
+      // Find parameters that belong to this main category
+      const relevantParams = parameters.filter(param => {
+        if (!param.frameworkCategory) return false;
+        return param.frameworkCategory.startsWith(mainCat);
+      });
+      
+      if (relevantParams.length > 0) {
+        const totalWeightage = relevantParams.reduce((sum, param) => sum + param.weightage, 0);
+        const weightedSum = relevantParams.reduce((sum, param) => sum + calculateWeightedScore(param), 0);
+        const score = totalWeightage > 0 ? (weightedSum / totalWeightage) * 100 : 0;
+        
+        // Determine maturity level
+        let maturityLevel = "Insufficient";
+        if (score >= 91) maturityLevel = "Exceptional";
+        else if (score >= 81) maturityLevel = "Optimal";
+        else if (score >= 71) maturityLevel = "Manageable";
+        else if (score >= 61) maturityLevel = "Developing";
+        else if (score >= 51) maturityLevel = "Bare Minimum";
+        
+        mainCategoryScores[mainCat] = {
+          score,
+          maturityLevel,
+          totalWeightage,
+          compliant: score >= 60
+        };
+      }
+    });
+    
+    // Maturity Description - more compact
+    const descriptionY = (doc as any).lastAutoTable.finalY + 4;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Maturity Description', 14, descriptionY);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    
+    // Trim description and add line breaks for conciseness
+    const splitDesc = doc.splitTextToSize(result.maturityDescription, contentWidth);
+    doc.text(splitDesc, 14, descriptionY + 5);
+    
+    // Category Analysis Section - Start on same page if room
+    let currentY = doc.getTextDimensions(splitDesc).h + descriptionY + 10;
+    
+    // Check if we need a new page
+    if (currentY > pageHeight - 60) {
+      doc.addPage();
+      currentY = 15;
+    }
+    
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Category Analysis', 14, currentY);
+    
+    // Setup category table data - more compact
+    const categoryTableHead = [['Category', 'Score', 'Maturity Level', 'Status']];
+    const categoryTableBody = mainCategoryOrder
+      .filter(cat => mainCategoryScores[cat])
+      .map(cat => {
+        const { score, maturityLevel, compliant } = mainCategoryScores[cat];
+        const status = compliant ? 'Compliant' : 'Non-Compliant';
+        
+        return [cat, score.toFixed(1), maturityLevel, status];
+      });
+    
+    // Draw category table - more compact
+    autoTable(doc, {
+      startY: currentY + 4,
+      head: categoryTableHead,
+      body: categoryTableBody,
+      headStyles: { 
+        fillColor: [50, 50, 50],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 10
+      },
+      bodyStyles: {
+        fontSize: 9
+      },
+      margin: margin,
+    });
+    
+    // Maturity description reference - combine with Category Maturity Classification to save space
+    currentY = (doc as any).lastAutoTable.finalY + 8;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Category Maturity Classification', 14, currentY);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Detailed breakdown of maturity levels by security domain with reference levels', 14, currentY + 5);
+    
+    // Draw maturity reference table - more compact
+    autoTable(doc, {
+      startY: currentY + 8,
+      head: [['Level', 'Score Range', 'Description']],
+      body: [
+        ['Exceptional', '91-100', 'Leading-edge security posture with advanced capabilities'],
+        ['Optimal', '81-90', 'Robust security program with well-integrated controls'],
+        ['Manageable', '71-80', 'Established security program with consistent implementation'],
+        ['Developing', '61-70', 'Basic security controls with some gaps in implementation'],
+        ['Bare Minimum', '51-60', 'Minimal security controls meeting basic requirements'],
+        ['Insufficient', '0-50', 'Inadequate security controls requiring significant improvements']
+      ],
+      headStyles: { 
+        fillColor: [80, 80, 80],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 9
+      },
+      bodyStyles: {
+        fontSize: 8
+      },
+      margin: margin,
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 30 },
+        1: { cellWidth: 25 }
+      }
+    });
+    
+    // More compact domain cards - 3 columns if possible
+    currentY = (doc as any).lastAutoTable.finalY + 8;
+    const cardWidth = 60;
+    const cardHeight = 36;
+    const cardsPerRow = 3;
+    const cardMargin = 4;
+    let cardCol = 0;
+    let rowY = currentY;
+    
+    // Add domain cards
+    mainCategoryOrder.forEach(main => {
+      if (mainCategoryScores[main]) {
+        // Need a new row?
+        if (cardCol >= cardsPerRow) {
+          cardCol = 0;
+          rowY += cardHeight + cardMargin;
+        }
+        
+        // Need a new page?
+        if (rowY + cardHeight > pageHeight - 15) {
+          doc.addPage();
+          rowY = 15;
+          cardCol = 0;
+        }
+        
+        const { score, maturityLevel, totalWeightage, compliant } = mainCategoryScores[main];
+        const cardX = margin.left + (cardCol * (cardWidth + cardMargin));
+        
+        // Create a card-like section
+        doc.setFillColor(245, 245, 245);
+        doc.roundedRect(cardX, rowY, cardWidth, cardHeight, 2, 2, 'F');
+        
+        // Title
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 0, 0);
+        doc.text(main, cardX + 4, rowY + 6);
+        
+        // Content
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Score: ${score.toFixed(1)}`, cardX + 4, rowY + 14);
+        doc.text(`Maturity: ${maturityLevel}`, cardX + 4, rowY + 20);
+        
+        // Status indicator with color
+        const statusColor = compliant ? [0, 128, 0] : [180, 0, 0]; // Green or Red
+        doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+        doc.text(compliant ? '✓ Compliant' : '✗ Non-Compliant', cardX + 4, rowY + 28);
+        doc.setTextColor(0, 0, 0);
+        
+        // Increment column counter
+        cardCol++;
+      }
+    });
+    
+    // Annexure K Section - optimize for space efficiency
+    if (annexureKData) {
+      doc.addPage();
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Annexure K - SEBI Submission Form', 105, 15, { align: 'center' });
+      
+      // Combine Entity Details and CCI Score Summary in a compact layout
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Entity Details & CCI Summary', 14, 25);
+      
+      // Two-column layout for entity details and CCI scores
+      const leftTableStartY = 30;
+      
+      // Left column: Entity Details
+      autoTable(doc, {
+        startY: leftTableStartY,
+        body: [
+          ['Organization', annexureKData.organization || result.organization],
+          ['Entity Type', annexureKData.entityType || 'Not specified'],
+          ['Entity Category', annexureKData.entityCategory || 'Not specified'],
+          ['Assessment Period', annexureKData.period || 'Not specified'],
+          ['Auditing Organization', annexureKData.auditingOrganization || 'Not specified']
+        ],
+        theme: 'plain',
+        styles: {
+          fontSize: 9,
+          cellPadding: 2
+        },
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 50 }
+        },
+        tableWidth: 85,
+        margin: { left: 14 }
+      });
+      
+      // Right column: CCI Score Summary
+      // Setup data for the score table
+      const scoreTableBody = [
+        ['Overall CCI', result.totalScore.toFixed(1), result.maturityLevel, result.totalScore >= 60 ? 'Compliant' : 'Non-Compliant']
+      ];
+      
+      // Add category scores
+      mainCategoryOrder.forEach(main => {
+        if (mainCategoryScores[main]) {
+          const { score, maturityLevel, compliant } = mainCategoryScores[main];
+          scoreTableBody.push([main, score.toFixed(1), maturityLevel, compliant ? 'Compliant' : 'Non-Compliant']);
+        }
+      });
+      
+      // Right table with scores
+      autoTable(doc, {
+        startY: leftTableStartY,
+        head: [['Domain', 'Score', 'Level', 'Status']],
+        body: scoreTableBody,
+        headStyles: { 
+          fillColor: [70, 70, 70],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 9
+        },
+        bodyStyles: {
+          fontSize: 8,
+          cellPadding: 2
+        },
+        tableWidth: 85,
+        margin: { left: 105 }
+      });
+      
+      // Determine the tallest table's bottom position
+      const entityTableEndY = (doc as any).lastAutoTable.finalY;
+      
+      // Rationale section
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Rationale for Self-Assessment', 14, entityTableEndY + 10);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      
+      const splitRationale = doc.splitTextToSize(annexureKData.rationale || 'Not provided', contentWidth);
+      doc.text(splitRationale, 14, entityTableEndY + 16);
+      
+      // Signatory section - more compact
+      const signatoryY = doc.getTextDimensions(splitRationale).h + entityTableEndY + 20;
+      
+      // Check if we need a new page for the signatory section
+      if (signatoryY > pageHeight - 50) {
+        doc.addPage();
+        currentY = 15;
+      } else {
+        currentY = signatoryY;
+      }
+      
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Authorised Signatory Declaration', 14, currentY);
+      
+      // Signatory statement
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text([
+        'I/ We hereby confirm that Cyber Capability Index (CCI) has been verified by me/ us and I/ We shall take',
+        'the responsibility and ownership of the CCI report.'
+      ], 14, currentY + 6);
+      
+      // Two-column layout for signatory details and signature
+      const leftColWidth = 85;
+      
+      // Left column: Signatory details
+      autoTable(doc, {
+        startY: currentY + 14,
+        body: [
+          ['Name of Signatory', annexureKData.signatoryName || 'Not specified'],
+          ['Designation', annexureKData.designation || 'Not specified']
+        ],
+        theme: 'plain',
+        styles: {
+          fontSize: 9,
+          cellPadding: 2
+        },
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 40 }
+        },
+        tableWidth: leftColWidth,
+        margin: { left: 14 }
+      });
+      
+      // Right column: Signature field
+      doc.setDrawColor(100);
+      doc.setLineWidth(0.2);
+      doc.line(105, currentY + 20, 185, currentY + 20);
+      doc.setFontSize(8);
+      doc.text('Signature', 105, currentY + 18);
+      doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, 105, currentY + 25);
+    }
+    
+    // Detailed Parameter Analysis - create a new condensed format
+    doc.addPage();
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Detailed Parameter Assessment', 105, 15, { align: 'center' });
+    
+    // Sort categories by main category order
+    const categories = Object.keys(paramsByCategory).sort((a, b) => {
+      // Sort by main category first (using the mainCategoryOrder)
+      const mainA = a.split(':')[0]?.trim() || a;
+      const mainB = b.split(':')[0]?.trim() || b;
+      
+      const indexA = mainCategoryOrder.indexOf(mainA);
+      const indexB = mainCategoryOrder.indexOf(mainB);
+      
+      if (indexA !== indexB) {
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+      } else {
+        return a.localeCompare(b);
+      }
+    });
+    
+    // Start position
+    currentY = 20;
+    
+    // Process each category with condensed parameter tables
+    categories.forEach((category, categoryIndex) => {
+      const params = paramsByCategory[category];
+      
+      // Calculate category score
+      const totalWeightage = params.reduce((sum, param) => sum + param.weightage, 0);
+      const weightedSum = params.reduce((sum, param) => sum + calculateWeightedScore(param), 0);
+      const categoryScore = totalWeightage > 0 ? (weightedSum / totalWeightage) * 100 : 0;
+      
+      // Get maturity level
+      let maturityLevel = "Insufficient";
+      if (categoryScore >= 91) maturityLevel = "Exceptional";
+      else if (categoryScore >= 81) maturityLevel = "Optimal";
+      else if (categoryScore >= 71) maturityLevel = "Manageable";
+      else if (categoryScore >= 61) maturityLevel = "Developing";
+      else if (categoryScore >= 51) maturityLevel = "Bare Minimum";
+      
+      // Check if we need a new page
+      if (currentY > pageHeight - 30 || categoryIndex > 0) {
+        doc.addPage();
+        currentY = 15;
+      }
+      
+      // Category header
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${category} - Score: ${categoryScore.toFixed(1)} (${maturityLevel})`, 14, currentY);
+      
+      // Parameter table - extremely condensed
+      const paramTableData = params.map(param => {
+        const score = calculateParameterScore(param);
+        const compliant = score >= 60;
+        
+        return [
+          param.measureId,
+          param.title,
+          `${param.numerator}/${param.denominator}`,
+          score.toFixed(1),
+          compliant ? '✓' : '✗'
+        ];
+      });
+      
+      // Draw the parameter table
+      autoTable(doc, {
+        startY: currentY + 3,
+        head: [['ID', 'Parameter', 'N/D', 'Score', 'Status']],
+        body: paramTableData,
+        headStyles: { 
+          fillColor: [80, 80, 80],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 8
+        },
+        bodyStyles: {
+          fontSize: 7,
+          cellPadding: { top: 1, right: 2, bottom: 1, left: 2 }
+        },
+        columnStyles: {
+          0: { cellWidth: 20 },
+          1: { cellWidth: 'auto' },
+          2: { cellWidth: 20, halign: 'center' },
+          3: { cellWidth: 15, halign: 'center' },
+          4: { cellWidth: 15, halign: 'center' }
+        },
+        margin: margin,
+        showHead: 'firstPage',
+        didDrawPage: (data) => {
+          // Add category header on new pages
+          if (data.pageCount > 1 && data.cursor && data.cursor.y === data.settings.margin.top) {
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${category} - Score: ${categoryScore.toFixed(1)} (${maturityLevel})`, 14, data.cursor.y - 5);
+          }
+        }
+      });
+      
+      currentY = (doc as any).lastAutoTable.finalY + 10;
+    });
+    
+    // Add Comprehensive Parameter Details section with implementation evidence and auditor comments
+    doc.addPage();
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Comprehensive Parameter Details', 105, 15, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('As required for SEBI submission with implementation evidence and auditor verification', 105, 22, { align: 'center' });
+    
+    // Initialize starting Y position
+    currentY = 30;
+    
+    // Prepare parameter tables for each category
+    categories.forEach((category, categoryIndex) => {
+      // Need a new page?
+      if (categoryIndex > 0 && currentY > pageHeight - 40) {
+        doc.addPage();
+        currentY = 15;
+      }
+      
+      // Category header
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(category, 14, currentY);
+      currentY += 8;
+      
+      // Parameters in this category
+      const params = paramsByCategory[category];
+      
+      // Table with parameter details
+      autoTable(doc, {
+        startY: currentY,
+        head: [['Parameter ID', 'Title', 'Formula', 'N/D', 'Score']],
+        body: params.map(param => {
+          const score = calculateParameterScore(param);
+          return [
+            param.measureId,
+            param.title,
+            param.formula.length > 50 ? param.formula.substring(0, 47) + '...' : param.formula,
+            `${param.numerator}/${param.denominator}`,
+            `${score.toFixed(1)}%`
+          ];
+        }),
+        headStyles: { 
+          fillColor: [60, 60, 60],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 8
+        },
+        bodyStyles: {
+          fontSize: 7,
+          cellPadding: { top: 1, right: 2, bottom: 1, left: 2 }
+        },
+        columnStyles: {
+          0: { cellWidth: 20 },
+          1: { cellWidth: 50 },
+          2: { cellWidth: 70 },
+          3: { cellWidth: 15, halign: 'center' },
+          4: { cellWidth: 20, halign: 'center' },
+        },
+        margin: margin
+      });
+      
+      currentY = (doc as any).lastAutoTable.finalY + 5;
+      
+      // Process each parameter with detailed information but in a more compact format
+      params.forEach((param, index) => {
+        // Calculate parameter score
+        const score = calculateParameterScore(param);
+        const compliant = score >= 60;
+        
+        // Check if we need a new page
+        if (currentY > pageHeight - 60) {
+          doc.addPage();
+          currentY = 15;
+        }
+        
+        // Parameter header with border
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(14, currentY, contentWidth, 8, 1, 1, 'D');
+        
+        // Parameter ID and title
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        
+        // Parameter status indicator with color
+        const statusColor = compliant ? [0, 128, 0] : [180, 0, 0]; // Green or Red
+        doc.text(`${param.measureId}: ${param.title}`, 17, currentY + 5);
+        doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+        doc.setFontSize(8);
+        doc.text(`${score.toFixed(1)}% (${compliant ? 'Compliant' : 'Non-Compliant'})`, pageWidth - 17, currentY + 5, { align: 'right' });
+        doc.setTextColor(0, 0, 0);
+        
+        currentY += 12;
+        
+        // Implementation Evidence and Auditor Comments table
+        autoTable(doc, {
+          startY: currentY,
+          head: [['Implementation Evidence', 'Auditor Comments']],
+          body: [[
+            param.implementationEvidence || 'Not specified',
+            param.auditorComments || 'No comments provided'
+          ]],
+          headStyles: { 
+            fillColor: [80, 80, 80],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            fontSize: 8
+          },
+          bodyStyles: {
+            fontSize: 7,
+            cellPadding: 3,
+            lineColor: [200, 200, 200],
+            lineWidth: 0.1
+          },
+          margin: margin
+        });
+        
+        currentY = (doc as any).lastAutoTable.finalY + 5;
+        
+        // Only add detailed context for high-weightage parameters (to save space)
+        if (param.weightage >= 5) {
+          // Additional information table (standard context, best practices if available)
+          if (param.standardContext || param.bestPractices) {
+            // Check if we need a new page
+            if (currentY > pageHeight - 40) {
+              doc.addPage();
+              currentY = 15;
+            }
+            
+            let contextRows = [];
+            if (param.standardContext) {
+              contextRows.push(['Standard Context', param.standardContext]);
+            }
+            if (param.bestPractices) {
+              contextRows.push(['Best Practices', param.bestPractices]);
+            }
+            
+            if (contextRows.length > 0) {
+              autoTable(doc, {
+                startY: currentY,
+                body: contextRows,
+                theme: 'plain',
+                styles: {
+                  fontSize: 7,
+                  cellPadding: 2,
+                  overflow: 'linebreak',
+                  lineColor: [220, 220, 220],
+                  lineWidth: 0.1
+                },
+                columnStyles: {
+                  0: { fontStyle: 'bold', cellWidth: 30 }
+                },
+                margin: margin
+              });
+              
+              currentY = (doc as any).lastAutoTable.finalY + 8;
+            }
+          }
+        }
+      });
+      
+      // Add a little extra space between categories
+      currentY += 5;
+    });
+    
+    // Signature section at the end
+    if (currentY > pageHeight - 40) {
+      doc.addPage();
+      currentY = 15;
+    }
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Verification and Approval', 105, currentY, { align: 'center' });
+    
+    // Signature boxes
+    currentY += 10;
+    doc.setDrawColor(100);
+    doc.setLineWidth(0.2);
+    
+    // Draw three signature lines
+    const signatureWidth = (contentWidth - 20) / 3;
+    
+    // Auditor signature
+    doc.line(20, currentY + 15, 20 + signatureWidth, currentY + 15);
+    doc.setFontSize(8);
+    doc.text('Auditor Signature', 20, currentY + 20);
+    
+    // Compliance Officer signature
+    doc.line(20 + signatureWidth + 10, currentY + 15, 20 + signatureWidth * 2 + 10, currentY + 15);
+    doc.text('Compliance Officer', 20 + signatureWidth + 10, currentY + 20);
+    
+    // CEO/MD signature
+    doc.line(20 + signatureWidth * 2 + 20, currentY + 15, 20 + signatureWidth * 3 + 20, currentY + 15);
+    doc.text('CEO/MD', 20 + signatureWidth * 2 + 20, currentY + 20);
+    
+    // Date line
+    doc.line(105, currentY + 35, 170, currentY + 35);
+    doc.text('Date', 105, currentY + 40);
+    
+    // Add footer to each page
+    const pageCount = doc.getNumberOfPages();
+    for(let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.text(
+        `SEBI CSCRF Report - ${result.organization} - Page ${i} of ${pageCount}`, 
+        pageWidth / 2, 
+        pageHeight - 8, 
+        { align: 'center' }
+      );
+      
+      // Add confidentiality note in the footer if there's room
+      if (i === pageCount) {
+        doc.text('CONFIDENTIAL - FOR REGULATORY SUBMISSION ONLY', pageWidth / 2, pageHeight - 4, { align: 'center' });
+      }
+    }
+    
+    // Save the PDF
+    const sanitizedOrgName = sanitizeFilename(result.organization);
+  const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `SEBI_CSCRF_Report_${sanitizedOrgName}_${timestamp}.pdf`;
+    
+    doc.save(filename);
+    
+    // Toast notification
+    toast.dismiss('pdf-export');
+    toast.success('Compact SEBI report exported successfully (under 10 pages)!');
+    
+    return Promise.resolve();
+  } catch (error) {
+    console.error('Error generating PDF document:', error);
+    toast.dismiss('pdf-export');
+    toast.error('Failed to export PDF document');
+    return Promise.reject(error);
+  }
+};
+
+/**
+ * Generate and export SEBI CSCRF report in CSV format for data analysis
+ * 
+ * @param parameters The complete set of CCIParameters with values
+ * @param result The calculated CCIResult with scores
+ */
+export const exportToCsv = async (
+  parameters: CCIParameter[],
+  result: CCIResult
+) => {
+  try {
+    // Display loading indicator
+    toast('Generating CSV file...', { 
+      id: 'csv-export',
+      duration: 5000
+    });
+
+    // CSV header row
+    let csv = 'Parameter ID,Title,Category,Score,Weightage,Numerator,Denominator,Weighted Score,Compliance Status\n';
+    
+    // Group parameters by framework category
+    const paramsByCategory: Record<string, CCIParameter[]> = {};
+    parameters.forEach(param => {
+      const category = param.frameworkCategory || 'Uncategorized';
+      if (!paramsByCategory[category]) {
+        paramsByCategory[category] = [];
+      }
+      paramsByCategory[category].push(param);
+    });
+    
+    // Process each parameter
+    Object.keys(paramsByCategory).forEach(category => {
+      paramsByCategory[category].forEach(param => {
+        const score = calculateParameterScore(param);
+        const weightedScore = calculateWeightedScore(param);
+        const complianceStatus = score >= 60 ? 'Compliant' : 'Non-Compliant';
+        
+        // Escape any commas in text fields
+        const escapedTitle = param.title.replace(/,/g, ' ');
+        const escapedCategory = category.replace(/,/g, ' ');
+        
+        // Add row to CSV
+        csv += `${param.measureId},${escapedTitle},${escapedCategory},${score.toFixed(2)},${param.weightage},${param.numerator},${param.denominator},${weightedScore.toFixed(2)},${complianceStatus}\n`;
+      });
+    });
+    
+    // Add summary rows
+    csv += '\n';
+    csv += 'SUMMARY\n';
+    csv += `Organization,${result.organization}\n`;
+    csv += `Assessment Date,${new Date(result.date).toLocaleDateString('en-GB')}\n`;
+    csv += `Total CCI Score,${result.totalScore.toFixed(2)}\n`;
+    csv += `Maturity Level,${result.maturityLevel}\n`;
+    csv += `Compliance Status,${result.totalScore >= 60 ? 'Compliant' : 'Non-Compliant'}\n`;
+    
+    // Add category scores
+    csv += '\nCATEGORY SCORES\n';
+    csv += 'Category,Score,Maturity Level,Compliance Status\n';
+    
+    // Calculate category scores
+    const mainCategoryOrder = ['Governance', 'Identify', 'Protect', 'Detect', 'Respond', 'Recover'];
+    
+    mainCategoryOrder.forEach(mainCat => {
+      // Find parameters that belong to this main category
+      const relevantParams = parameters.filter(param => {
+        if (!param.frameworkCategory) return false;
+        return param.frameworkCategory.startsWith(mainCat);
+      });
+      
+      if (relevantParams.length > 0) {
+        const totalWeightage = relevantParams.reduce((sum, param) => sum + param.weightage, 0);
+        const weightedSum = relevantParams.reduce((sum, param) => sum + calculateWeightedScore(param), 0);
+        const score = totalWeightage > 0 ? (weightedSum / totalWeightage) * 100 : 0;
+        
+        // Determine maturity level
+        let maturityLevel = "Insufficient";
+        if (score >= 91) maturityLevel = "Exceptional";
+        else if (score >= 81) maturityLevel = "Optimal";
+        else if (score >= 71) maturityLevel = "Manageable";
+        else if (score >= 61) maturityLevel = "Developing";
+        else if (score >= 51) maturityLevel = "Bare Minimum";
+        
+        const complianceStatus = score >= 60 ? 'Compliant' : 'Non-Compliant';
+        
+        csv += `${mainCat},${score.toFixed(2)},${maturityLevel},${complianceStatus}\n`;
+      }
+    });
+    
+    // Create and save the file
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const sanitizedOrgName = sanitizeFilename(result.organization);
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `SEBI_CSCRF_Data_${sanitizedOrgName}_${timestamp}.csv`;
+    
+    saveAs(blob, filename);
+    
+    // Toast notification
+    toast.dismiss('csv-export');
+    toast.success('CSV file exported successfully!');
+    
+    return Promise.resolve();
+  } catch (error) {
+    console.error('Error generating CSV file:', error);
+    toast.dismiss('csv-export');
+    toast.error('Failed to export CSV file');
+    return Promise.reject(error);
+  }
+};
+
+/**
+ * Export a compact SEBI report containing only the comprehensive parameter details
+ * for submission purposes (<10 pages).
+ */
+export const exportCompactSebiReport = async (
+  parameters: CCIParameter[],
+  result: CCIResult,
+  annexureKData?: AnnexureKData
+) => {
+  try {
+    // Display loading indicator
+    toast('Generating compact SEBI parameter report...', { 
+      id: 'compact-pdf-export',
+      duration: 8000
+    });
+
+    // Create new PDF document - A4 format
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
+    
+    // Set properties for official document
+    doc.setProperties({
+      title: `SEBI CSCRF Report - ${result.organization}`,
+      subject: 'Cyber Capability Index Assessment',
+      author: result.organization,
+      keywords: 'SEBI, CSCRF, Cybersecurity, Compliance',
+      creator: 'CCI Calculator'
+    });
+    
+    // Define constants for page layout
+    const pageHeight = doc.internal.pageSize.height;
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = { left: 14, right: 14 };
+    const contentWidth = pageWidth - margin.left - margin.right;
+    
+    // Add header
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SEBI CSCRF Comprehensive Parameter Report', 105, 15, { align: 'center' });
+    
+    // Organization details
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Organization: ${result.organization}`, 14, 25);
+    doc.setFontSize(10);
+    doc.text(`Assessment Date: ${new Date(result.date).toLocaleDateString('en-GB')}`, 14, 32);
+    doc.text(`Report Generated: ${new Date().toLocaleDateString('en-GB')}`, 14, 38);
+    
+    // Display total score information
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Compliance Status:', 14, 46);
+    
+    // Status with color
+    const compliant = result.totalScore >= 60;
+    const statusColor = compliant ? [0, 128, 0] : [180, 0, 0]; // Green or Red
+    doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+    doc.text(`${result.totalScore.toFixed(1)}% - ${result.maturityLevel} (${compliant ? 'Compliant' : 'Non-Compliant'})`, 58, 46);
+    doc.setTextColor(0, 0, 0);
+    
+    // Group parameters by framework category
+    const paramsByCategory: Record<string, CCIParameter[]> = {};
+    parameters.forEach(param => {
+      const category = param.frameworkCategory || 'Uncategorized';
+      if (!paramsByCategory[category]) {
+        paramsByCategory[category] = [];
+      }
+      paramsByCategory[category].push(param);
+    });
+    
+    // Define standard categories
+    const mainCategoryOrder = ['Governance', 'Identify', 'Protect', 'Detect', 'Respond', 'Recover'];
+    
+    // Sort categories by main category order
+    const categories = Object.keys(paramsByCategory).sort((a, b) => {
+      // Sort by main category first (using the mainCategoryOrder)
+      const mainA = a.split(':')[0]?.trim() || a;
+      const mainB = b.split(':')[0]?.trim() || b;
+      
+      const indexA = mainCategoryOrder.indexOf(mainA);
+      const indexB = mainCategoryOrder.indexOf(mainB);
+      
+      if (indexA !== indexB) {
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+      } else {
+        return a.localeCompare(b);
+      }
+    });
+    
+    // Add Comprehensive Parameter Details section title
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Comprehensive Parameter Details', 105, 54, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('As required for SEBI submission with implementation evidence and auditor verification', 105, 60, { align: 'center' });
+    
+    // Initialize starting Y position
+    let currentY = 68;
+    
+    // Prepare parameter tables for each category
+    categories.forEach((category, categoryIndex) => {
+      // Need a new page?
+      if (categoryIndex > 0 && currentY > pageHeight - 40) {
+        doc.addPage();
+        currentY = 15;
+      }
+      
+      // Category header
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(category, 14, currentY);
+      
+      // Parameters in this category
+      const params = paramsByCategory[category];
+      
+      // Table with parameter details
+      autoTable(doc, {
+        startY: currentY + 4,
+        head: [['Parameter ID', 'Title', 'Formula', 'N/D', 'Score', 'ID']],
+        body: params.map(param => {
+          const score = calculateParameterScore(param);
+          return [
+            param.measureId,
+            param.title,
+            param.formula.length > 30 ? param.formula.substring(0, 27) + '...' : param.formula,
+            `${param.numerator}/${param.denominator}`,
+            `${score.toFixed(1)}%`,
+            param.id.toString()
+          ];
+        }),
+        headStyles: { 
+          fillColor: [60, 60, 60],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 8
+        },
+        bodyStyles: {
+          fontSize: 7,
+          cellPadding: { top: 1, right: 2, bottom: 1, left: 2 }
+        },
+        columnStyles: {
+          0: { cellWidth: 20 },
+          1: { cellWidth: 50 },
+          2: { cellWidth: 70 },
+          3: { cellWidth: 15, halign: 'center' },
+          4: { cellWidth: 20, halign: 'center' },
+          5: { cellWidth: 8, halign: 'center' }
+        },
+        margin: margin
+      });
+      
+      currentY = (doc as any).lastAutoTable.finalY + 5;
+      
+      // Process each parameter with detailed information
+      params.forEach((param, index) => {
+        // Calculate parameter score
+        const score = calculateParameterScore(param);
+        const compliant = score >= 60;
+        
+        // Check if we need a new page
+        if (currentY > pageHeight - 60) {
+          doc.addPage();
+          currentY = 15;
+        }
+        
+        // Parameter header with border
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(14, currentY, contentWidth, 8, 1, 1, 'D');
+        
+        // Parameter ID and title
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        
+        // Parameter status indicator with color
+        const statusColor = compliant ? [0, 128, 0] : [180, 0, 0]; // Green or Red
+        doc.text(`${param.measureId}: ${param.title}`, 17, currentY + 5);
+        doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+        doc.setFontSize(8);
+        doc.text(`${score.toFixed(1)}% (${compliant ? 'Compliant' : 'Non-Compliant'})`, pageWidth - 17, currentY + 5, { align: 'right' });
+        doc.setTextColor(0, 0, 0);
+        
+        currentY += 12;
+        
+        // Implementation Evidence and Auditor Comments table
+        autoTable(doc, {
+          startY: currentY,
+          head: [['Implementation Evidence', 'Auditor Comments']],
+          body: [[
+            param.implementationEvidence || 'Not specified',
+            param.auditorComments || 'No comments provided'
+          ]],
+          headStyles: { 
+            fillColor: [80, 80, 80],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            fontSize: 8
+          },
+          bodyStyles: {
+            fontSize: 7,
+            cellPadding: 3,
+            lineColor: [200, 200, 200],
+            lineWidth: 0.1
+          },
+          margin: margin
+        });
+        
+        currentY = (doc as any).lastAutoTable.finalY + 5;
+        
+        // Add Standard Context if available
+        if (param.standardContext) {
+          // Check if we need a new page
+          if (currentY > pageHeight - 40) {
+            doc.addPage();
+            currentY = 15;
+          }
+          
+          autoTable(doc, {
+            startY: currentY,
+            body: [['Standard Context', param.standardContext]],
+            theme: 'plain',
+            styles: {
+              fontSize: 7,
+              cellPadding: 2,
+              overflow: 'linebreak',
+              lineColor: [220, 220, 220],
+              lineWidth: 0.1
+            },
+            columnStyles: {
+              0: { fontStyle: 'bold', cellWidth: 30 }
+            },
+            margin: margin
+          });
+          
+          currentY = (doc as any).lastAutoTable.finalY + 5;
+        }
+        
+        // Add Best Practices if available
+        if (param.bestPractices) {
+          // Check if we need a new page
+          if (currentY > pageHeight - 40) {
+            doc.addPage();
+            currentY = 15;
+          }
+          
+          autoTable(doc, {
+            startY: currentY,
+            body: [['Best Practices', param.bestPractices]],
+            theme: 'plain',
+            styles: {
+              fontSize: 7,
+              cellPadding: 2,
+              overflow: 'linebreak',
+              lineColor: [220, 220, 220],
+              lineWidth: 0.1
+            },
+            columnStyles: {
+              0: { fontStyle: 'bold', cellWidth: 30 }
+            },
+            margin: margin
+          });
+          
+          currentY = (doc as any).lastAutoTable.finalY + 8;
+        }
+      });
+    });
+    
+    // Add verification section
+    if (currentY > pageHeight - 40) {
+      doc.addPage();
+      currentY = 15;
+    }
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Verification and Approval', 105, currentY, { align: 'center' });
+    
+    // Signature table
+    currentY += 10;
+    autoTable(doc, {
+      startY: currentY,
+      body: [['Auditor Signature', 'Compliance Officer', 'CEO/MD']],
+      styles: {
+        fontSize: 8,
+        cellPadding: 2
+      },
+      margin: margin
+    });
+    
+    currentY = (doc as any).lastAutoTable.finalY + 8;
+    autoTable(doc, {
+      startY: currentY,
+      body: [['Date', '', '']],
+      styles: {
+        fontSize: 8,
+        cellPadding: 2
+      },
+      margin: margin
+    });
+    
+    // Page numbers
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.text(`SEBI CSCRF Report - ${result.organization} - Page ${i} of ${totalPages}`, 105, pageHeight - 10, { align: 'center' });
+    }
+    
+    // Save the PDF
+    const fileName = `SEBI_CSCRF_ParameterReport_${sanitizeFilename(result.organization)}_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+    
+    toast.success('Compact SEBI parameter report successfully generated!', { id: 'compact-pdf-export' });
+    
+    return true;
+  } catch (error) {
+    console.error('Error generating Compact SEBI report:', error);
+    toast.error('Failed to generate Compact SEBI report');
+    return false;
   }
 }; 

@@ -69,12 +69,12 @@ The CCI calculator helps entities measure their compliance with these requiremen
 
 ## Maturity Levels
 
-- **Exceptional Cybersecurity Maturity**: 91-100 - Exceeds SEBI requirements with advanced capabilities
-- **Optimal Cybersecurity Maturity**: 81-90 - Fully compliant with robust implementation
-- **Manageable Cybersecurity Maturity**: 71-80 - Generally compliant with some areas for improvement
-- **Developing Cybersecurity Maturity**: 61-70 - Partially compliant with significant gaps
-- **Bare Minimum Cybersecurity Maturity**: 51-60 - Minimal compliance with critical gaps
-- **Fail**: 50 or below - Non-compliant, requires immediate remediation
+- **Exceptional Cybersecurity Maturity**: 91-100.99 - Exceeds SEBI requirements with advanced capabilities
+- **Optimal Cybersecurity Maturity**: 81-90.99 - Fully compliant with robust implementation
+- **Manageable Cybersecurity Maturity**: 71-80.99 - Generally compliant with some areas for improvement
+- **Developing Cybersecurity Maturity**: 61-70.99 - Partially compliant with significant gaps
+- **Bare Minimum Cybersecurity Maturity**: 51-60.99 - Minimal compliance with critical gaps
+- **Fail**: 50.99 or below - Non-compliant, requires immediate remediation
 
 ## Compliance Benefits
 

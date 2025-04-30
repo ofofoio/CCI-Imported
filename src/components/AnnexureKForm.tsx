@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { CCIResult, CCIParameter } from '../app/types';
 import AnnexureKReport from './AnnexureKReport';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, BorderStyle, WidthType, AlignmentType } from 'docx';
 import { saveAs } from 'file-saver';
 import { generateAnnexureKSampleData } from '../app/data/cciParameters';
+import { exportToPdf } from '../app/utils/exportUtils';
 
 interface AnnexureKFormProps {
   result: CCIResult;
@@ -260,189 +260,48 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
     setTouched({});
   };
 
+  // Export as PDF function
+  const handleExportPdf = () => {
+    // Validate form first
+    const formErrors = validateForm();
+    setErrors(formErrors);
+    
+    // Mark all fields as touched
+    const allTouched: Record<string, boolean> = {};
+    Object.keys(formState).forEach(key => {
+      allTouched[key] = true;
+    });
+    setTouched(allTouched);
+    
+    // Only export if no errors
+    if (Object.keys(formErrors).length === 0) {
+      try {
+        exportToPdf(parameters, result, formState)
+          .then(() => {
+            console.log('PDF export of Annexure K completed successfully');
+          })
+          .catch(error => {
+            console.error('Error exporting PDF:', error);
+            alert('Failed to export PDF document. Please try again.');
+          });
+      } catch (error) {
+        console.error('Error starting PDF export:', error);
+        alert('Failed to start PDF export. Please try again.');
+      }
+    } else {
+      // Scroll to first error
+      const firstErrorField = Object.keys(formErrors)[0];
+      const errorElement = document.getElementById(firstErrorField);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        errorElement.focus();
+      }
+    }
+  };
+
   // Helper function to determine if a field has an error
   const hasError = (fieldName: keyof FormState) => {
     return (touched[fieldName] || formSubmitted) && errors[fieldName];
-  };
-
-  // Generate and export form data as Word document
-  const exportToWord = async () => {
-    try {
-      // Create document with a single section
-      const doc = new Document({
-        sections: [{
-          properties: {},
-          children: [
-            new Paragraph({
-              text: "Annexure-K Form",
-              heading: HeadingLevel.HEADING_1,
-              alignment: AlignmentType.CENTER,
-            }),
-            new Paragraph({
-              text: "SEBI Reporting Format for MIIs and Qualified REs to Submit CCI Score",
-              alignment: AlignmentType.CENTER,
-            }),
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({
-              text: "Organization Information",
-              heading: HeadingLevel.HEADING_2,
-            }),
-            
-            // Create organization info table
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: [
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Name of the Organisation")] }),
-                    new TableCell({ children: [new Paragraph(formState.organization)] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Entity Type")] }),
-                    new TableCell({ children: [new Paragraph(formState.entityType)] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Entity Category (as per CSCRF)")] }),
-                    new TableCell({ children: [new Paragraph(formState.entityCategory)] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Period")] }),
-                    new TableCell({ children: [new Paragraph(formState.period)] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Rationale for the Category")] }),
-                    new TableCell({ children: [new Paragraph(formState.rationale)] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Name of the Auditing Organisation")] }),
-                    new TableCell({ children: [new Paragraph(formState.auditingOrganization || "Not Applicable")] }),
-                  ],
-                }),
-              ],
-            }),
-            
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({
-              text: "CCI Score",
-              heading: HeadingLevel.HEADING_2,
-            }),
-            
-            // Create CCI Score table
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: [
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("CCI Score")] }),
-                    new TableCell({ children: [new Paragraph(result.totalScore.toString())] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Maturity Level")] }),
-                    new TableCell({ children: [new Paragraph(result.maturityLevel)] }),
-                  ],
-                }),
-              ],
-            }),
-            
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({
-              text: "Parameters Summary",
-              heading: HeadingLevel.HEADING_2,
-            }),
-            
-            // Create parameters table
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: [
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Parameter")] }),
-                    new TableCell({ children: [new Paragraph("Score")] }),
-                    new TableCell({ children: [new Paragraph("Weightage")] }),
-                  ],
-                }),
-                // Add rows for top 5 parameters by weightage
-                ...parameters
-                  .sort((a, b) => b.weightage - a.weightage)
-                  .slice(0, 5)
-                  .map(param => 
-                    new TableRow({
-                      children: [
-                        new TableCell({ children: [new Paragraph(param.title)] }),
-                        new TableCell({ 
-                          children: [
-                            new Paragraph(
-                              ((param.numerator / param.denominator) * 100).toFixed(1) + "%"
-                            )
-                          ] 
-                        }),
-                        new TableCell({ children: [new Paragraph(param.weightage.toString())] }),
-                      ],
-                    })
-                  ),
-              ],
-            }),
-            
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({
-              text: "Authorised Signatory Declaration",
-              heading: HeadingLevel.HEADING_2,
-            }),
-            new Paragraph({
-              text: "I/ We hereby confirm that Cyber Capability Index (CCI) has been verified by me/ us and I/ We shall take the responsibility and ownership of the CCI report.",
-            }),
-            new Paragraph({ text: " " }), // Empty line
-            
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: [
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Name of the Signatory")] }),
-                    new TableCell({ children: [new Paragraph(formState.signatoryName)] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Designation")] }),
-                    new TableCell({ children: [new Paragraph(formState.designation)] }),
-                  ],
-                }),
-              ],
-            }),
-            
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({
-              text: "Signature: ________________________",
-            }),
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({
-              text: "Date: ________________________",
-            }),
-          ],
-        }],
-      });
-      
-      // Generate and save document
-      const buffer = await Packer.toBlob(doc);
-      saveAs(buffer, `Annexure-K_${formState.organization}_${new Date().toISOString().split('T')[0]}.docx`);
-    } catch (error) {
-      console.error("Error generating Word document:", error);
-      alert("Failed to export document. Please try again.");
-    }
   };
 
   return (
@@ -471,6 +330,16 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
               className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition duration-200"
             >
               Reset Form
+            </button>
+            <button
+              type="button"
+              onClick={handleExportPdf}
+              className="bg-gray-700 hover:bg-gray-800 text-white py-2 px-4 rounded-md transition duration-200 flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
+              </svg>
+              Export as PDF
             </button>
             <button
               type="button"
@@ -504,16 +373,6 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
             designation={formState.designation}
           />
           <div className="mt-8 flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={exportToWord}
-              className="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-md transition duration-200 flex items-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-              Export as Word
-            </button>
             <button
               type="button"
               onClick={togglePreview}

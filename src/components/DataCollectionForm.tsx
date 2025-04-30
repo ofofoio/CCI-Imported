@@ -29,6 +29,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
     denominatorBreakdown: { question: string, value: number }[] 
   }>>({});
   const [isExporting, setIsExporting] = useState(false);
+  const [isLoadingSample, setIsLoadingSample] = useState(false);
   
   // Walkthrough state
   const [showWalkthrough, setShowWalkthrough] = useState(false);
@@ -48,7 +49,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
   const walkthroughSteps: WalkthroughStep[] = [
     {
       target: 'header',
-      title: 'Welcome to the CCI Data Collection Form',
+      title: 'Welcome to the CCI Detailed Calculator',
       content: 'This form allows you to enter detailed data for each parameter of the Cyber Capability Index. Follow this walkthrough to learn how to use it.',
       placement: 'bottom'
     },
@@ -732,7 +733,68 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
 
   const handleExportPDF = () => {
     // Alert the user that PDF export is no longer available
-    alert('PDF export is no longer available. Please use Word export in the detailed report view.');
+    alert('PDF export is no longer available. Please use Markdown export in the detailed report view.');
+  };
+
+  const handleLoadSampleData = () => {
+    setIsLoadingSample(true);
+    
+    // Create sample data for all parameters
+    const updatedDetailedData = { ...detailedData };
+    
+    formData.forEach(param => {
+      // Initialize detailed data if not already done
+      initializeDetailedData(param.id);
+      
+      // Get the current parameter's detailed data
+      const paramData = updatedDetailedData[param.id] || {
+        numeratorBreakdown: [],
+        denominatorBreakdown: []
+      };
+      
+      // Generate random values for each question in numerator and denominator
+      if (paramData.numeratorBreakdown.length > 0) {
+        paramData.numeratorBreakdown = paramData.numeratorBreakdown.map(q => {
+          // Generate random value between 70 and 95 for each question
+          const randomValue = Math.floor(Math.random() * 26) + 70;
+          return { ...q, value: randomValue };
+        });
+        
+        // Calculate and update the total numerator value
+        const numeratorTotal = paramData.numeratorBreakdown.reduce(
+          (sum, item) => sum + (item.value || 0), 0
+        );
+        
+        // Update the parameter's numerator
+        handleChange(param.id, 'numerator', numeratorTotal);
+      }
+      
+      if (paramData.denominatorBreakdown.length > 0) {
+        paramData.denominatorBreakdown = paramData.denominatorBreakdown.map(q => {
+          // Generate random value between 80 and 100 for each question
+          const randomValue = Math.floor(Math.random() * 21) + 80;
+          return { ...q, value: randomValue };
+        });
+        
+        // Calculate and update the total denominator value
+        const denominatorTotal = paramData.denominatorBreakdown.reduce(
+          (sum, item) => sum + (item.value || 0), 0
+        );
+        
+        // Ensure denominator is not zero
+        handleChange(param.id, 'denominator', denominatorTotal || 1);
+      }
+      
+      // Update the detailed data for this parameter
+      updatedDetailedData[param.id] = paramData;
+    });
+    
+    // Update state with the new detailed data
+    setDetailedData(updatedDetailedData);
+    setIsLoadingSample(false);
+    
+    // Show success message
+    alert('Sample data has been loaded successfully!');
   };
 
   // Walkthrough functions
@@ -886,7 +948,7 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
       <div className="p-6 bg-black border-b">
         <div className="flex justify-between items-center" ref={parameterHeaderRef}>
-        <h2 className="text-xl font-semibold text-white">Detailed Data Collection</h2>
+          <h2 className="text-xl font-semibold text-white">CCI Detailed Calculator</h2>
           <div className="flex space-x-3">
             <button
               type="button"
@@ -899,6 +961,25 @@ const DataCollectionForm: React.FC<DataCollectionFormProps> = ({
                 <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
               </svg>
               {isExporting ? 'Generating PDF...' : 'Export as PDF'}
+            </button>
+            <button
+              className="px-3 py-1 bg-black hover:bg-gray-800 text-white rounded-md text-sm flex items-center"
+              onClick={handleLoadSampleData}
+              disabled={isLoadingSample}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
+              {isLoadingSample ? 'Loading...' : 'Load Sample Data'}
+            </button>
+            <button
+              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md text-sm flex items-center"
+              onClick={startWalkthrough}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Help
             </button>
           </div>
         </div>

@@ -20,12 +20,26 @@ export interface CCIParameter {
   denominatorHelp?: string; // Help text for calculating the denominator
 }
 
+export interface CategoryScore {
+  name: string;
+  score: number;
+}
+
+export interface ImprovementArea {
+  measureId: string;
+  title: string;
+  score: number;
+  impact: number;
+}
+
 export interface CCIResult {
   totalScore: number;
   maturityLevel: string;
   maturityDescription: string;
   date: string; // Date of assessment
   organization: string; // Organization name
+  categoryScores?: CategoryScore[]; // Score breakdown by category
+  improvementAreas?: ImprovementArea[]; // Top improvement areas
 }
 
 // Annexure K form data interface
@@ -74,10 +88,10 @@ export interface SBOMRegistry {
 }
 
 export const maturityLevels = [
-  { min: 91, max: 100, level: 'Exceptional Cybersecurity Maturity' },
-  { min: 81, max: 90, level: 'Optimal Cybersecurity Maturity' },
-  { min: 71, max: 80, level: 'Manageable Cybersecurity Maturity' },
-  { min: 61, max: 70, level: 'Developing Cybersecurity Maturity' },
-  { min: 51, max: 60, level: 'Bare Minimum Cybersecurity Maturity' },
-  { min: 0, max: 50, level: 'Fail' },
+  { min: 91, max: 100.99, level: 'Exceptional Cybersecurity Maturity' },
+  { min: 81, max: 90.99, level: 'Optimal Cybersecurity Maturity' },
+  { min: 71, max: 80.99, level: 'Manageable Cybersecurity Maturity' },
+  { min: 61, max: 70.99, level: 'Developing Cybersecurity Maturity' },
+  { min: 51, max: 60.99, level: 'Bare Minimum Cybersecurity Maturity' },
+  { min: 0, max: 50.99, level: 'Fail' },
 ]; 

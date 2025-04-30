@@ -4,6 +4,7 @@ import { CCIResult, maturityLevels } from '../app/types';
 export interface CCIResultsProps {
   result: CCIResult;
   onViewReport: () => void;
+  onViewParameterReport?: () => void;
   onReset: () => void;
   onShowAnnexureK: () => void;
 }
@@ -20,7 +21,13 @@ interface ImprovementArea {
   impact: number;
 }
 
-const CCIResults: React.FC<CCIResultsProps> = ({ result, onViewReport, onReset, onShowAnnexureK }) => {
+const CCIResults: React.FC<CCIResultsProps> = ({ 
+  result, 
+  onViewReport, 
+  onViewParameterReport, 
+  onReset, 
+  onShowAnnexureK 
+}) => {
   // Helper functions for score categories and color
   const getScoreCategory = (score: number): string => {
     const level = maturityLevels.find(level => score >= level.min && score <= level.max);
@@ -39,24 +46,6 @@ const CCIResults: React.FC<CCIResultsProps> = ({ result, onViewReport, onReset, 
     const date = new Date(dateString);
     return date.toLocaleDateString('en-GB');
   };
-
-  // Sample category scores for the black and white theme
-  const sampleCategoryScores: CategoryScore[] = [
-    { name: 'Governance', score: 75.5 },
-    { name: 'Identify', score: 82.3 },
-    { name: 'Protect', score: 68.9 },
-    { name: 'Detect', score: 71.2 },
-    { name: 'Respond', score: 65.8 },
-    { name: 'Recover', score: 60.1 }
-  ];
-
-  // Sample improvement areas
-  const sampleImprovementAreas: ImprovementArea[] = [
-    { measureId: 'PR.5.2', title: 'Multi-factor Authentication', score: 50, impact: 5.2 },
-    { measureId: 'DE.2.1', title: 'Security Monitoring', score: 60, impact: 4.8 },
-    { measureId: 'GV.1.3', title: 'Security Policies', score: 65, impact: 4.3 },
-    { measureId: 'RS.3.1', title: 'Incident Response', score: 55, impact: 3.9 }
-  ];
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden animate-scaleIn">
@@ -102,7 +91,7 @@ const CCIResults: React.FC<CCIResultsProps> = ({ result, onViewReport, onReset, 
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {sampleCategoryScores.map((category, index) => (
+                {result.categoryScores && result.categoryScores.map((category, index) => (
                   <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
                       {category.name}
@@ -143,7 +132,7 @@ const CCIResults: React.FC<CCIResultsProps> = ({ result, onViewReport, onReset, 
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {sampleImprovementAreas.map((area, index) => (
+                {result.improvementAreas && result.improvementAreas.map((area, index) => (
                   <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
                       {area.measureId}
@@ -164,34 +153,49 @@ const CCIResults: React.FC<CCIResultsProps> = ({ result, onViewReport, onReset, 
           </div>
         </div>
 
-        <div className="flex justify-center space-x-4">
-          <button
-            onClick={onReset}
-            className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-6 rounded-md transition duration-200 flex items-center"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-            </svg>
-            Reset
-          </button>
-          <button
-            onClick={onShowAnnexureK}
-            className="bg-gray-800 hover:bg-black text-white py-2 px-6 rounded-md transition duration-200 flex items-center"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-            </svg>
-            Annexure-K Form
-          </button>
-          <button
-            onClick={onViewReport}
-            className="bg-black hover:bg-gray-800 text-white py-2 px-6 rounded-md transition duration-200 flex items-center"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-            </svg>
-            View Detailed Report
-          </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex justify-center space-x-4">
+            <button
+              onClick={onReset}
+              className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-6 rounded-md transition duration-200 flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+              </svg>
+              Reset
+            </button>
+            <button
+              onClick={onShowAnnexureK}
+              className="bg-gray-800 hover:bg-black text-white py-2 px-6 rounded-md transition duration-200 flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+              </svg>
+              Annexure-K Form
+            </button>
+          </div>
+          <div className="flex justify-center space-x-4">
+            <button
+              onClick={onViewReport}
+              className="bg-black hover:bg-gray-800 text-white py-2 px-6 rounded-md transition duration-200 flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+              </svg>
+              View Detailed Report
+            </button>
+            {onViewParameterReport && (
+              <button
+                onClick={onViewParameterReport}
+                className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-6 rounded-md transition duration-200 flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                </svg>
+                Parameters Only
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

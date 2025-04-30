@@ -1,17 +1,36 @@
 import React, { useState } from 'react';
-import { CCIResult, CCIParameter } from '../app/types';
+import { CCIResult, CCIParameter, AnnexureKData } from '../app/types';
 import { calculateParameterScore, calculateWeightedScore } from '../app/utils/cciCalculator';
 import { exportToMarkdown } from '../app/utils/exportUtils';
 
 interface CCIReportProps {
   result: CCIResult;
   parameters: CCIParameter[];
+  annexureKData?: AnnexureKData;
   onExportMarkdown?: () => void;
+  onExportPdf?: () => void;
+  onExportCsv?: () => void;
+  onExportCompactSebiReport?: () => void;
+  onReset?: () => void;
+  isExporting?: boolean;
 }
 
-const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportMarkdown }) => {
+const CCIReport: React.FC<CCIReportProps> = ({ 
+  result, 
+  parameters, 
+  annexureKData, 
+  onExportMarkdown, 
+  onExportPdf,
+  onExportCsv,
+  onExportCompactSebiReport,
+  onReset, 
+  isExporting = false 
+}) => {
   // Add state for tracking export status
-  const [isExportingMD, setIsExportingMD] = useState<boolean>(false);
+  const [isExportingMD, setIsExportingMD] = useState<boolean>(isExporting);
+  const [isExportingPDF, setIsExportingPDF] = useState<boolean>(false);
+  const [isExportingCSV, setIsExportingCSV] = useState<boolean>(false);
+  const [isExportingCompactSebi, setIsExportingCompactSebi] = useState<boolean>(false);
   
   // Helper function to get the color for a score
   const getScoreColor = (score: number) => {
@@ -189,15 +208,139 @@ const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportMarkd
       // Execute the export function
       onExportMarkdown();
       
-      // Schedule state reset after a short delay
+      // Clear the timeout since we handled it
+      clearTimeout(timeout);
+      
+      // Reset state after a short delay to show success
       setTimeout(() => {
         setIsExportingMD(false);
-        clearTimeout(timeout);
-        console.log('Markdown export process completed');
       }, 2000);
-    } catch (error) {
-      console.error('Error during Markdown export:', error);
+    } catch (e) {
+      console.error('Error executing export function:', e);
       setIsExportingMD(false);
+      clearTimeout(timeout);
+    }
+  };
+
+  // Add handleExportPdf function
+  const handleExportPdf = () => {
+    if (!onExportPdf) {
+      console.log('Export PDF function not provided');
+      alert('PDF export function not available');
+      return;
+    }
+    
+    // Log export attempt with details
+    console.log('Export as PDF button clicked');
+    console.log(`Exporting PDF report for: ${result.organization}`);
+    
+    // Set loading state
+    setIsExportingPDF(true);
+    
+    // Add a timeout to reset if export doesn't complete
+    const timeout = setTimeout(() => {
+      if (isExportingPDF) {
+        setIsExportingPDF(false);
+        console.error('PDF export timeout - reset UI state');
+      }
+    }, 30000); // 30 second timeout
+    
+    try {
+      // Execute the export function
+      onExportPdf();
+      
+      // Clear the timeout since we handled it
+      clearTimeout(timeout);
+      
+      // Reset state after a short delay to show success
+      setTimeout(() => {
+        setIsExportingPDF(false);
+      }, 2000);
+    } catch (e) {
+      console.error('Error executing PDF export function:', e);
+      setIsExportingPDF(false);
+      clearTimeout(timeout);
+    }
+  };
+
+  // Add handleExportCsv function
+  const handleExportCsv = () => {
+    if (!onExportCsv) {
+      console.log('Export CSV function not provided');
+      alert('CSV export function not available');
+      return;
+    }
+    
+    // Log export attempt with details
+    console.log('Export as CSV button clicked');
+    console.log(`Exporting CSV data for: ${result.organization}`);
+    
+    // Set loading state
+    setIsExportingCSV(true);
+    
+    // Add a timeout to reset if export doesn't complete
+    const timeout = setTimeout(() => {
+      if (isExportingCSV) {
+        setIsExportingCSV(false);
+        console.error('CSV export timeout - reset UI state');
+      }
+    }, 30000); // 30 second timeout
+    
+    try {
+      // Execute the export function
+      onExportCsv();
+      
+      // Clear the timeout since we handled it
+      clearTimeout(timeout);
+      
+      // Reset state after a short delay to show success
+      setTimeout(() => {
+        setIsExportingCSV(false);
+      }, 2000);
+    } catch (e) {
+      console.error('Error executing CSV export function:', e);
+      setIsExportingCSV(false);
+      clearTimeout(timeout);
+    }
+  };
+
+  // Add handleExportCompactSebiReport function
+  const handleExportCompactSebiReport = () => {
+    if (!onExportCompactSebiReport) {
+      console.log('Export Compact SEBI Report function not provided');
+      alert('Compact SEBI Report export function not available');
+      return;
+    }
+    
+    // Log export attempt with details
+    console.log('Export Compact SEBI Report button clicked');
+    console.log(`Exporting Compact SEBI Report for: ${result.organization}`);
+    
+    // Set loading state
+    setIsExportingCompactSebi(true);
+    
+    // Add a timeout to reset if export doesn't complete
+    const timeout = setTimeout(() => {
+      if (isExportingCompactSebi) {
+        setIsExportingCompactSebi(false);
+        console.error('Compact SEBI Report export timeout - reset UI state');
+      }
+    }, 30000); // 30 second timeout
+    
+    try {
+      // Execute the export function
+      onExportCompactSebiReport();
+      
+      // Clear the timeout since we handled it
+      clearTimeout(timeout);
+      
+      // Reset state after a short delay to show success
+      setTimeout(() => {
+        setIsExportingCompactSebi(false);
+      }, 2000);
+    } catch (e) {
+      console.error('Error executing Compact SEBI Report export function:', e);
+      setIsExportingCompactSebi(false);
       clearTimeout(timeout);
     }
   };
@@ -212,7 +355,8 @@ const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportMarkd
               id="export-markdown-btn"
               onClick={handleExportMarkdown}
               disabled={isExportingMD}
-              className={`${isExportingMD ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-100 hover:bg-gray-200'} text-black py-2 px-4 rounded-md transition duration-200 flex items-center`}
+              title="Export this report as Markdown format for easy sharing and version control"
+              className={`${isExportingMD ? 'bg-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-200'} text-black py-2 px-4 rounded-md transition duration-200 flex items-center shadow-sm border border-gray-300`}
             >
               {isExportingMD ? (
                 <>
@@ -224,10 +368,35 @@ const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportMarkd
                 </>
               ) : (
                 <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm11 1H6v8l4-2 4 2V6z" clipRule="evenodd" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-black" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
-                  Export as Markdown
+                  <span className="font-medium">Export as Markdown</span>
+                </>
+              )}
+            </button>
+            
+            <button 
+              id="export-compact-sebi-btn"
+              onClick={handleExportCompactSebiReport}
+              disabled={isExportingCompactSebi}
+              title="Export a compact SEBI report with only parameter details (<10 pages)"
+              className={`${isExportingCompactSebi ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} text-white py-2 px-4 rounded-md transition duration-200 flex items-center shadow-sm`}
+            >
+              {isExportingCompactSebi ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                  </svg>
+                  <span className="font-medium">Compact SEBI Report</span>
                 </>
               )}
             </button>
@@ -237,11 +406,13 @@ const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportMarkd
 
       <div className="p-6">
         {/* Report Header */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-black">SEBI Cyber Security and Cyber Resilience Framework</h1>
           <h2 className="text-xl mt-1 text-gray-800">Compliance Assessment Report</h2>
-          <p className="mt-2 text-gray-600">Prepared for: {result.organization}</p>
-          <p className="text-gray-600">Assessment Date: {formatDate(result.date)}</p>
+          <div className="mt-6 mb-2 py-3 px-4 bg-gray-50 border border-gray-200 rounded-lg inline-block mx-auto">
+            <p className="text-gray-800 text-xl font-semibold">Organization: {result.organization}</p>
+            <p className="mt-2 text-gray-700 text-lg">Assessment Date: {formatDate(result.date)}</p>
+          </div>
         </div>
 
         {/* Executive Summary Section */}
@@ -291,6 +462,24 @@ const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportMarkd
             </p>
             <div className="flex items-center justify-center py-2 bg-black text-white text-sm font-medium px-4 mt-4 rounded">
               <span>Compliance Deadline: June 30, 2025</span>
+            </div>
+          </div>
+          
+          {/* Markdown Export Info */}
+          <div className="mt-4 bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r text-sm text-blue-700">
+            <div className="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <h4 className="font-semibold mb-1">Export as Markdown</h4>
+                <p className="text-blue-600 mb-1">
+                  This report can be exported as a Markdown (.md) file using the "Export as Markdown" button at the top of the page.
+                </p>
+                <p className="text-blue-600">
+                  Markdown is a lightweight markup format that's easily readable and can be converted to other formats like PDF or HTML. It's perfect for documentation, GitHub repositories, and sharing with technical teams.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -465,15 +654,62 @@ const CCIReport: React.FC<CCIReportProps> = ({ result, parameters, onExportMarkd
             <div className="mt-4 p-3 bg-gray-100 rounded-lg text-gray-800 text-sm">
               <p className="font-medium mb-1">Maturity Level Classification:</p>
               <ul className="list-disc pl-5 space-y-1">
-                <li><span className="font-medium">Exceptional (91-100):</span> Leading-edge security posture with advanced capabilities</li>
-                <li><span className="font-medium">Optimal (81-90):</span> Robust security program with well-integrated controls</li>
-                <li><span className="font-medium">Manageable (71-80):</span> Established security program with consistent implementation</li>
-                <li><span className="font-medium">Developing (61-70):</span> Basic security controls with some gaps in implementation</li>
-                <li><span className="font-medium">Bare Minimum (51-60):</span> Minimal security controls meeting basic requirements</li>
-                <li><span className="font-medium">Insufficient (0-50):</span> Inadequate security controls requiring significant improvements</li>
+                <li><span className="font-medium">Exceptional (91-100.99):</span> Leading-edge security posture with advanced capabilities</li>
+                <li><span className="font-medium">Optimal (81-90.99):</span> Robust security program with well-integrated controls</li>
+                <li><span className="font-medium">Manageable (71-80.99):</span> Established security program with consistent implementation</li>
+                <li><span className="font-medium">Developing (61-70.99):</span> Basic security controls with some gaps in implementation</li>
+                <li><span className="font-medium">Bare Minimum (51-60.99):</span> Minimal security controls meeting basic requirements</li>
+                <li><span className="font-medium">Insufficient (0-50.99):</span> Inadequate security controls requiring significant improvements</li>
               </ul>
             </div>
           </div>
+        </div>
+        
+        <div className="mt-8 flex justify-center space-x-4">
+          {onReset && (
+            <button
+              onClick={onReset}
+              className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-6 rounded-md transition duration-200 flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+              </svg>
+              Back to Calculator
+            </button>
+          )}
+          
+          <button
+            onClick={handleExportMarkdown}
+            disabled={isExportingMD}
+            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md transition duration-200 flex items-center disabled:opacity-70"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+            {isExportingMD ? 'Generating Markdown...' : 'Export as Markdown'}
+          </button>
+          
+          <button
+            onClick={handleExportPdf}
+            disabled={isExportingPDF}
+            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition duration-200 flex items-center disabled:opacity-70"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
+            </svg>
+            {isExportingPDF ? 'Generating PDF...' : 'Compact SEBI Report (<10 pages)'}
+          </button>
+          
+          <button
+            onClick={handleExportCsv}
+            disabled={isExportingCSV}
+            className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-200 flex items-center disabled:opacity-70"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+            </svg>
+            {isExportingCSV ? 'Generating CSV...' : 'Export Data (CSV)'}
+          </button>
         </div>
       </div>
     </div>
