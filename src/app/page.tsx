@@ -19,6 +19,34 @@ import { toast } from 'react-hot-toast';
 // @ts-ignore - This component exists but TypeScript is having trouble finding it
 import CCIParameterReport from '../components/CCIParameterReport';
 
+// Add this function at the top level before your component
+function CalculatorJsonLd() {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "SEBI CSCRF CCI Calculator",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "All",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR"
+          },
+          "description": "Official SEBI CSCRF Compliance Assessment Tool for calculating Cyber Capability Index (CCI) scores for Qualified REs and MIIs.",
+          "audience": {
+            "@type": "Audience",
+            "audienceType": "Qualified Registered Entities and Market Infrastructure Institutions"
+          }
+        })
+      }}
+    />
+  );
+}
+
 export default function Home() {
   const [parameters, setParameters] = useState<CCIParameter[]>(initialCCIParameters);
   const [showResults, setShowResults] = useState(false);
@@ -352,438 +380,433 @@ export default function Home() {
   };
 
   return (
-    <div className="flex">
-      <Sidebar 
-        showResults={showResults}
-        showReport={showReport}
-        showDataCollection={showDataCollection}
-        showAnnexureK={showAnnexureK}
-        showSBOM={showSBOM}
-        showOnlyParameterReport={showOnlyParameterReport}
-        onCalculate={handleCalculate}
-        onReset={handleReset}
-        onViewReport={handleViewReport}
-        onViewParameterReport={handleViewParameterReport}
-        onShowDataCollection={handleShowDataCollection}
-        onShowAnnexureK={handleShowAnnexureK}
-        onShowSBOM={handleShowSBOM}
-        onExportMarkdown={handleExportMarkdown}
-        onExportPdf={handleExportPdf}
-        onExportCsv={handleExportCsv}
-        onExportCompactSebiReport={handleExportCompactSebiReport}
-      />
-      
-      <div className="md:ml-64 w-full max-w-6xl mx-auto px-4 pb-20">
-        <div className="p-8 mt-4 bg-black text-white rounded-xl shadow-lg mb-8">
-          <h1 className="text-3xl font-bold text-center">
-            Cyber Capability Index Calculator
-          </h1>
-          <p className="mt-4 text-center text-gray-300">
-            SEBI CSCRF Compliance Assessment Tool<br />
-            <span className="bg-white text-black px-2 py-1 mt-2 inline-block rounded-md font-medium">
-              Deadline: June 30, 2025
-            </span>
-          </p>
+    <>
+      <CalculatorJsonLd />
+      <div className="flex">
+        <Sidebar 
+          showResults={showResults}
+          showReport={showReport}
+          showDataCollection={showDataCollection}
+          showAnnexureK={showAnnexureK}
+          showSBOM={showSBOM}
+          showOnlyParameterReport={showOnlyParameterReport}
+          onCalculate={handleCalculate}
+          onReset={handleReset}
+          onViewReport={handleViewReport}
+          onViewParameterReport={handleViewParameterReport}
+          onShowDataCollection={handleShowDataCollection}
+          onShowAnnexureK={handleShowAnnexureK}
+          onShowSBOM={handleShowSBOM}
+          onExportMarkdown={handleExportMarkdown}
+          onExportPdf={handleExportPdf}
+          onExportCsv={handleExportCsv}
+          onExportCompactSebiReport={handleExportCompactSebiReport}
+        />
+        
+        <main className="md:ml-64 w-full max-w-6xl mx-auto px-4 pb-20">
+          <section aria-labelledby="cci-calculator-heading" className="p-8 mt-4 bg-black text-white rounded-xl shadow-lg mb-8">
+            <h1 id="cci-calculator-heading" className="text-3xl font-bold text-center">
+              Cyber Capability Index Calculator
+            </h1>
+            <p className="mt-2 text-center text-gray-300">
+              SEBI CSCRF Compliance Assessment Tool<br />
+              <span className="bg-white text-black px-2 py-1 mt-1 inline-block rounded-md font-medium text-sm">
+                For Qualified REs & MIIs only | Deadline: June 30, 2025
+              </span>
+            </p>
 
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="organizationName" className="block text-sm font-medium text-gray-300">Organization Name <span className="text-red-500">*</span></label>
-              <input 
-                type="text" 
-                id="organizationName" 
-                value={organizationName} 
-                onChange={(e) => {
-                  setOrganizationName(e.target.value);
-                  if (e.target.value.trim() !== '') {
-                    setOrganizationNameError('');
-                  }
-                }}
-                onClick={() => {
-                  if (organizationName === 'Enter Organization Name') {
-                    setOrganizationName('');
-                  }
-                }}
-                className={`mt-1 block w-full rounded-md border ${organizationNameError ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm text-gray-900 ${organizationName === 'Enter Organization Name' ? 'text-gray-500 italic' : ''}`}
-                placeholder="e.g., ABC Securities Ltd."
-                required
-              />
-              {organizationNameError && (
-                <p className="mt-1 text-sm text-red-500">{organizationNameError}</p>
-              )}
-            </div>
-            <div>
-              <label htmlFor="assessmentDate" className="block text-sm font-medium text-gray-300">Assessment Date</label>
-              <input 
-                type="date" 
-                id="assessmentDate" 
-                value={assessmentDate} 
-                onChange={(e) => setAssessmentDate(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-gray-900 sm:text-sm"
-              />
-            </div>
-          </div>
-          
-          {/* Calculate CCI Button */}
-          <div className="mt-6 flex justify-center space-x-4">
-            <button
-              onClick={handleCalculate}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg font-medium rounded-md shadow-md transform transition hover:scale-105 flex items-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              Calculate CCI
-            </button>
-            <button
-              onClick={toggleGuide}
-              className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white text-lg font-medium rounded-md shadow-md transform transition hover:scale-105 flex items-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {showGuide ? 'Hide Guide' : 'Show Guide'}
-            </button>
-          </div>
-        </div>
-
-        {/* Process Guide Section */}
-        {showGuide && (
-          <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8 animate-fadeIn">
-            <div className="p-6 bg-green-600 border-b">
-              <h2 className="text-xl font-semibold text-white">Complete SEBI CSCRF Compliance Process</h2>
-            </div>
-            <div className="p-6">
-              <div className="space-y-6">
-                <div className="flex items-start space-x-4">
-                  <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
-                    <span className="text-green-800 font-bold text-xl">1</span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">Fill Basic Information</h3>
-                    <p className="mt-1 text-gray-600">
-                      Start by entering your organization name and assessment date at the top of this page.
-                      Then go through each parameter section to enter values for your assessment.
-                    </p>
-                    <button 
-                      onClick={handleReset} 
-                      className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none"
-                    >
-                      Go to Basic Calculator
-                    </button>
-                  </div>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+              <div className="md:col-span-2">
+                <label htmlFor="organizationName" className="block text-xs font-medium text-gray-300">Organization Name <span className="text-red-500">*</span></label>
+                <div className="relative">
+                  <input 
+                    type="text" 
+                    id="organizationName" 
+                    value={organizationName} 
+                    onChange={(e) => {
+                      setOrganizationName(e.target.value);
+                      if (e.target.value.trim() !== '') {
+                        setOrganizationNameError('');
+                      }
+                    }}
+                    onClick={() => {
+                      if (organizationName === 'Enter Organization Name') {
+                        setOrganizationName('');
+                      }
+                    }}
+                    className={`mt-1 block w-full rounded-md border ${organizationNameError ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-gray-500 focus:ring-gray-500 text-sm h-9 text-gray-900 ${organizationName === 'Enter Organization Name' ? 'text-gray-500 italic' : ''}`}
+                    placeholder="e.g., ABC Securities Ltd."
+                    required
+                  />
+                  {organizationNameError && (
+                    <p className="absolute text-xs text-red-500 -bottom-4">{organizationNameError}</p>
+                  )}
                 </div>
-                
-                <div className="border-t border-gray-200 pt-6 flex items-start space-x-4">
-                  <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
-                    <span className="text-green-800 font-bold text-xl">2</span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">Complete Detailed Assessment</h3>
-                    <p className="mt-1 text-gray-600">
-                      For a comprehensive assessment, use the detailed calculator to break down each parameter
-                      into specific questions and provide structured evidence for your implementation.
-                    </p>
-                    <button 
-                      onClick={handleShowDataCollection} 
-                      className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none"
-                    >
-                      Go to Detailed Calculator
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="border-t border-gray-200 pt-6 flex items-start space-x-4">
-                  <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
-                    <span className="text-green-800 font-bold text-xl">3</span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">Fill Annexure K Form</h3>
-                    <p className="mt-1 text-gray-600">
-                      Complete the Annexure K form as required by SEBI for formal submission. Include all necessary
-                      organizational details and compliance information.
-                    </p>
-                    <button 
-                      onClick={handleShowAnnexureK} 
-                      className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none"
-                    >
-                      Go to Annexure K Form
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="border-t border-gray-200 pt-6 flex items-start space-x-4">
-                  <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
-                    <span className="text-green-800 font-bold text-xl">4</span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">Generate and Export Report</h3>
-                    <p className="mt-1 text-gray-600">
-                      View your final assessment report and export it in your preferred format (PDF, Markdown, or CSV)
-                      for submission to SEBI.
-                    </p>
-                    <button 
-                      onClick={handleViewReport}
-                      className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none"
-                      disabled={!showResults && !showReport}
-                    >
-                      View Detailed Report
-                    </button>
-                  </div>
+              </div>
+              <div className="md:col-span-1">
+                <label htmlFor="assessmentDate" className="block text-xs font-medium text-gray-300">Assessment Date</label>
+                <input 
+                  type="date" 
+                  id="assessmentDate" 
+                  value={assessmentDate} 
+                  onChange={(e) => setAssessmentDate(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-gray-900 text-sm h-9"
+                />
+              </div>
+              <div className="md:col-span-2">
+                {/* Calculate CCI Button */}
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleCalculate}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md shadow-md transform transition hover:scale-105 flex items-center justify-center h-9"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Calculate CCI
+                  </button>
+                  <button
+                    onClick={toggleGuide}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md shadow-md transform transition hover:scale-105 flex items-center justify-center h-9"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {showGuide ? 'Hide Guide' : 'Show Guide'}
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          </section>
 
-        {/* CCI Calculation Explanation Blurb */}
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-r-md shadow-sm">
-          <h3 className="text-lg font-semibold text-blue-800 mb-2">How to Calculate Your CCI Score</h3>
-          <p className="text-sm text-blue-900">
-            The Cyber Capability Index (CCI) is calculated based on 23 critical parameters across 6 NIST-aligned domains 
-            (Governance, Identify, Protect, Detect, Respond, and Recover). Each parameter has a specific weightage and target value,
-            with scores determined by the ratio of numerator to denominator values. A score of 61+ ("Developing") meets SEBI CSCRF
-            requirements for Qualified REs, while MIIs need 71+ ("Manageable") for compliance.
-          </p>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="my-6 bg-white rounded-xl shadow-md p-6">
-          <div className="mb-2">
-            <h2 className="text-lg font-semibold text-gray-700">Progress Tracker</h2>
-            <p className="text-sm text-gray-500">Complete these steps to generate your SEBI CSCRF report</p>
-          </div>
-          <div className="relative mb-2">
-            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
-              <div style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }} 
-                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-black transition-all duration-500"></div>
-            </div>
-            <div className="flex justify-between">
-              {steps.map((step, index) => (
-                <div key={index} className={`flex flex-col items-center ${index <= currentStep ? 'text-black' : 'text-gray-400'}`}>
-                  <div className={`flex items-center justify-center h-10 w-10 rounded-full ${index <= currentStep ? 'bg-black text-white' : 'bg-gray-200'} mb-1`}>
-                    {index + 1}
+          {/* Process Guide Section */}
+          {showGuide && (
+            <section aria-label="Compliance Process Guide" className="bg-white rounded-xl shadow-md overflow-hidden mb-8 animate-fadeIn">
+              <div className="p-6 bg-green-600 border-b">
+                <h2 className="text-xl font-semibold text-white">Complete SEBI CSCRF Compliance Process</h2>
+              </div>
+              <div className="p-6">
+                <div className="space-y-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
+                      <span className="text-green-800 font-bold text-xl">1</span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900">Fill Basic Information</h3>
+                      <p className="mt-1 text-gray-600">
+                        Start by entering your organization name and assessment date at the top of this page.
+                        Then go through each parameter section to enter values for your assessment.
+                      </p>
+                      <button 
+                        onClick={handleReset} 
+                        className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none"
+                      >
+                        Go to Basic Calculator
+                      </button>
+                    </div>
                   </div>
-                  <div className="text-sm font-medium">{step.name}</div>
-                  <div className="text-xs text-gray-500 text-center">{step.description}</div>
+                  
+                  <div className="border-t border-gray-200 pt-6 flex items-start space-x-4">
+                    <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
+                      <span className="text-green-800 font-bold text-xl">2</span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900">Complete Detailed Assessment</h3>
+                      <p className="mt-1 text-gray-600">
+                        For a comprehensive assessment, use the detailed calculator to break down each parameter
+                        into specific questions and provide structured evidence for your implementation.
+                      </p>
+                      <button 
+                        onClick={handleShowDataCollection} 
+                        className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none"
+                      >
+                        Go to Detailed Calculator
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-gray-200 pt-6 flex items-start space-x-4">
+                    <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
+                      <span className="text-green-800 font-bold text-xl">3</span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900">Fill Annexure K Form</h3>
+                      <p className="mt-1 text-gray-600">
+                        Complete the Annexure K form as required by SEBI for formal submission. Include all necessary
+                        organizational details and compliance information.
+                      </p>
+                      <button 
+                        onClick={handleShowAnnexureK} 
+                        className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none"
+                      >
+                        Go to Annexure K Form
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-gray-200 pt-6 flex items-start space-x-4">
+                    <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
+                      <span className="text-green-800 font-bold text-xl">4</span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900">Generate and Export Report</h3>
+                      <p className="mt-1 text-gray-600">
+                        View your final assessment report and export it in your preferred format (PDF, Markdown, or CSV)
+                        for submission to SEBI.
+                      </p>
+                      <button 
+                        onClick={handleViewReport}
+                        className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none"
+                        disabled={!showResults && !showReport}
+                      >
+                        View Detailed Report
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-          <div className="text-sm text-center mt-4 text-gray-600 bg-gray-100 py-2 rounded">
-            {currentStep === 0 && "Step 1: Fill in your parameters through basic or detailed calculator"}
-            {currentStep === 1 && "Step 2: Review your results and CCI score with detailed analysis"}
-            {currentStep === 2 && "Step 3: Export your completed report in your preferred format"}
-          </div>
-        </div>
+              </div>
+            </section>
+          )}
 
-        {!showDataCollection && !showResults && !showReport && !showSBOM && !showAnnexureK && !showOnlyParameterReport && (
-          <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-            <div className="p-6 bg-black border-b flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-white">CCI Parameters</h2>
-              <div className="flex space-x-4">
+          {/* CCI Calculation Explanation Blurb */}
+          <section aria-label="CCI Calculation Explanation" className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-r-md shadow-sm">
+            <h3 className="text-lg font-semibold text-blue-800 mb-2">How to Calculate Your CCI Score</h3>
+            <p className="text-sm text-blue-900">
+              The Cyber Capability Index (CCI) is calculated based on 23 critical parameters across 6 NIST-aligned domains 
+              (Governance, Identify, Protect, Detect, Respond, and Recover). Each parameter has a specific weightage and target value,
+              with scores determined by the ratio of numerator to denominator values. A score of 61+ ("Developing") meets SEBI CSCRF
+              requirements for Qualified REs, while MIIs need 71+ ("Manageable") for compliance.
+            </p>
+          </section>
+
+          {/* Progress Bar */}
+          <section aria-label="Progress Tracker" className="my-6 bg-white rounded-xl shadow-md p-6">
+            <div className="mb-3">
+              <h2 className="text-lg font-semibold text-gray-700">Progress Tracker</h2>
+              <p className="text-sm text-gray-500">
+                Complete these steps to generate your SEBI CSCRF report
+                <span className="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                  For Qualified REs & MIIs only
+                </span>
+              </p>
+            </div>
+            <div className="relative mb-2">
+              <div className="overflow-hidden h-3 mb-6 text-xs flex rounded bg-gray-200">
+                <div style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }} 
+                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-black transition-all duration-500"></div>
+              </div>
+              <div className="flex justify-between">
+                {steps.map((step, index) => (
+                  <div key={index} className={`flex flex-col items-center ${index <= currentStep ? 'text-black' : 'text-gray-400'}`}>
+                    <div className={`flex items-center justify-center h-12 w-12 rounded-full ${index <= currentStep ? 'bg-black text-white' : 'bg-gray-200'} mb-1`}>
+                      {index + 1}
+                    </div>
+                    <div className="text-sm font-medium">{step.name}</div>
+                    <div className="text-xs text-gray-500 text-center">{step.description}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="text-sm text-center mt-4 text-gray-600 bg-gray-100 py-3 rounded font-medium">
+              {currentStep === 0 && "Step 1: Fill in your parameters through basic or detailed calculator"}
+              {currentStep === 1 && "Step 2: Review your results and CCI score with detailed analysis"}
+              {currentStep === 2 && "Step 3: Export your completed report in your preferred format"}
+            </div>
+          </section>
+
+          {/* Parameters Section */}
+          {!showDataCollection && !showResults && !showReport && !showSBOM && !showAnnexureK && !showOnlyParameterReport && (
+            <section aria-label="CCI Parameters" className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+              <div className="p-6 bg-black border-b flex justify-between items-center">
+                <h2 className="text-xl font-semibold text-white">CCI Parameters</h2>
+                <div className="flex space-x-4">
+                  <button
+                    onClick={handleLoadSample}
+                    className="text-white hover:text-gray-300 font-medium flex items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                    Load Sample Data
+                  </button>
+                  <button 
+                    onClick={expandAll}
+                    className="text-white hover:text-gray-300 font-medium flex items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                    Toggle All
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-6">
+                {Object.keys(groupedParameters).map((category, categoryIndex) => (
+                  <div key={categoryIndex} className="mb-8">
+                    <h3 className="text-lg font-medium text-black mb-4 pb-2 border-b">
+                      {getCategoryName(category)} Parameters
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      {groupedParameters[category].map((param) => (
+                        <div key={param.id} className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow duration-200">
+                          <ParameterInput 
+                            parameter={param} 
+                            onChange={handleParameterChange}
+                            expanded={expandedParameter === param.id}
+                            onToggleExpand={() => toggleExpanded(param.id)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Calculate CCI Button at the bottom of parameters */}
+                <div className="mt-8 flex justify-center">
+                  <button
+                    onClick={handleCalculate}
+                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg font-medium rounded-md shadow-md transform transition hover:scale-105 flex items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Calculate CCI
+                  </button>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Data Collection Form */}
+          {showDataCollection && (
+            <section id="data-collection" aria-label="Detailed Data Collection" className="mb-8 animate-fadeIn">
+              <div className="flex justify-end mb-4">
                 <button
                   onClick={handleLoadSample}
-                  className="text-white hover:text-gray-300 font-medium flex items-center"
+                  className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                   Load Sample Data
                 </button>
-                <button 
-                  onClick={expandAll}
-                  className="text-white hover:text-gray-300 font-medium flex items-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                  Toggle All
-                </button>
               </div>
-            </div>
-            
-            <div className="p-6">
-              {Object.keys(groupedParameters).map((category, categoryIndex) => (
-                <div key={categoryIndex} className="mb-8">
-                  <h3 className="text-lg font-medium text-black mb-4 pb-2 border-b">
-                    {getCategoryName(category)} Parameters
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    {groupedParameters[category].map((param) => (
-                      <div key={param.id} className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow duration-200">
-                        <ParameterInput 
-                          parameter={param} 
-                          onChange={handleParameterChange}
-                          expanded={expandedParameter === param.id}
-                          onToggleExpand={() => toggleExpanded(param.id)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              
-              {/* Calculate CCI Button at the bottom of parameters */}
-              <div className="mt-8 flex justify-center">
+              <DataCollectionForm 
+                parameters={parameters} 
+                onComplete={handleDataCollectionComplete}
+                onCancel={() => setShowDataCollection(false)}
+              />
+            </section>
+          )}
+
+          {/* Results Section */}
+          {showResults && !showReport && !showDataCollection && !showAnnexureK && !showSBOM && !showOnlyParameterReport && (
+            <section id="results" aria-label="CCI Results" className="animate-fadeIn">
+              <div className="flex justify-end mb-4">
                 <button
-                  onClick={handleCalculate}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg font-medium rounded-md shadow-md transform transition hover:scale-105 flex items-center"
+                  onClick={handleLoadSample}
+                  className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
-                  Calculate CCI
+                  Load Sample Data
                 </button>
               </div>
-            </div>
-          </div>
-        )}
+              <CCIResults 
+                result={cciResult} 
+                onViewReport={handleViewReport}
+                onViewParameterReport={handleViewParameterReport}
+                onReset={handleReset}
+                onShowAnnexureK={handleShowAnnexureK}
+              />
+            </section>
+          )}
 
-        {showDataCollection && (
-          <div id="data-collection" className="mb-8 animate-fadeIn">
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={handleLoadSample}
-                className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-                Load Sample Data
-              </button>
-            </div>
-            <DataCollectionForm 
-              parameters={parameters} 
-              onComplete={handleDataCollectionComplete}
-              onCancel={() => setShowDataCollection(false)}
-            />
-          </div>
-        )}
+          {/* Report Section */}
+          {showReport && !showDataCollection && !showAnnexureK && !showSBOM && !showOnlyParameterReport && (
+            <section id="report" aria-label="CCI Report" className="animate-fadeIn">
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={handleLoadSample}
+                  className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  Load Sample Data
+                </button>
+              </div>
+              <CCIReport 
+                result={cciResult} 
+                parameters={parameters}
+                annexureKData={annexureKData || undefined}
+                onReset={handleReset}
+                onExportMarkdown={handleExportMarkdown}
+                onExportPdf={handleExportPdf}
+                onExportCsv={handleExportCsv}
+                onExportCompactSebiReport={handleExportCompactSebiReport}
+                isExporting={isExporting}
+              />
+            </section>
+          )}
 
-        {showAnnexureK && (
-          <div id="annexure-k-form" className="mb-8 animate-fadeIn">
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={handleLoadSample}
-                className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-                Load Sample Data
-              </button>
-            </div>
-            <AnnexureKForm 
-              result={cciResult}
-              parameters={parameters} 
-              onComplete={handleAnnexureKComplete}
-              onCancel={() => setShowAnnexureK(false)}
-            />
-          </div>
-        )}
+          {/* Only Parameter Report Section */}
+          {showOnlyParameterReport && !showReport && !showDataCollection && !showAnnexureK && !showSBOM && (
+            <section id="parameter-report" aria-label="CCI Parameter Report" className="animate-fadeIn">
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={handleLoadSample}
+                  className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  Load Sample Data
+                </button>
+              </div>
+              <CCIParameterReport 
+                result={cciResult} 
+                parameters={parameters}
+                onReset={handleReset}
+                onExportMarkdown={handleExportMarkdown}
+                onExportPdf={handleExportPdf}
+                onExportCsv={handleExportCsv}
+              />
+            </section>
+          )}
 
-        {showResults && !showReport && !showDataCollection && !showAnnexureK && !showSBOM && !showOnlyParameterReport && (
-          <div id="results" className="animate-fadeIn">
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={handleLoadSample}
-                className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-                Load Sample Data
-              </button>
-            </div>
-            <CCIResults 
-              result={cciResult} 
-              onViewReport={handleViewReport}
-              onViewParameterReport={handleViewParameterReport}
-              onReset={handleReset}
-              onShowAnnexureK={handleShowAnnexureK}
-            />
-          </div>
-        )}
-
-        {showReport && !showDataCollection && !showAnnexureK && !showSBOM && !showOnlyParameterReport && (
-          <div id="report" className="animate-fadeIn">
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={handleLoadSample}
-                className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-                Load Sample Data
-              </button>
-            </div>
-            <CCIReport 
-              result={cciResult} 
-              parameters={parameters}
-              annexureKData={annexureKData || undefined}
-              onReset={handleReset}
-              onExportMarkdown={handleExportMarkdown}
-              onExportPdf={handleExportPdf}
-              onExportCsv={handleExportCsv}
-              onExportCompactSebiReport={handleExportCompactSebiReport}
-              isExporting={isExporting}
-            />
-          </div>
-        )}
-
-        {showOnlyParameterReport && !showReport && !showDataCollection && !showAnnexureK && !showSBOM && (
-          <div id="parameter-report" className="animate-fadeIn">
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={handleLoadSample}
-                className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-                Load Sample Data
-              </button>
-            </div>
-            <CCIParameterReport 
-              result={cciResult} 
-              parameters={parameters}
-              onReset={handleReset}
-              onExportMarkdown={handleExportMarkdown}
-              onExportPdf={handleExportPdf}
-              onExportCsv={handleExportCsv}
-            />
-          </div>
-        )}
-
-        {showSBOM && (
-          <div id="sbom-management" className="mb-8 animate-fadeIn">
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={handleLoadSample}
-                className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-                Load Sample Data
-              </button>
-            </div>
-            <SBOMManagement
-              organizationName={organizationName}
-              onBack={() => {
-                setShowSBOM(false);
-                if (showResults) {
-                  setShowResults(true);
-                } else if (showReport) {
-                  setShowReport(true);
-                }
-              }}
-            />
-          </div>
-        )}
+          {/* SBOM Section */}
+          {showSBOM && (
+            <section id="sbom-management" aria-label="SBOM Management" className="mb-8 animate-fadeIn">
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={handleLoadSample}
+                  className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  Load Sample Data
+                </button>
+              </div>
+              <SBOMManagement
+                organizationName={organizationName}
+                onBack={() => {
+                  setShowSBOM(false);
+                  if (showResults) {
+                    setShowResults(true);
+                  } else if (showReport) {
+                    setShowReport(true);
+                  }
+                }}
+              />
+            </section>
+          )}
+        </main>
       </div>
-    </div>
+    </>
   );
 } 
