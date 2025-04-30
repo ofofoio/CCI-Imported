@@ -11,7 +11,7 @@ import Sidebar from '../components/Sidebar';
 import { initialCCIParameters, generateSampleData } from './data/cciParameters';
 import { CCIParameter, CCIResult, AnnexureKData } from './types';
 import { calculateCCIIndex } from './utils/cciCalculator';
-import { exportToMarkdown, exportToPdf, exportToCsv, exportCompactSebiReport, exportAnnexureKReport } from './utils/exportUtils';
+import { exportToMarkdown, exportToPdf, exportToCsv, exportCompactSebiReport, exportAnnexureKReport, exportSBOMDocument } from './utils/exportUtils';
 import DataCollectionForm from '../components/DataCollectionForm';
 import { FormState as AnnexureKFormState } from '../components/AnnexureKForm';
 import { toast } from 'react-hot-toast';
@@ -497,6 +497,57 @@ export default function Home() {
     }
   };
 
+  // Handle export of SBOM
+  const handleExportSBOM = async () => {
+    // Validate organization name
+    if (!organizationName || organizationName.trim() === '' || organizationName === 'Enter Organization Name') {
+      setOrganizationNameError('Please enter your organization name');
+      // Focus on the organization name field
+      const orgNameField = document.getElementById('organizationName');
+      if (orgNameField) {
+        orgNameField.focus();
+        orgNameField.scrollIntoView({ behavior: 'smooth' });
+      }
+      toast.error('Please enter your organization name before exporting');
+      return;
+    }
+    
+    console.log('Exporting SBOM data...');
+    
+    try {
+      // Get the SBOM registry from localStorage
+      const sbomRegistryData = localStorage.getItem('sbomRegistry');
+      if (!sbomRegistryData) {
+        toast.error('No SBOM data found. Please create SBOM records first.');
+        return;
+      }
+      
+      const sbomRegistry = JSON.parse(sbomRegistryData);
+      
+      // Check if there are any SBOM documents
+      if (!sbomRegistry.sbomDocuments || sbomRegistry.sbomDocuments.length === 0) {
+        toast.error('No SBOM documents found. Please create at least one SBOM document.');
+        return;
+      }
+      
+      // Call export function with SBOM data
+      const success = await exportSBOMDocument(
+        organizationName,
+        sbomRegistry,
+        assessmentDate
+      );
+      
+      if (success) {
+        toast.success('SBOM data exported successfully for SEBI submission!');
+      } else {
+        toast.error('Failed to export SBOM data. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error exporting SBOM data:', error);
+      toast.error('Failed to export SBOM data. See console for details.');
+    }
+  };
+
   return (
     <>
       <CalculatorJsonLd />
@@ -520,6 +571,7 @@ export default function Home() {
           onExportCsv={handleExportCsv}
           onExportCompactSebiReport={handleExportCompactSebiReport}
           onExportAnnexureK={handleExportAnnexureK}
+          onExportSBOM={handleExportSBOM}
         />
         
         <main className="md:ml-64 w-full max-w-6xl mx-auto px-4 pb-20">
@@ -534,8 +586,8 @@ export default function Home() {
               </span>
             </p>
 
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
-              <div className="md:col-span-2">
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+              <div className="md:col-span-3">
                 <label htmlFor="organizationName" className="block text-xs font-medium text-gray-300">Organization Name <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <input 
@@ -571,20 +623,6 @@ export default function Home() {
                   onChange={(e) => setAssessmentDate(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-gray-900 text-sm h-9"
                 />
-              </div>
-              <div className="md:col-span-2">
-                {/* Calculate CCI Button */}
-                <div className="flex justify-center mt-2">
-                  <button
-                    onClick={handleCalculate}
-                    className="w-56 py-3 cci-btn-primary text-base font-medium"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                    Calculate CCI
-                  </button>
-                </div>
               </div>
             </div>
           </section>
@@ -634,6 +672,38 @@ export default function Home() {
               {currentStep === 2 && "Step 3: Export your completed report in your preferred format"}
             </div>
           </section>
+
+          {/* Calculate CCI Button - Centered below progress tracker */}
+          <div className="flex justify-center mb-8">
+            <button
+              onClick={() => {
+                // Check if any parameters have been filled in
+                const hasFilledParameters = parameters.some(param => 
+                  param.numerator !== undefined && param.numerator !== 0 && 
+                  param.denominator !== undefined && param.denominator !== 0
+                );
+                
+                if (!hasFilledParameters) {
+                  toast.error('Please fill in the calculator parameters before proceeding');
+                  
+                  // Highlight a parameter to draw attention
+                  const paramSection = document.querySelector('.space-y-4');
+                  if (paramSection) {
+                    paramSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                  return;
+                }
+                
+                handleCalculate();
+              }}
+              className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-md flex items-center justify-center text-lg"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Calculate CCI
+            </button>
+          </div>
 
           {/* Parameters Section */}
           {!showDataCollection && !showResults && !showReport && !showSBOM && !showAnnexureK && !showOnlyParameterReport && (
@@ -688,7 +758,7 @@ export default function Home() {
                 <div className="mt-8 flex justify-center">
                   <button
                     onClick={handleCalculate}
-                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg font-medium rounded-md shadow-md transform transition hover:scale-105 flex items-center"
+                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-md flex items-center justify-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -827,6 +897,7 @@ export default function Home() {
                     setShowReport(true);
                   }
                 }}
+                onExportSBOM={handleExportSBOM}
               />
             </section>
           )}

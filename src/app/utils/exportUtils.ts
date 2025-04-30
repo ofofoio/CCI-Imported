@@ -1851,3 +1851,342 @@ export const exportAnnexureKReport = async (data: {
     return Promise.reject(error);
   }
 }; 
+
+/**
+ * Export SBOM document in a SEBI-compliant format as a PDF document
+ * 
+ * @param organizationName Organization name for the report
+ * @param sbomRegistry The SBOM registry containing documents and critical systems
+ * @param assessmentDate The date of the assessment
+ */
+export const exportSBOMDocument = async (
+  organizationName: string,
+  sbomRegistry: { sbomDocuments: any[], criticalSystems: string[] },
+  assessmentDate: string
+) => {
+  try {
+    // Display loading indicator
+    toast('Generating SBOM export for SEBI submission...', { 
+      id: 'sbom-export',
+      duration: 5000
+    });
+
+    // Create new PDF document - A4 format
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
+    
+    // Set properties for official document
+    doc.setProperties({
+      title: `SEBI CSCRF - SBOM Report - ${organizationName}`,
+      subject: 'Software Bill of Materials for SEBI CSCRF Compliance',
+      author: organizationName,
+      keywords: 'SEBI, CSCRF, SBOM, Compliance, Cybersecurity',
+      creator: 'CCI Calculator'
+    });
+    
+    // Define constants for page layout
+    const pageHeight = doc.internal.pageSize.height;
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = { left: 14, right: 14 };
+    const contentWidth = pageWidth - margin.left - margin.right;
+    
+    // Add header
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SEBI CSCRF Compliance', 105, 15, { align: 'center' });
+    doc.setFontSize(16);
+    doc.text('Software Bill of Materials (SBOM) Report', 105, 25, { align: 'center' });
+    
+    // Add organization details
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Organization: ${organizationName}`, 14, 40);
+    doc.text(`Assessment Date: ${assessmentDate}`, 14, 46);
+    doc.text(`Report Generation Date: ${new Date().toLocaleDateString()}`, 14, 52);
+    
+    // Add SBOM coverage details
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SBOM Coverage Summary', 14, 65);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total Critical Systems: ${sbomRegistry.criticalSystems.length}`, 14, 72);
+    doc.text(`Systems with SBOM Documentation: ${sbomRegistry.sbomDocuments.length}`, 14, 78);
+    
+    const coveragePercentage = sbomRegistry.criticalSystems.length > 0 
+      ? Math.round((sbomRegistry.sbomDocuments.length / sbomRegistry.criticalSystems.length) * 100) 
+      : 0;
+    
+    // SBOM Coverage Status
+    const complianceStatus = coveragePercentage >= 100 ? 'Compliant' : 'Non-Compliant';
+    const statusColor = coveragePercentage >= 100 ? [0, 128, 0] : [180, 0, 0]; // Green or Red
+    
+    doc.text(`Coverage Percentage: ${coveragePercentage}%`, 14, 84);
+    doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`SBOM Compliance Status: ${complianceStatus}`, 14, 90);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    
+    // Add Critical Systems List
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Critical Systems', 14, 105);
+    
+    // Critical systems table
+    const criticalSystemsData = sbomRegistry.criticalSystems.map((system, index) => {
+      return [
+        (index + 1).toString(),
+        system,
+        sbomRegistry.sbomDocuments.some(doc => doc.name === system) ? 'Available' : 'Missing'
+      ];
+    });
+    
+    if (criticalSystemsData.length === 0) {
+      criticalSystemsData.push(['', 'No critical systems defined', '']);
+    }
+    
+    autoTable(doc, {
+      startY: 110,
+      head: [['#', 'System Name', 'SBOM Status']],
+      body: criticalSystemsData,
+      headStyles: { 
+        fillColor: [80, 80, 80],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 10
+      },
+      bodyStyles: {
+        fontSize: 9
+      },
+      columnStyles: {
+        0: { cellWidth: 10, halign: 'center' },
+        1: { cellWidth: 'auto' },
+        2: { cellWidth: 30, halign: 'center' }
+      },
+      margin: margin
+    });
+    
+    // Get position after the table
+    let currentY = (doc as any).lastAutoTable.finalY + 15;
+    
+    // SBOM Documents section
+    doc.addPage();
+    currentY = 15;
+    
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SBOM Documents', 14, currentY);
+    currentY += 10;
+    
+    // Process each SBOM document
+    sbomRegistry.sbomDocuments.forEach((sbomDoc, index) => {
+      // Document header
+      if (currentY > pageHeight - 100) {
+        doc.addPage();
+        currentY = 15;
+      }
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`SBOM #${index + 1}: ${sbomDoc.name} v${sbomDoc.version}`, 14, currentY);
+      currentY += 8;
+      
+      // Document details
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Supplier: ${sbomDoc.supplier}`, 14, currentY);
+      currentY += 5;
+      doc.text(`Creation Date: ${sbomDoc.dateCreated}`, 14, currentY);
+      currentY += 5;
+      doc.text(`Last Updated: ${sbomDoc.lastUpdated}`, 14, currentY);
+      currentY += 5;
+      doc.text(`Update Frequency: ${sbomDoc.updateFrequency}`, 14, currentY);
+      currentY += 5;
+      doc.text(`Encryption: ${sbomDoc.encryptionUsed}`, 14, currentY);
+      currentY += 5;
+      doc.text(`Access Control: ${sbomDoc.accessControl}`, 14, currentY);
+      currentY += 5;
+      doc.text(`Error Handling: ${sbomDoc.errorHandlingMethod}`, 14, currentY);
+      currentY += 10;
+      
+      // Components table
+      const componentsData = sbomDoc.components.map((component, idx) => {
+        return [
+          (idx + 1).toString(),
+          component.name,
+          component.version,
+          component.supplier,
+          component.license
+        ];
+      });
+      
+      if (componentsData.length === 0) {
+        componentsData.push(['', 'No components defined', '', '', '']);
+      }
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Components:', 14, currentY);
+      currentY += 5;
+      
+      autoTable(doc, {
+        startY: currentY,
+        head: [['#', 'Component', 'Version', 'Supplier', 'License']],
+        body: componentsData,
+        headStyles: { 
+          fillColor: [100, 100, 100],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 8
+        },
+        bodyStyles: {
+          fontSize: 7,
+          cellPadding: { top: 1, right: 2, bottom: 1, left: 2 }
+        },
+        columnStyles: {
+          0: { cellWidth: 8, halign: 'center' },
+          1: { cellWidth: 40 },
+          2: { cellWidth: 20, halign: 'center' },
+          3: { cellWidth: 40 },
+          4: { cellWidth: 30 }
+        },
+        margin: margin
+      });
+      
+      currentY = (doc as any).lastAutoTable.finalY + 15;
+      
+      // Known Unknowns
+      if (sbomDoc.knownUnknowns && sbomDoc.knownUnknowns.length > 0) {
+        if (currentY > pageHeight - 60) {
+          doc.addPage();
+          currentY = 15;
+        }
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Known Unknowns:', 14, currentY);
+        currentY += 5;
+        
+        const knownUnknownsData = sbomDoc.knownUnknowns.map((item, idx) => {
+          return [(idx + 1).toString(), item];
+        });
+        
+        autoTable(doc, {
+          startY: currentY,
+          head: [['#', 'Description']],
+          body: knownUnknownsData,
+          headStyles: { 
+            fillColor: [100, 100, 100],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            fontSize: 8
+          },
+          bodyStyles: {
+            fontSize: 7
+          },
+          columnStyles: {
+            0: { cellWidth: 8, halign: 'center' },
+            1: { cellWidth: 'auto' }
+          },
+          margin: margin
+        });
+        
+        currentY = (doc as any).lastAutoTable.finalY + 15;
+      }
+      
+      // Add notes if they exist
+      if (sbomDoc.notes) {
+        if (currentY > pageHeight - 50) {
+          doc.addPage();
+          currentY = 15;
+        }
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Notes:', 14, currentY);
+        currentY += 5;
+        
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        
+        // Split notes into multiple lines to fit page width
+        const noteLines = doc.splitTextToSize(sbomDoc.notes, contentWidth - 5);
+        doc.text(noteLines, 14, currentY);
+        currentY += noteLines.length * 4 + 10;
+      }
+      
+      // Add divider between documents
+      if (index < sbomRegistry.sbomDocuments.length - 1) {
+        if (currentY > pageHeight - 20) {
+          doc.addPage();
+          currentY = 15;
+        } else {
+          doc.setDrawColor(200, 200, 200);
+          doc.setLineWidth(0.5);
+          doc.line(14, currentY, pageWidth - 14, currentY);
+          currentY += 15;
+        }
+      }
+    });
+    
+    // Add SEBI compliance page
+    doc.addPage();
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SEBI CSCRF SBOM Compliance Declaration', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('This Software Bill of Materials (SBOM) report is prepared in accordance with the', 105, 30, { align: 'center' });
+    doc.text('Securities and Exchange Board of India (SEBI) Cyber Security & Cyber Resilience Framework.', 105, 35, { align: 'center' });
+    
+    // Compliance statement
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    if (complianceStatus === 'Compliant') {
+      doc.setTextColor(0, 128, 0);
+      doc.text('✓ All critical systems have associated SBOMs as required by SEBI CSCRF', 105, 50, { align: 'center' });
+    } else {
+      doc.setTextColor(180, 0, 0);
+      doc.text('⚠ Not all critical systems have associated SBOMs as required by SEBI CSCRF', 105, 50, { align: 'center' });
+      doc.setFontSize(10);
+      doc.text('Immediate action required to ensure compliance', 105, 55, { align: 'center' });
+    }
+    doc.setTextColor(0, 0, 0);
+    
+    // Signature block
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Authorized by:', 50, 80);
+    doc.text('Date:', 150, 80);
+    
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(50, 95, 120, 95); // Signature line
+    doc.line(150, 95, 180, 95); // Date line
+    
+    doc.text('Name and Title:', 50, 105);
+    doc.line(50, 115, 120, 115); // Name line
+    
+    // Add SEBI Footer
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.text('This document is prepared in compliance with SEBI Circular SEBI/HO/MIRSD/MIRSD_CRADT/CIR/P/2022/03', 105, 280, { align: 'center' });
+    
+    // Save the PDF
+    doc.save(`SEBI-CSCRF-SBOM-Report-${organizationName.replace(/\s+/g, '_')}-${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    // Success notification
+    toast.success('SBOM report exported successfully for SEBI submission!');
+    return true;
+  } catch (error) {
+    console.error('Error exporting SBOM report:', error);
+    toast.error('Failed to export SBOM report. See console for details.');
+    return false;
+  }
+};

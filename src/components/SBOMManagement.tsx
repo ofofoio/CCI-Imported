@@ -10,6 +10,7 @@ import {
 interface SBOMManagementProps {
   organizationName: string;
   onBack?: () => void;
+  onExportSBOM?: () => void;
 }
 
 const DEFAULT_SBOM_COMPONENT: SBOMComponent = {
@@ -39,7 +40,7 @@ const DEFAULT_SBOM_DOCUMENT: SBOMDocument = {
   notes: '',
 };
 
-export default function SBOMManagement({ organizationName, onBack }: SBOMManagementProps) {
+export default function SBOMManagement({ organizationName, onBack, onExportSBOM }: SBOMManagementProps) {
   const [registry, setRegistry] = useState<SBOMRegistry>({
     sbomDocuments: [],
     criticalSystems: [],
@@ -697,10 +698,31 @@ export default function SBOMManagement({ organizationName, onBack }: SBOMManagem
                     setActiveTab('document');
                   }}
                 >
-                  Create New SBOM
+                  Create SBOM
                 </button>
               </div>
             </div>
+            
+            {/* Export to SEBI button */}
+            {registry.sbomDocuments.length > 0 && (
+              <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-r flex justify-between items-center">
+                <div>
+                  <h3 className="text-md font-semibold text-indigo-800">Ready to submit to SEBI?</h3>
+                  <p className="text-sm text-indigo-700">
+                    Generate a comprehensive SBOM report formatted according to SEBI CSCRF requirements.
+                  </p>
+                </div>
+                <button
+                  onClick={onExportSBOM}
+                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-md flex items-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Export for SEBI
+                </button>
+              </div>
+            )}
             
             <div className="overflow-x-auto">
               <table className="min-w-full bg-white border">
