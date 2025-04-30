@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { CCIResult, CCIParameter } from '../app/types';
+import { CCIResult, CCIParameter, AnnexureKData } from '../app/types';
 import AnnexureKReport from './AnnexureKReport';
 import { saveAs } from 'file-saver';
 import { generateAnnexureKSampleData } from '../app/data/cciParameters';
-import { exportToPdf } from '../app/utils/exportUtils';
+import { exportAnnexureKReport } from '../app/utils/exportUtils';
+import { toast } from 'react-hot-toast';
 
 interface AnnexureKFormProps {
   result: CCIResult;
@@ -38,6 +39,16 @@ export interface FormState {
 
 const FORM_STORAGE_KEY = 'annexureK_form_data';
 
+// Helper function to determine maturity level based on score
+const getMaturityLevelForScore = (score: number): string => {
+  if (score >= 91) return 'Exceptional';
+  if (score >= 81) return 'Optimal';
+  if (score >= 71) return 'Manageable';
+  if (score >= 61) return 'Developing';
+  if (score >= 51) return 'Bare Minimum';
+  return 'Insufficient';
+};
+
 const AnnexureKForm: React.FC<AnnexureKFormProps> = ({ 
   result, 
   parameters, 
@@ -59,6 +70,7 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
   const [previewMode, setPreviewMode] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   
   // Form field is required only if it's a MII
   const isMII = formState.entityType === 'Stock Exchange' || 
@@ -276,17 +288,56 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
     // Only export if no errors
     if (Object.keys(formErrors).length === 0) {
       try {
-        exportToPdf(parameters, result, formState)
+        // Set loading state
+        setIsExporting(true);
+        
+        // Create the AnnexureKData object
+        const annexureKData: AnnexureKData = {
+          organization: formState.organization,
+          entityType: formState.entityType,
+          entityCategory: formState.entityCategory,
+          rationale: formState.rationale,
+          period: formState.period,
+          auditingOrganization: formState.auditingOrganization,
+          signatoryName: formState.signatoryName,
+          designation: formState.designation
+        };
+        
+        // Extract category scores from result
+        const categoryScoresMap: Record<string, { score: number, maturityLevel: string }> = {};
+        
+        if (result.categoryScores) {
+          result.categoryScores.forEach(category => {
+            categoryScoresMap[category.name] = {
+              score: category.score,
+              maturityLevel: getMaturityLevelForScore(category.score)
+            };
+          });
+        }
+        
+        // Call specific Annexure K export function
+        exportAnnexureKReport({
+          organizationName: formState.organization,
+          assessmentDate: result.date,
+          annexureKData: annexureKData,
+          cciScore: result.totalScore,
+          categoryScores: categoryScoresMap
+        })
           .then(() => {
-            console.log('PDF export of Annexure K completed successfully');
+            console.log('Annexure K PDF export completed successfully');
+            toast.success('Annexure-K PDF successfully exported for SEBI submission!');
+            setIsExporting(false);
           })
           .catch(error => {
-            console.error('Error exporting PDF:', error);
-            alert('Failed to export PDF document. Please try again.');
+            console.error('Error exporting Annexure K PDF:', error);
+            toast.error('Failed to export Annexure-K PDF document. Please try again.');
+            alert('Failed to export Annexure K PDF document. Please try again.');
+            setIsExporting(false);
           });
       } catch (error) {
-        console.error('Error starting PDF export:', error);
-        alert('Failed to start PDF export. Please try again.');
+        console.error('Error starting Annexure K PDF export:', error);
+        alert('Failed to start Annexure K PDF export. Please try again.');
+        setIsExporting(false);
       }
     } else {
       // Scroll to first error
@@ -333,16 +384,6 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
             </button>
             <button
               type="button"
-              onClick={handleExportPdf}
-              className="bg-gray-700 hover:bg-gray-800 text-white py-2 px-4 rounded-md transition duration-200 flex items-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
-              </svg>
-              Export as PDF
-            </button>
-            <button
-              type="button"
               onClick={togglePreview}
               className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200"
             >
@@ -361,6 +402,38 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
             </p>
           </div>
           
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <h3 className="text-lg font-medium text-green-800 mb-2">Ready for Export</h3>
+            <p className="text-sm text-green-700 mb-2">
+              Your Annexure-K is ready to be exported as a PDF document that complies with SEBI submission requirements.
+            </p>
+            <div className="flex items-center mt-4">
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                disabled={isExporting}
+                className={`${isExporting ? 'bg-gray-500' : 'bg-green-600 hover:bg-green-700'} text-white py-2 px-4 rounded-md transition duration-200 flex items-center`}
+              >
+                {isExporting ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
+                    </svg>
+                    Export Annexure-K as PDF for SEBI
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+          
           <AnnexureKReport 
             result={result}
             parameters={parameters}
@@ -373,13 +446,6 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
             designation={formState.designation}
           />
           <div className="mt-8 flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={togglePreview}
-              className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-6 rounded-md transition duration-200"
-            >
-              Back to Edit
-            </button>
             <button
               type="button"
               onClick={handleSubmit}
@@ -399,7 +465,10 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h3 className="text-lg font-medium text-blue-800 mb-2">Annexure-K Form Instructions</h3>
               <p className="text-sm text-blue-700 mb-4">
-                This form is required for SEBI compliance reporting. Please complete all required fields marked with an asterisk (*).
+                This form is required for SEBI compliance reporting. It captures the authorized signatory information that verifies your organization's CCI score for official submission. Please complete all required fields marked with an asterisk (*).
+              </p>
+              <p className="text-sm text-blue-700 mb-4">
+                Once completed, you can export this Annexure-K as a PDF document ready for SEBI submission as part of your compliance documentation.
               </p>
               
               <div className="flex items-center justify-between mb-2">
@@ -735,6 +804,29 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
                 className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-6 rounded-md transition duration-200"
               >
                 Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                disabled={isExporting}
+                className={`${isExporting ? 'bg-gray-500' : 'bg-green-600 hover:bg-green-700'} text-white py-2 px-6 rounded-md transition duration-200 flex items-center`}
+              >
+                {isExporting ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
+                    </svg>
+                    Export Annexure-K as PDF
+                  </>
+                )}
               </button>
               <button
                 type="button"

@@ -11,6 +11,7 @@ interface CCIReportProps {
   onExportPdf?: () => void;
   onExportCsv?: () => void;
   onExportCompactSebiReport?: () => void;
+  onExportAnnexureK?: () => Promise<void>;
   onReset?: () => void;
   isExporting?: boolean;
 }
@@ -23,6 +24,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
   onExportPdf,
   onExportCsv,
   onExportCompactSebiReport,
+  onExportAnnexureK,
   onReset, 
   isExporting = false 
 }) => {
@@ -31,6 +33,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
   const [isExportingPDF, setIsExportingPDF] = useState<boolean>(false);
   const [isExportingCSV, setIsExportingCSV] = useState<boolean>(false);
   const [isExportingCompactSebi, setIsExportingCompactSebi] = useState<boolean>(false);
+  const [isExportingAnnexureK, setIsExportingAnnexureK] = useState<boolean>(false);
   
   // Helper function to get the color for a score
   const getScoreColor = (score: number) => {
@@ -307,14 +310,14 @@ const CCIReport: React.FC<CCIReportProps> = ({
   // Add handleExportCompactSebiReport function
   const handleExportCompactSebiReport = () => {
     if (!onExportCompactSebiReport) {
-      console.log('Export Compact SEBI Report function not provided');
-      alert('Compact SEBI Report export function not available');
+      console.log('Export Parameters-Only SEBI Report function not provided');
+      alert('Parameters-Only SEBI Report export function not available');
       return;
     }
     
     // Log export attempt with details
-    console.log('Export Compact SEBI Report button clicked');
-    console.log(`Exporting Compact SEBI Report for: ${result.organization}`);
+    console.log('Export Parameters-Only SEBI Report button clicked');
+    console.log(`Exporting Parameters-Only SEBI Report for: ${result.organization}`);
     
     // Set loading state
     setIsExportingCompactSebi(true);
@@ -323,7 +326,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
     const timeout = setTimeout(() => {
       if (isExportingCompactSebi) {
         setIsExportingCompactSebi(false);
-        console.error('Compact SEBI Report export timeout - reset UI state');
+        console.error('Parameters-Only SEBI Report export timeout - reset UI state');
       }
     }, 30000); // 30 second timeout
     
@@ -339,8 +342,49 @@ const CCIReport: React.FC<CCIReportProps> = ({
         setIsExportingCompactSebi(false);
       }, 2000);
     } catch (e) {
-      console.error('Error executing Compact SEBI Report export function:', e);
+      console.error('Error executing Parameters-Only SEBI Report export function:', e);
       setIsExportingCompactSebi(false);
+      clearTimeout(timeout);
+    }
+  };
+
+  // Add handleExportAnnexureK function
+  const handleExportAnnexureK = async () => {
+    if (!onExportAnnexureK) {
+      console.log('Export Annexure K function not provided');
+      alert('Annexure K export function not available');
+      return;
+    }
+    
+    // Log export attempt with details
+    console.log('Export Annexure K button clicked');
+    console.log(`Exporting Annexure K for: ${result.organization}`);
+    
+    // Set loading state
+    setIsExportingAnnexureK(true);
+    
+    // Add a timeout to reset if export doesn't complete
+    const timeout = setTimeout(() => {
+      if (isExportingAnnexureK) {
+        setIsExportingAnnexureK(false);
+        console.error('Annexure K export timeout - reset UI state');
+      }
+    }, 30000); // 30 second timeout
+    
+    try {
+      // Execute the export function
+      await onExportAnnexureK();
+      
+      // Clear the timeout since we handled it
+      clearTimeout(timeout);
+      
+      // Reset state after a short delay to show success
+      setTimeout(() => {
+        setIsExportingAnnexureK(false);
+      }, 2000);
+    } catch (e) {
+      console.error('Error executing Annexure K export function:', e);
+      setIsExportingAnnexureK(false);
       clearTimeout(timeout);
     }
   };
@@ -356,7 +400,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
               onClick={handleExportMarkdown}
               disabled={isExportingMD}
               title="Export this report as Markdown format for easy sharing and version control"
-              className={`${isExportingMD ? 'bg-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-200'} text-black py-2 px-4 rounded-md transition duration-200 flex items-center shadow-sm border border-gray-300`}
+              className={`${isExportingMD ? 'bg-gray-400 cursor-not-allowed' : 'cci-btn-outline'}`}
             >
               {isExportingMD ? (
                 <>
@@ -368,7 +412,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
                 </>
               ) : (
                 <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-black" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-800" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                   <span className="font-medium">Export as Markdown</span>
@@ -380,8 +424,8 @@ const CCIReport: React.FC<CCIReportProps> = ({
               id="export-compact-sebi-btn"
               onClick={handleExportCompactSebiReport}
               disabled={isExportingCompactSebi}
-              title="Export a compact SEBI report with only parameter details (<10 pages)"
-              className={`${isExportingCompactSebi ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} text-white py-2 px-4 rounded-md transition duration-200 flex items-center shadow-sm`}
+              title="Export a SEBI report with only parameter details, excluding the compliance summary (<10 pages)"
+              className={`${isExportingCompactSebi ? 'bg-gray-400 cursor-not-allowed' : 'cci-btn-success'}`}
             >
               {isExportingCompactSebi ? (
                 <>
@@ -396,7 +440,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-white" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                   </svg>
-                  <span className="font-medium">Compact SEBI Report</span>
+                  <span className="font-medium">Parameters-Only Report</span>
                 </>
               )}
             </button>
@@ -669,7 +713,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
           {onReset && (
             <button
               onClick={onReset}
-              className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-6 rounded-md transition duration-200 flex items-center"
+              className="cci-btn-outline"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
@@ -681,7 +725,7 @@ const CCIReport: React.FC<CCIReportProps> = ({
           <button
             onClick={handleExportMarkdown}
             disabled={isExportingMD}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md transition duration-200 flex items-center disabled:opacity-70"
+            className="cci-btn-primary disabled:opacity-70"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -692,24 +736,39 @@ const CCIReport: React.FC<CCIReportProps> = ({
           <button
             onClick={handleExportPdf}
             disabled={isExportingPDF}
-            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition duration-200 flex items-center disabled:opacity-70"
+            className="cci-btn-danger disabled:opacity-70"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
             </svg>
-            {isExportingPDF ? 'Generating PDF...' : 'Compact SEBI Report (<10 pages)'}
+            {isExportingPDF ? 'Generating PDF...' : 'Full SEBI Report (PDF)'}
           </button>
           
           <button
             onClick={handleExportCsv}
             disabled={isExportingCSV}
-            className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-200 flex items-center disabled:opacity-70"
+            className="cci-btn-success disabled:opacity-70"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
             </svg>
             {isExportingCSV ? 'Generating CSV...' : 'Export Data (CSV)'}
           </button>
+          
+          {onExportAnnexureK && (
+            <button
+              onClick={handleExportAnnexureK}
+              disabled={isExportingAnnexureK}
+              className="cci-btn-outline disabled:opacity-70"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                <path d="M8 11a1 1 0 100 2h4a1 1 0 100-2H8z" />
+                <path d="M8 7a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+              </svg>
+              {isExportingAnnexureK ? 'Generating Annexure K...' : 'Export Annexure K'}
+            </button>
+          )}
         </div>
       </div>
     </div>

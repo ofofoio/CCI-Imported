@@ -160,7 +160,7 @@ const CCIParameterReport: React.FC<CCIParameterReportProps> = ({
               onClick={handleExportMarkdown}
               disabled={isExportingMD}
               title="Export this report as Markdown format for easy sharing and version control"
-              className={`${isExportingMD ? 'bg-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-200'} text-black py-2 px-4 rounded-md transition duration-200 flex items-center shadow-sm border border-gray-300`}
+              className={`${isExportingMD ? 'bg-gray-400 cursor-not-allowed' : 'cci-btn-outline'}`}
             >
               {isExportingMD ? (
                 <>
@@ -172,7 +172,7 @@ const CCIParameterReport: React.FC<CCIParameterReportProps> = ({
                 </>
               ) : (
                 <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-black" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-800" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                   <span className="font-medium">Export as Markdown</span>
@@ -298,7 +298,7 @@ const CCIParameterReport: React.FC<CCIParameterReportProps> = ({
           <button
             onClick={handleExportMarkdown}
             disabled={isExportingMD}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md transition duration-200 flex items-center disabled:opacity-70"
+            className="cci-btn-primary disabled:opacity-70"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -309,7 +309,7 @@ const CCIParameterReport: React.FC<CCIParameterReportProps> = ({
           <button
             onClick={handleExportPdf}
             disabled={isExportingPDF}
-            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition duration-200 flex items-center disabled:opacity-70"
+            className="cci-btn-danger disabled:opacity-70"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />

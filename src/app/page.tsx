@@ -11,7 +11,7 @@ import Sidebar from '../components/Sidebar';
 import { initialCCIParameters, generateSampleData } from './data/cciParameters';
 import { CCIParameter, CCIResult, AnnexureKData } from './types';
 import { calculateCCIIndex } from './utils/cciCalculator';
-import { exportToMarkdown, exportToPdf, exportToCsv, exportCompactSebiReport } from './utils/exportUtils';
+import { exportToMarkdown, exportToPdf, exportToCsv, exportCompactSebiReport, exportAnnexureKReport } from './utils/exportUtils';
 import DataCollectionForm from '../components/DataCollectionForm';
 import { FormState as AnnexureKFormState } from '../components/AnnexureKForm';
 import { toast } from 'react-hot-toast';
@@ -47,6 +47,16 @@ function CalculatorJsonLd() {
   );
 }
 
+// Helper function to determine maturity level based on score
+const getMaturityLevelForScore = (score: number): string => {
+  if (score >= 91) return 'Exceptional';
+  if (score >= 81) return 'Optimal';
+  if (score >= 71) return 'Manageable';
+  if (score >= 61) return 'Developing';
+  if (score >= 51) return 'Bare Minimum';
+  return 'Insufficient';
+};
+
 export default function Home() {
   const [parameters, setParameters] = useState<CCIParameter[]>(initialCCIParameters);
   const [showResults, setShowResults] = useState(false);
@@ -55,7 +65,6 @@ export default function Home() {
   const [showAnnexureK, setShowAnnexureK] = useState<boolean>(false);
   const [showSBOM, setShowSBOM] = useState<boolean>(false);
   const [showOnlyParameterReport, setShowOnlyParameterReport] = useState(false);
-  const [showGuide, setShowGuide] = useState(false);
   const [organizationName, setOrganizationName] = useState('Enter Organization Name');
   const [organizationNameError, setOrganizationNameError] = useState('');
   const [expandedParameter, setExpandedParameter] = useState<number | null>(null);
@@ -172,6 +181,19 @@ export default function Home() {
   };
 
   const handleExportMarkdown = () => {
+    // Validate organization name
+    if (!organizationName || organizationName.trim() === '' || organizationName === 'Enter Organization Name') {
+      setOrganizationNameError('Please enter your organization name');
+      // Focus on the organization name field
+      const orgNameField = document.getElementById('organizationName');
+      if (orgNameField) {
+        orgNameField.focus();
+        orgNameField.scrollIntoView({ behavior: 'smooth' });
+      }
+      toast.error('Please enter your organization name before exporting');
+      return;
+    }
+    
     // Show loading indicator
     console.group('Markdown Export Process - Started');
     console.log(`Timestamp: ${new Date().toISOString()}`);
@@ -199,6 +221,19 @@ export default function Home() {
   };
 
   const handleExportPdf = () => {
+    // Validate organization name
+    if (!organizationName || organizationName.trim() === '' || organizationName === 'Enter Organization Name') {
+      setOrganizationNameError('Please enter your organization name');
+      // Focus on the organization name field
+      const orgNameField = document.getElementById('organizationName');
+      if (orgNameField) {
+        orgNameField.focus();
+        orgNameField.scrollIntoView({ behavior: 'smooth' });
+      }
+      toast.error('Please enter your organization name before exporting');
+      return;
+    }
+
     // Show loading indicator
     console.group('PDF Export Process - Started');
     console.log(`Timestamp: ${new Date().toISOString()}`);
@@ -226,6 +261,19 @@ export default function Home() {
   };
 
   const handleExportCsv = () => {
+    // Validate organization name
+    if (!organizationName || organizationName.trim() === '' || organizationName === 'Enter Organization Name') {
+      setOrganizationNameError('Please enter your organization name');
+      // Focus on the organization name field
+      const orgNameField = document.getElementById('organizationName');
+      if (orgNameField) {
+        orgNameField.focus();
+        orgNameField.scrollIntoView({ behavior: 'smooth' });
+      }
+      toast.error('Please enter your organization name before exporting');
+      return;
+    }
+
     // Show loading indicator
     console.group('CSV Export Process - Started');
     console.log(`Timestamp: ${new Date().toISOString()}`);
@@ -253,29 +301,42 @@ export default function Home() {
   };
 
   const handleExportCompactSebiReport = () => {
+    // Validate organization name
+    if (!organizationName || organizationName.trim() === '' || organizationName === 'Enter Organization Name') {
+      setOrganizationNameError('Please enter your organization name');
+      // Focus on the organization name field
+      const orgNameField = document.getElementById('organizationName');
+      if (orgNameField) {
+        orgNameField.focus();
+        orgNameField.scrollIntoView({ behavior: 'smooth' });
+      }
+      toast.error('Please enter your organization name before exporting');
+      return;
+    }
+
     // Show loading indicator
-    console.group('Compact SEBI Report Export Process - Started');
+    console.group('Parameters-Only SEBI Report Export Process - Started');
     console.log(`Timestamp: ${new Date().toISOString()}`);
     console.log(`Organization: ${organizationName}`);
     console.log(`Parameters Count: ${parameters.length}`);
     
     try {
-      // Export the compact SEBI report
+      // Export the parameters-only SEBI report
       exportCompactSebiReport(parameters, cciResult, annexureKData || undefined)
         .then(() => {
-          console.log('Compact SEBI report export completed successfully');
-          console.log(`Compact SEBI report generated for: ${cciResult.organization}`);
+          console.log('Parameters-only SEBI report export completed successfully');
+          console.log(`Parameters-only SEBI report generated for: ${cciResult.organization}`);
           console.groupEnd();
         })
         .catch(error => {
-          console.error('Error exporting Compact SEBI report:', error);
+          console.error('Error exporting parameters-only SEBI report:', error);
           console.groupEnd();
-          toast.error('Failed to export Compact SEBI report');
+          toast.error('Failed to export parameters-only SEBI report');
         });
     } catch (error) {
-      console.error('Error starting Compact SEBI report export:', error);
+      console.error('Error starting parameters-only SEBI report export:', error);
       console.groupEnd();
-      toast.error('Failed to start Compact SEBI report export');
+      toast.error('Failed to start parameters-only SEBI report export');
     }
   };
 
@@ -374,9 +435,66 @@ export default function Home() {
     return categories[category] || category;
   };
 
-  // Toggle guide visibility
-  const toggleGuide = () => {
-    setShowGuide(!showGuide);
+  // Handle export of Annexure K
+  const handleExportAnnexureK = async () => {
+    // Validate organization name
+    if (!organizationName || organizationName.trim() === '' || organizationName === 'Enter Organization Name') {
+      setOrganizationNameError('Please enter your organization name');
+      // Focus on the organization name field
+      const orgNameField = document.getElementById('organizationName');
+      if (orgNameField) {
+        orgNameField.focus();
+        orgNameField.scrollIntoView({ behavior: 'smooth' });
+      }
+      toast.error('Please enter your organization name before exporting');
+      return;
+    }
+    
+    console.log('Exporting Annexure K...');
+    
+    try {
+      if (cciResult) {
+        // Build annexure K data from form or generate default values
+        const annexureKFormData: AnnexureKData = {
+          organization: organizationName,
+          entityType: 'Stock Exchange', // Default value
+          entityCategory: 'Market Infrastructure Institution (MII)', // Default value
+          rationale: 'As per SEBI CSCRF guidelines', // Default value
+          period: `${new Date().getFullYear() - 1}-${new Date().getFullYear()}`, // Last year to current year
+          auditingOrganization: 'Internal Assessment', // Default value
+          signatoryName: 'CISO', // Default value
+          designation: 'Chief Information Security Officer' // Default value
+        };
+        
+        // Extract category scores from cciResult
+        const categoryScoresMap: Record<string, { score: number, maturityLevel: string }> = {};
+        
+        if (cciResult.categoryScores) {
+          cciResult.categoryScores.forEach(category => {
+            categoryScoresMap[category.name] = {
+              score: category.score,
+              maturityLevel: getMaturityLevelForScore(category.score)
+            };
+          });
+        }
+        
+        // Call export function with correctly formatted data
+        await exportAnnexureKReport({
+          organizationName: organizationName,
+          assessmentDate: assessmentDate,
+          annexureKData: annexureKFormData,
+          cciScore: cciResult.totalScore,
+          categoryScores: categoryScoresMap
+        });
+        
+        toast.success('Annexure K exported successfully!');
+      } else {
+        toast.error('Unable to export Annexure K. Invalid result data.');
+      }
+    } catch (error) {
+      console.error('Error exporting Annexure K:', error);
+      toast.error('Failed to export Annexure K. See console for details.');
+    }
   };
 
   return (
@@ -401,6 +519,7 @@ export default function Home() {
           onExportPdf={handleExportPdf}
           onExportCsv={handleExportCsv}
           onExportCompactSebiReport={handleExportCompactSebiReport}
+          onExportAnnexureK={handleExportAnnexureK}
         />
         
         <main className="md:ml-64 w-full max-w-6xl mx-auto px-4 pb-20">
@@ -455,118 +574,20 @@ export default function Home() {
               </div>
               <div className="md:col-span-2">
                 {/* Calculate CCI Button */}
-                <div className="flex space-x-2">
+                <div className="flex justify-center mt-2">
                   <button
                     onClick={handleCalculate}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md shadow-md transform transition hover:scale-105 flex items-center justify-center h-9"
+                    className="w-56 py-3 cci-btn-primary text-base font-medium"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
                     Calculate CCI
-                  </button>
-                  <button
-                    onClick={toggleGuide}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md shadow-md transform transition hover:scale-105 flex items-center justify-center h-9"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {showGuide ? 'Hide Guide' : 'Show Guide'}
                   </button>
                 </div>
               </div>
             </div>
           </section>
-
-          {/* Process Guide Section */}
-          {showGuide && (
-            <section aria-label="Compliance Process Guide" className="bg-white rounded-xl shadow-md overflow-hidden mb-8 animate-fadeIn">
-              <div className="p-6 bg-green-600 border-b">
-                <h2 className="text-xl font-semibold text-white">Complete SEBI CSCRF Compliance Process</h2>
-              </div>
-              <div className="p-6">
-                <div className="space-y-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
-                      <span className="text-green-800 font-bold text-xl">1</span>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900">Fill Basic Information</h3>
-                      <p className="mt-1 text-gray-600">
-                        Start by entering your organization name and assessment date at the top of this page.
-                        Then go through each parameter section to enter values for your assessment.
-                      </p>
-                      <button 
-                        onClick={handleReset} 
-                        className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none"
-                      >
-                        Go to Basic Calculator
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="border-t border-gray-200 pt-6 flex items-start space-x-4">
-                    <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
-                      <span className="text-green-800 font-bold text-xl">2</span>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900">Complete Detailed Assessment</h3>
-                      <p className="mt-1 text-gray-600">
-                        For a comprehensive assessment, use the detailed calculator to break down each parameter
-                        into specific questions and provide structured evidence for your implementation.
-                      </p>
-                      <button 
-                        onClick={handleShowDataCollection} 
-                        className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none"
-                      >
-                        Go to Detailed Calculator
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="border-t border-gray-200 pt-6 flex items-start space-x-4">
-                    <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
-                      <span className="text-green-800 font-bold text-xl">3</span>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900">Fill Annexure K Form</h3>
-                      <p className="mt-1 text-gray-600">
-                        Complete the Annexure K form as required by SEBI for formal submission. Include all necessary
-                        organizational details and compliance information.
-                      </p>
-                      <button 
-                        onClick={handleShowAnnexureK} 
-                        className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none"
-                      >
-                        Go to Annexure K Form
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="border-t border-gray-200 pt-6 flex items-start space-x-4">
-                    <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
-                      <span className="text-green-800 font-bold text-xl">4</span>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900">Generate and Export Report</h3>
-                      <p className="mt-1 text-gray-600">
-                        View your final assessment report and export it in your preferred format (PDF, Markdown, or CSV)
-                        for submission to SEBI.
-                      </p>
-                      <button 
-                        onClick={handleViewReport}
-                        className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none"
-                        disabled={!showResults && !showReport}
-                      >
-                        View Detailed Report
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
 
           {/* CCI Calculation Explanation Blurb */}
           <section aria-label="CCI Calculation Explanation" className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-r-md shadow-sm">
@@ -622,7 +643,7 @@ export default function Home() {
                 <div className="flex space-x-4">
                   <button
                     onClick={handleLoadSample}
-                    className="text-white hover:text-gray-300 font-medium flex items-center"
+                    className="cci-btn-outline text-sm"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -631,7 +652,7 @@ export default function Home() {
                   </button>
                   <button 
                     onClick={expandAll}
-                    className="text-white hover:text-gray-300 font-medium flex items-center"
+                    className="cci-btn-outline text-sm"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -685,9 +706,9 @@ export default function Home() {
               <div className="flex justify-end mb-4">
                 <button
                   onClick={handleLoadSample}
-                  className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
+                  className="cci-btn-outline text-sm"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                   Load Sample Data
@@ -707,9 +728,9 @@ export default function Home() {
               <div className="flex justify-end mb-4">
                 <button
                   onClick={handleLoadSample}
-                  className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
+                  className="cci-btn-outline text-sm"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                   Load Sample Data
@@ -731,9 +752,9 @@ export default function Home() {
               <div className="flex justify-end mb-4">
                 <button
                   onClick={handleLoadSample}
-                  className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
+                  className="cci-btn-outline text-sm"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                   Load Sample Data
@@ -743,11 +764,15 @@ export default function Home() {
                 result={cciResult} 
                 parameters={parameters}
                 annexureKData={annexureKData || undefined}
-                onReset={handleReset}
                 onExportMarkdown={handleExportMarkdown}
                 onExportPdf={handleExportPdf}
                 onExportCsv={handleExportCsv}
                 onExportCompactSebiReport={handleExportCompactSebiReport}
+                onExportAnnexureK={handleExportAnnexureK}
+                onReset={() => {
+                  setShowReport(false);
+                  setShowAnnexureK(false);
+                }}
                 isExporting={isExporting}
               />
             </section>
@@ -759,9 +784,9 @@ export default function Home() {
               <div className="flex justify-end mb-4">
                 <button
                   onClick={handleLoadSample}
-                  className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
+                  className="cci-btn-outline text-sm"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                   Load Sample Data
@@ -784,9 +809,9 @@ export default function Home() {
               <div className="flex justify-end mb-4">
                 <button
                   onClick={handleLoadSample}
-                  className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-md transition duration-200 flex items-center"
+                  className="cci-btn-outline text-sm"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                   Load Sample Data
@@ -796,6 +821,36 @@ export default function Home() {
                 organizationName={organizationName}
                 onBack={() => {
                   setShowSBOM(false);
+                  if (showResults) {
+                    setShowResults(true);
+                  } else if (showReport) {
+                    setShowReport(true);
+                  }
+                }}
+              />
+            </section>
+          )}
+
+          {/* Annexure K Form Section */}
+          {showAnnexureK && (
+            <section id="annexure-k-form" aria-label="Annexure K Form" className="mb-8 animate-fadeIn">
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={handleLoadSample}
+                  className="cci-btn-outline text-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  Load Sample Data
+                </button>
+              </div>
+              <AnnexureKForm 
+                result={cciResult}
+                parameters={parameters}
+                onComplete={handleAnnexureKComplete}
+                onCancel={() => {
+                  setShowAnnexureK(false);
                   if (showResults) {
                     setShowResults(true);
                   } else if (showReport) {

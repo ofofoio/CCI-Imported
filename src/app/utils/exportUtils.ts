@@ -1292,7 +1292,7 @@ export const exportCompactSebiReport = async (
 ) => {
   try {
     // Display loading indicator
-    toast('Generating compact SEBI parameter report...', { 
+    toast('Generating parameters-only SEBI report...', { 
       id: 'compact-pdf-export',
       duration: 8000
     });
@@ -1306,10 +1306,10 @@ export const exportCompactSebiReport = async (
     
     // Set properties for official document
     doc.setProperties({
-      title: `SEBI CSCRF Report - ${result.organization}`,
-      subject: 'Cyber Capability Index Assessment',
+      title: `SEBI CSCRF Parameter Report - ${result.organization}`,
+      subject: 'Cyber Capability Index Parameter Assessment',
       author: result.organization,
-      keywords: 'SEBI, CSCRF, Cybersecurity, Compliance',
+      keywords: 'SEBI, CSCRF, Cybersecurity, Compliance, Parameters',
       creator: 'CCI Calculator'
     });
     
@@ -1332,17 +1332,13 @@ export const exportCompactSebiReport = async (
     doc.text(`Assessment Date: ${new Date(result.date).toLocaleDateString('en-GB')}`, 14, 32);
     doc.text(`Report Generated: ${new Date().toLocaleDateString('en-GB')}`, 14, 38);
     
-    // Display total score information
-    doc.setFontSize(12);
+    // Add Comprehensive Parameter Details section title
+    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('Compliance Status:', 14, 46);
-    
-    // Status with color
-    const compliant = result.totalScore >= 60;
-    const statusColor = compliant ? [0, 128, 0] : [180, 0, 0]; // Green or Red
-    doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
-    doc.text(`${result.totalScore.toFixed(1)}% - ${result.maturityLevel} (${compliant ? 'Compliant' : 'Non-Compliant'})`, 58, 46);
-    doc.setTextColor(0, 0, 0);
+    doc.text('Comprehensive Parameter Details', 105, 48, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('As required for SEBI submission with implementation evidence and auditor verification', 105, 54, { align: 'center' });
     
     // Group parameters by framework category
     const paramsByCategory: Record<string, CCIParameter[]> = {};
@@ -1375,16 +1371,8 @@ export const exportCompactSebiReport = async (
       }
     });
     
-    // Add Comprehensive Parameter Details section title
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Comprehensive Parameter Details', 105, 54, { align: 'center' });
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text('As required for SEBI submission with implementation evidence and auditor verification', 105, 60, { align: 'center' });
-    
     // Initialize starting Y position
-    let currentY = 68;
+    let currentY = 62;
     
     // Prepare parameter tables for each category
     categories.forEach((category, categoryIndex) => {
@@ -1599,12 +1587,267 @@ export const exportCompactSebiReport = async (
     const fileName = `SEBI_CSCRF_ParameterReport_${sanitizeFilename(result.organization)}_${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
     
-    toast.success('Compact SEBI parameter report successfully generated!', { id: 'compact-pdf-export' });
+    toast.success('Parameters-only SEBI report successfully generated!', { id: 'compact-pdf-export' });
     
     return true;
   } catch (error) {
-    console.error('Error generating Compact SEBI report:', error);
-    toast.error('Failed to generate Compact SEBI report');
+    console.error('Error generating parameters-only SEBI report:', error);
+    toast.error('Failed to generate parameters-only SEBI report');
     return false;
+  }
+};
+
+/**
+ * Export only the Annexure K report as a PDF document
+ * 
+ * @param data An object containing all the required data for the report
+ */
+export const exportAnnexureKReport = async (data: {
+  organizationName: string,
+  assessmentDate: string,
+  annexureKData: AnnexureKData,
+  cciScore: number,
+  categoryScores: Record<string, { score: number, maturityLevel: string }>
+}) => {
+  try {
+    // Display loading indicator
+    toast('Generating Annexure K report...', { 
+      id: 'annexure-k-export',
+      duration: 5000
+    });
+
+    // Create new PDF document - A4 format
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
+    
+    // Set properties for official document
+    doc.setProperties({
+      title: `SEBI CSCRF Annexure K - ${data.organizationName}`,
+      subject: 'Annexure K for SEBI CSCRF Compliance',
+      author: data.organizationName,
+      keywords: 'SEBI, CSCRF, Annexure K, Compliance',
+      creator: 'CCI Calculator'
+    });
+    
+    // Define constants for page layout
+    const pageHeight = doc.internal.pageSize.height;
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = { left: 14, right: 14 };
+    const contentWidth = pageWidth - margin.left - margin.right;
+    
+    // Add header
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Annexure K - SEBI CSCRF', 105, 15, { align: 'center' });
+    doc.setFontSize(14);
+    doc.text('Authorized Signatory Declaration Form', 105, 25, { align: 'center' });
+    
+    // Entity Details section
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Entity Details', 14, 40);
+    
+    // Entity details table
+    autoTable(doc, {
+      startY: 45,
+      head: [['Field', 'Information']],
+      body: [
+        ['Organization', data.annexureKData.organization || data.organizationName],
+        ['Entity Type', data.annexureKData.entityType || 'Not specified'],
+        ['Entity Category', data.annexureKData.entityCategory || 'Not specified'],
+        ['Assessment Period', data.annexureKData.period || 'Not specified'],
+        ['Auditing Organization', data.annexureKData.auditingOrganization || 'Not specified']
+      ],
+      headStyles: { 
+        fillColor: [50, 50, 50],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 10
+      },
+      bodyStyles: {
+        fontSize: 10
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 50 }
+      },
+      margin: margin
+    });
+    
+    // Rationale section
+    let currentY = (doc as any).lastAutoTable.finalY + 15;
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Rationale for Assessment', 14, currentY);
+    
+    currentY += 10;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    // Handle long text with word wrapping
+    const splitRationale = doc.splitTextToSize(data.annexureKData.rationale || 'Not provided', contentWidth);
+    doc.text(splitRationale, 14, currentY);
+    
+    // Determine new Y position after text
+    currentY += doc.getTextDimensions(splitRationale).h + 20;
+    
+    // Check if we need a new page
+    if (currentY > pageHeight - 60) {
+      doc.addPage();
+      currentY = 15;
+    }
+    
+    // Signatory section
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Authorized Signatory Declaration', 14, currentY);
+    
+    currentY += 10;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    // Signatory statement
+    doc.text([
+      'I/We hereby confirm that Cyber Capability Index (CCI) has been verified by me/us and I/We shall take',
+      'the responsibility and ownership of the CCI report.'
+    ], 14, currentY);
+    
+    currentY += 20;
+    
+    // Signatory details table
+    autoTable(doc, {
+      startY: currentY,
+      body: [
+        ['Name of Signatory', data.annexureKData.signatoryName || 'Not specified'],
+        ['Designation', data.annexureKData.designation || 'Not specified']
+      ],
+      theme: 'plain',
+      styles: {
+        fontSize: 10,
+        cellPadding: 3
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 50 }
+      },
+      margin: margin
+    });
+    
+    // Signature field
+    currentY = (doc as any).lastAutoTable.finalY + 15;
+    doc.setDrawColor(100);
+    doc.setLineWidth(0.2);
+    doc.line(14, currentY + 20, 105, currentY + 20);
+    doc.setFontSize(9);
+    doc.text('Signature', 14, currentY + 25);
+    
+    // Date field
+    doc.line(115, currentY + 20, 195, currentY + 20);
+    doc.text('Date', 115, currentY + 25);
+    
+    // CCI Score summary
+    currentY += 40;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CCI Score Summary', 14, currentY);
+    
+    currentY += 10;
+    
+    // Get maturity level based on score
+    let maturityLevel = "Insufficient";
+    if (data.cciScore >= 91) maturityLevel = "Exceptional";
+    else if (data.cciScore >= 81) maturityLevel = "Optimal";
+    else if (data.cciScore >= 71) maturityLevel = "Manageable";
+    else if (data.cciScore >= 61) maturityLevel = "Developing";
+    else if (data.cciScore >= 51) maturityLevel = "Bare Minimum";
+    
+    // Summary table
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Metric', 'Value']],
+      body: [
+        ['Overall CCI Score', `${data.cciScore.toFixed(2)}%`],
+        ['Maturity Level', maturityLevel],
+        ['Compliance Status', data.cciScore >= 60 ? 'Compliant' : 'Non-Compliant']
+      ],
+      headStyles: { 
+        fillColor: [50, 50, 50],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 10
+      },
+      bodyStyles: {
+        fontSize: 10
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 50 }
+      },
+      margin: margin
+    });
+    
+    currentY = (doc as any).lastAutoTable.finalY + 15;
+    
+    // Domain scores table
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Domain Scores', 14, currentY);
+    
+    currentY += 10;
+    
+    // Sort domain categories for consistent order
+    const categoryOrder = ['Governance', 'Identify', 'Protect', 'Detect', 'Respond', 'Recover'];
+    const sortedCategories = Object.keys(data.categoryScores).sort((a, b) => {
+      return categoryOrder.indexOf(a) - categoryOrder.indexOf(b);
+    });
+    
+    // Create table body for domain scores
+    const domainTableBody = sortedCategories.map(category => {
+      const { score, maturityLevel } = data.categoryScores[category];
+      const compliant = score >= 60;
+      return [
+        category,
+        `${score.toFixed(1)}%`, 
+        maturityLevel,
+        compliant ? 'Compliant' : 'Non-Compliant'
+      ];
+    });
+    
+    // Domain scores table
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Domain', 'Score', 'Maturity Level', 'Status']],
+      body: domainTableBody,
+      headStyles: { 
+        fillColor: [50, 50, 50],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 10
+      },
+      bodyStyles: {
+        fontSize: 10
+      },
+      margin: margin
+    });
+    
+    // Footer with SEBI reference
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text('As per SEBI CSCRF requirements - Annexure K submission', 14, pageHeight - 10);
+    
+    // Page numbers
+    doc.text(`Page 1 of 1`, pageWidth - 14, pageHeight - 10, { align: 'right' });
+    
+    // Save the PDF
+    const fileName = `Annexure_K_${sanitizeFilename(data.organizationName)}_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+    
+    toast.success('Annexure K report successfully generated!', { id: 'annexure-k-export' });
+    
+    return Promise.resolve();
+  } catch (error) {
+    console.error('Error generating Annexure K report:', error);
+    toast.error('Failed to generate Annexure K report');
+    return Promise.reject(error);
   }
 }; 

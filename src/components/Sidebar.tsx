@@ -21,6 +21,7 @@ interface SidebarProps {
   onExportPdf: () => void;
   onExportCsv: () => void;
   onExportCompactSebiReport: () => void;
+  onExportAnnexureK: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -40,7 +41,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onExportMarkdown,
   onExportPdf,
   onExportCsv,
-  onExportCompactSebiReport
+  onExportCompactSebiReport,
+  onExportAnnexureK
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   
@@ -155,18 +157,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               </svg>
               View Detailed Report
             </button>
-            {onViewParameterReport && (
-              <button
-                onClick={onViewParameterReport}
-                className={`w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-200 flex items-center ${showOnlyParameterReport ? 'bg-gray-200 font-medium' : ''}`}
-                disabled={!showResults && !showReport && !showOnlyParameterReport}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                </svg>
-                Parameter Report Only
-              </button>
-            )}
             <button
               onClick={onExportMarkdown}
               className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-200 flex items-center"
@@ -175,17 +165,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
-              Export as Markdown
-            </button>
-            <button
-              onClick={onExportPdf}
-              className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-200 flex items-center"
-              disabled={!showResults && !showReport && !showOnlyParameterReport}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              Full SEBI Report
+              Export as Markdown Full SEBI Report
             </button>
             <button
               onClick={onExportCompactSebiReport}
@@ -196,6 +176,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               Parameter-Only Report
+            </button>
+            <button
+              onClick={onExportAnnexureK}
+              className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-200 flex items-center"
+              disabled={!showAnnexureK}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export Annexure K
             </button>
             <button
               onClick={onExportCsv}

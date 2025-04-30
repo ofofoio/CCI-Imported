@@ -163,18 +163,32 @@ body {
   @apply text-lg font-medium text-gray-700;
 }
 
+/* Button styles updated to match ofofo.ai */
 .cci-btn-primary {
-  @apply bg-black hover:bg-gray-800 text-white py-2 px-4 rounded-md transition duration-200 shadow-md;
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-md transition duration-300 shadow-sm flex items-center justify-center;
 }
 
 .cci-btn-secondary {
-  @apply bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md transition duration-200 shadow-md;
+  @apply bg-black hover:bg-gray-800 text-white font-medium py-2.5 px-6 rounded-md transition duration-300 shadow-sm flex items-center justify-center;
 }
 
 .cci-btn-success {
-  @apply bg-black hover:bg-gray-800 text-white py-2 px-4 rounded-md transition duration-200 shadow-md;
+  @apply bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-md transition duration-300 shadow-sm flex items-center justify-center;
 }
 
 .cci-btn-danger {
-  @apply bg-black hover:bg-gray-800 text-white py-2 px-4 rounded-md transition duration-200 shadow-md;
+  @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-6 rounded-md transition duration-300 shadow-sm flex items-center justify-center;
+}
+
+/* New button styles for various use cases */
+.cci-btn-outline {
+  @apply border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium py-2.5 px-6 rounded-md transition duration-300 shadow-sm flex items-center justify-center;
+}
+
+.cci-btn-demo {
+  @apply border border-gray-300 bg-black hover:bg-gray-800 text-white font-medium py-2.5 px-6 rounded-md transition duration-300 shadow-sm flex items-center justify-center;
+}
+
+.cci-btn-early-access {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-md transition duration-300 shadow-sm flex items-center justify-center;
 } 
