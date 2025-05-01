@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import CreatorFooter from './CreatorFooter';
 
 interface SEBIInfoProps {
   onCalculate: () => void;
@@ -469,6 +470,9 @@ const SEBIInfo: React.FC<SEBIInfoProps> = ({ onCalculate }) => {
           <a href="https://www.sebi.gov.in" target="_blank" rel="noopener noreferrer" className="text-black ml-1 hover:underline">www.sebi.gov.in</a>.
         </p>
       </div>
+      
+      {/* Creator Footer */}
+      <CreatorFooter className="mt-10" />
       
       <style jsx>{`
         @keyframes fadeInUp {

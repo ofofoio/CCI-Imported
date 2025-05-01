@@ -1,5 +1,6 @@
 import React from 'react';
 import { CCIResult, maturityLevels } from '../app/types';
+import CreatorFooter from './CreatorFooter';
 
 export interface CCIResultsProps {
   result: CCIResult;
@@ -28,6 +29,35 @@ const CCIResults: React.FC<CCIResultsProps> = ({
   onReset, 
   onShowAnnexureK 
 }) => {
+  const { totalScore, maturityLevel } = result;
+  
+  // Determine progress bar color and width based on score
+  const getProgressBarStyles = () => {
+    if (totalScore >= 80) {
+      return {
+        width: `${totalScore}%`,
+        backgroundColor: '#000000', // Black for optimal
+      };
+    } else if (totalScore >= 70) {
+      return {
+        width: `${totalScore}%`,
+        backgroundColor: '#374151', // Dark gray for manageable
+      };
+    } else if (totalScore >= 60) {
+      return {
+        width: `${totalScore}%`,
+        backgroundColor: '#6B7280', // Medium gray for developing
+      };
+    } else {
+      return {
+        width: `${totalScore}%`,
+        backgroundColor: '#9CA3AF', // Light gray for vulnerable
+      };
+    }
+  };
+
+  const progressBarStyles = getProgressBarStyles();
+  
   // Helper functions for score categories and color
   const getScoreCategory = (score: number): string => {
     const level = maturityLevels.find(level => score >= level.min && score <= level.max);
@@ -48,156 +78,133 @@ const CCIResults: React.FC<CCIResultsProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden animate-scaleIn">
-      <div className="p-6 bg-black border-b">
-        <h2 className="text-xl font-semibold text-white">Cyber Capability Index Results</h2>
+    <div className="animate-fadeIn">
+      <div className="bg-black text-white p-6 rounded-t-xl shadow-md relative">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),transparent_70%)]"></div>
+        <div className="relative z-10">
+          <h2 className="text-2xl font-bold mb-2">Results Analysis</h2>
+          <p className="text-gray-300">Your organization&apos;s Cyber Capability Index assessment results</p>
+        </div>
       </div>
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Organization</h3>
-            <p className="text-xl font-bold text-black">{result.organization}</p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Assessment Date</h3>
-            <p className="text-xl font-bold text-black">{formatDate(result.date)}</p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Overall CCI Score</h3>
-            <p className="text-xl font-bold text-black">
-              {result.totalScore.toFixed(2)}
-              <span className="ml-2 text-sm font-normal">
-                ({result.maturityLevel})
-              </span>
-            </p>
-          </div>
-        </div>
-
+      
+      <div className="bg-white p-6 rounded-b-xl shadow-md mb-8">
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-black mb-4">Score Breakdown by Category</h3>
-          <div className="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-black">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                    Score
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                    Rating
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {result.categoryScores && result.categoryScores.map((category, index) => (
-                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
-                      {category.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {category.score.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium ${getCategoryBadgeColor(category.score)}`}>
-                        {getScoreCategory(category.score)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-black mb-4">Top Improvement Areas</h3>
-          <div className="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-black">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                    Measure ID
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                    Title
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                    Current Score
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                    Impact
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {result.improvementAreas && result.improvementAreas.map((area, index) => (
-                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
-                      {area.measureId}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {area.title}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {area.score.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      +{area.impact.toFixed(2)} points
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex justify-center space-x-4">
-            <button
-              onClick={onReset}
-              className="cci-btn-outline"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-              </svg>
-              Reset
-            </button>
-            <button
-              onClick={onShowAnnexureK}
-              className="cci-btn-secondary"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-              </svg>
-              Annexure-K Form
-            </button>
-          </div>
-          <div className="flex justify-center space-x-4">
-            <button
-              onClick={onViewReport}
-              className="cci-btn-primary"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-              </svg>
-              View Detailed Report
-            </button>
-            {onViewParameterReport && (
+          <div className="flex flex-col items-center sm:flex-row sm:justify-between mb-6">
+            <div className="mb-4 sm:mb-0">
+              <h3 className="text-lg font-semibold">Cyber Capability Index (CCI)</h3>
+              <p className="text-sm text-gray-600">Based on SEBI CSCRF standards</p>
+            </div>
+            <div className="flex space-x-2">
               <button
-                onClick={onViewParameterReport}
-                className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-6 rounded-md transition duration-200 flex items-center"
+                onClick={onReset}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors duration-300 text-sm flex items-center"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                <svg className="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                 </svg>
-                Parameters Only
+                Reset
               </button>
-            )}
+              {onViewParameterReport && (
+                <button
+                  onClick={onViewParameterReport}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors duration-300 text-sm flex items-center"
+                >
+                  <svg className="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  Parameter Report
+                </button>
+              )}
+              <button
+                onClick={onViewReport}
+                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors duration-300 text-sm flex items-center"
+              >
+                <svg className="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Full Report
+              </button>
+            </div>
+          </div>
+          
+          <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 transition-all duration-300 hover:shadow-md hover:border-black">
+            <div className="flex justify-between mb-2">
+              <span className="font-medium">Overall Score:</span>
+              <span className="font-bold">{totalScore.toFixed(2)}</span>
+            </div>
+            
+            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+              <div 
+                className="h-2.5 rounded-full transition-all duration-1000 ease-in-out" 
+                style={progressBarStyles}
+              ></div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Maturity Level:</div>
+                <div className="font-semibold">{maturityLevel}</div>
+              </div>
+              
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Assessment Date:</div>
+                <div className="font-semibold">{new Date().toLocaleDateString()}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold mb-4">Maturity Level Descriptions</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {maturityLevels.map((level, index) => (
+              <div 
+                key={index}
+                className={`p-4 border rounded-md transition-all duration-300 hover:shadow-md ${
+                  level.level === maturityLevel 
+                    ? 'border-black bg-gray-50' 
+                    : 'border-gray-200 hover:border-black'
+                }`}
+              >
+                <div className="font-medium">{level.level}</div>
+                <div className="text-sm text-gray-600 mt-1">{level.min} - {level.max}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold mb-4">Regulatory Compliance Options</h3>
+          <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 transition-all duration-300 hover:shadow-md hover:border-black">
+            <div className="mb-4">
+              <p className="text-gray-700">As per the SEBI CSCRF Annexure-K, you need to submit the following information:</p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row justify-between">
+              <div className="mb-4 sm:mb-0">
+                <ul className="text-sm text-gray-600 space-y-2">
+                  <li>• Entity Type and Category</li>
+                  <li>• Rationale for Selected Threshold</li>
+                  <li>• Reporting Period</li>
+                  <li>• CCI Score and Maturity Level</li>
+                </ul>
+              </div>
+              
+              <button
+                onClick={onShowAnnexureK}
+                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors duration-300 text-sm flex items-center"
+              >
+                <svg className="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Go to Annexure-K
+              </button>
+            </div>
           </div>
         </div>
       </div>
+      
+      <CreatorFooter />
     </div>
   );
 };

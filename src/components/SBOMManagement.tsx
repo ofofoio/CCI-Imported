@@ -6,6 +6,7 @@ import {
   SBOMComponent, 
   SBOMRegistry 
 } from '../app/types';
+import CreatorFooter from './CreatorFooter';
 
 interface SBOMManagementProps {
   organizationName: string;
@@ -1339,6 +1340,9 @@ export default function SBOMManagement({ organizationName, onBack, onExportSBOM 
           </div>
         </div>
       </div>
+
+      {/* Creator Footer */}
+      <CreatorFooter className="mt-8" />
     </div>
   );
 } 
