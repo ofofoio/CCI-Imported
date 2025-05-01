@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { CCIResult, CCIParameter } from '../app/types';
+import { CCIResult, CCIParameter, AnnexureKData } from '../app/types';
 import AnnexureKReport from './AnnexureKReport';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, BorderStyle, WidthType, AlignmentType } from 'docx';
 import { saveAs } from 'file-saver';
 import { generateAnnexureKSampleData } from '../app/data/cciParameters';
+import { exportAnnexureKReport } from '../app/utils/exportUtils';
+import { toast } from 'react-hot-toast';
+import CreatorFooter from './CreatorFooter';
 
 interface AnnexureKFormProps {
   result: CCIResult;
@@ -38,6 +40,16 @@ export interface FormState {
 
 const FORM_STORAGE_KEY = 'annexureK_form_data';
 
+// Helper function to determine maturity level based on score
+const getMaturityLevelForScore = (score: number): string => {
+  if (score >= 91) return 'Exceptional';
+  if (score >= 81) return 'Optimal';
+  if (score >= 71) return 'Manageable';
+  if (score >= 61) return 'Developing';
+  if (score >= 51) return 'Bare Minimum';
+  return 'Insufficient';
+};
+
 const AnnexureKForm: React.FC<AnnexureKFormProps> = ({ 
   result, 
   parameters, 
@@ -59,6 +71,7 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
   const [previewMode, setPreviewMode] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   
   // Form field is required only if it's a MII
   const isMII = formState.entityType === 'Stock Exchange' || 
@@ -260,236 +273,148 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
     setTouched({});
   };
 
+  // Export as PDF function
+  const handleExportPdf = () => {
+    // Validate form first
+    const formErrors = validateForm();
+    setErrors(formErrors);
+    
+    // Mark all fields as touched
+    const allTouched: Record<string, boolean> = {};
+    Object.keys(formState).forEach(key => {
+      allTouched[key] = true;
+    });
+    setTouched(allTouched);
+    
+    // Only export if no errors
+    if (Object.keys(formErrors).length === 0) {
+      try {
+        // Set loading state
+        setIsExporting(true);
+        
+        // Create the AnnexureKData object
+        const annexureKData: AnnexureKData = {
+          organization: formState.organization,
+          entityType: formState.entityType,
+          entityCategory: formState.entityCategory,
+          rationale: formState.rationale,
+          period: formState.period,
+          auditingOrganization: formState.auditingOrganization,
+          signatoryName: formState.signatoryName,
+          designation: formState.designation
+        };
+        
+        // Extract category scores from result
+        const categoryScoresMap: Record<string, { score: number, maturityLevel: string }> = {};
+        
+        if (result.categoryScores) {
+          result.categoryScores.forEach(category => {
+            categoryScoresMap[category.name] = {
+              score: category.score,
+              maturityLevel: getMaturityLevelForScore(category.score)
+            };
+          });
+        }
+        
+        // Call specific Annexure K export function
+        exportAnnexureKReport({
+          organizationName: formState.organization,
+          assessmentDate: result.date,
+          annexureKData: annexureKData,
+          cciScore: result.totalScore,
+          categoryScores: categoryScoresMap
+        })
+          .then(() => {
+            console.log('Annexure K PDF export completed successfully');
+            toast.success('Annexure-K PDF successfully exported for SEBI submission!');
+            setIsExporting(false);
+          })
+          .catch(error => {
+            console.error('Error exporting Annexure K PDF:', error);
+            toast.error('Failed to export Annexure-K PDF document. Please try again.');
+            alert('Failed to export Annexure K PDF document. Please try again.');
+            setIsExporting(false);
+          });
+      } catch (error) {
+        console.error('Error starting Annexure K PDF export:', error);
+        alert('Failed to start Annexure K PDF export. Please try again.');
+        setIsExporting(false);
+      }
+    } else {
+      // Scroll to first error
+      const firstErrorField = Object.keys(formErrors)[0];
+      const errorElement = document.getElementById(firstErrorField);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        errorElement.focus();
+      }
+    }
+  };
+
   // Helper function to determine if a field has an error
   const hasError = (fieldName: keyof FormState) => {
     return (touched[fieldName] || formSubmitted) && errors[fieldName];
   };
 
-  // Generate and export form data as Word document
-  const exportToWord = async () => {
-    try {
-      // Create document with a single section
-      const doc = new Document({
-        sections: [{
-          properties: {},
-          children: [
-            new Paragraph({
-              text: "Annexure-K Form",
-              heading: HeadingLevel.HEADING_1,
-              alignment: AlignmentType.CENTER,
-            }),
-            new Paragraph({
-              text: "SEBI Reporting Format for MIIs and Qualified REs to Submit CCI Score",
-              alignment: AlignmentType.CENTER,
-            }),
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({
-              text: "Organization Information",
-              heading: HeadingLevel.HEADING_2,
-            }),
-            
-            // Create organization info table
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: [
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Name of the Organisation")] }),
-                    new TableCell({ children: [new Paragraph(formState.organization)] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Entity Type")] }),
-                    new TableCell({ children: [new Paragraph(formState.entityType)] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Entity Category (as per CSCRF)")] }),
-                    new TableCell({ children: [new Paragraph(formState.entityCategory)] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Period")] }),
-                    new TableCell({ children: [new Paragraph(formState.period)] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Rationale for the Category")] }),
-                    new TableCell({ children: [new Paragraph(formState.rationale)] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Name of the Auditing Organisation")] }),
-                    new TableCell({ children: [new Paragraph(formState.auditingOrganization || "Not Applicable")] }),
-                  ],
-                }),
-              ],
-            }),
-            
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({
-              text: "CCI Score",
-              heading: HeadingLevel.HEADING_2,
-            }),
-            
-            // Create CCI Score table
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: [
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("CCI Score")] }),
-                    new TableCell({ children: [new Paragraph(result.totalScore.toString())] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Maturity Level")] }),
-                    new TableCell({ children: [new Paragraph(result.maturityLevel)] }),
-                  ],
-                }),
-              ],
-            }),
-            
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({
-              text: "Parameters Summary",
-              heading: HeadingLevel.HEADING_2,
-            }),
-            
-            // Create parameters table
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: [
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Parameter")] }),
-                    new TableCell({ children: [new Paragraph("Score")] }),
-                    new TableCell({ children: [new Paragraph("Weightage")] }),
-                  ],
-                }),
-                // Add rows for top 5 parameters by weightage
-                ...parameters
-                  .sort((a, b) => b.weightage - a.weightage)
-                  .slice(0, 5)
-                  .map(param => 
-                    new TableRow({
-                      children: [
-                        new TableCell({ children: [new Paragraph(param.title)] }),
-                        new TableCell({ 
-                          children: [
-                            new Paragraph(
-                              ((param.numerator / param.denominator) * 100).toFixed(1) + "%"
-                            )
-                          ] 
-                        }),
-                        new TableCell({ children: [new Paragraph(param.weightage.toString())] }),
-                      ],
-                    })
-                  ),
-              ],
-            }),
-            
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({
-              text: "Authorised Signatory Declaration",
-              heading: HeadingLevel.HEADING_2,
-            }),
-            new Paragraph({
-              text: "I/ We hereby confirm that Cyber Capability Index (CCI) has been verified by me/ us and I/ We shall take the responsibility and ownership of the CCI report.",
-            }),
-            new Paragraph({ text: " " }), // Empty line
-            
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: [
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Name of the Signatory")] }),
-                    new TableCell({ children: [new Paragraph(formState.signatoryName)] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Designation")] }),
-                    new TableCell({ children: [new Paragraph(formState.designation)] }),
-                  ],
-                }),
-              ],
-            }),
-            
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({
-              text: "Signature: ________________________",
-            }),
-            new Paragraph({ text: " " }), // Empty line
-            new Paragraph({
-              text: "Date: ________________________",
-            }),
-          ],
-        }],
-      });
-      
-      // Generate and save document
-      const buffer = await Packer.toBlob(doc);
-      saveAs(buffer, `Annexure-K_${formState.organization}_${new Date().toISOString().split('T')[0]}.docx`);
-    } catch (error) {
-      console.error("Error generating Word document:", error);
-      alert("Failed to export document. Please try again.");
-    }
-  };
-
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden">
-      <div className="p-6 bg-black border-b">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-semibold text-white">Annexure-K Form</h2>
-            <p className="text-sm text-gray-400 mt-1">SEBI Reporting Format for MIIs and Qualified REs to Submit CCI Score</p>
-          </div>
-          <div className="flex space-x-2">
-            <button
-              type="button"
-              onClick={loadSampleData}
-              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition duration-200 flex items-center"
-              title="Load example data to see how the form should be filled"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-              Load Sample Data
-            </button>
-            <button
-              type="button"
-              onClick={resetForm}
-              className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition duration-200"
-            >
-              Reset Form
-            </button>
+    <div className="animate-fadeIn">
+      <div className="bg-black p-6 rounded-t-xl relative">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(40,40,40,0.4),transparent_70%)]"></div>
+        <div className="relative z-10 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-white tracking-wider">SEBI CSCRF Annexure-K</h2>
+          <div className="flex space-x-3">
             <button
               type="button"
               onClick={togglePreview}
-              className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200"
+              className="inline-flex items-center px-3 py-1.5 border border-white/30 text-white text-sm font-medium rounded-md hover:bg-white/10 focus:outline-none transition-colors duration-300"
             >
-              {previewMode ? 'Edit Form' : 'Preview Report'}
+              {previewMode ? (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit Form
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  Preview
+                </>
+              )}
             </button>
+            
+            {previewMode && (
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                className="bg-white hover:bg-gray-100 text-black py-1.5 px-3 rounded-md transition-all duration-300 flex items-center text-sm font-medium"
+              >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
+                    </svg>
+                Export PDF
+              </button>
+            )}
           </div>
         </div>
       </div>
-
-      {previewMode ? (
-        <div className="p-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h3 className="text-lg font-medium text-blue-800 mb-2">Preview Mode</h3>
-            <p className="text-sm text-blue-700">
-              This is a preview of your Annexure-K report. Please review all information carefully before submitting.
-            </p>
+      
+      <div className="bg-white border border-gray-200 rounded-b-xl shadow-md">
+        {previewMode ? (
+          <div className="p-6">
+            <div className="mb-4 bg-black/5 border-l-4 border-black rounded-lg p-4">
+              <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-black mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                <h3 className="text-md font-medium text-black">Preview Mode</h3>
+              </div>
+              <p className="text-sm text-gray-800 mt-2">
+                This is a preview of your Annexure-K report. Click "Edit Form" to make changes or "Export PDF" to download.
+              </p>
           </div>
           
           <AnnexureKReport 
@@ -506,23 +431,6 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
           <div className="mt-8 flex justify-end space-x-4">
             <button
               type="button"
-              onClick={exportToWord}
-              className="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-md transition duration-200 flex items-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-              Export as Word
-            </button>
-            <button
-              type="button"
-              onClick={togglePreview}
-              className="bg-gray-200 hover:bg-gray-300 text-black py-2 px-6 rounded-md transition duration-200"
-            >
-              Back to Edit
-            </button>
-            <button
-              type="button"
               onClick={handleSubmit}
               className="bg-black hover:bg-gray-800 text-white py-2 px-6 rounded-md transition duration-200"
             >
@@ -537,26 +445,29 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
         <form onSubmit={handleSubmit} className="p-6">
           {/* Form progress indicator */}
           <div className="mb-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-blue-800 mb-2">Annexure-K Form Instructions</h3>
-              <p className="text-sm text-blue-700 mb-4">
-                This form is required for SEBI compliance reporting. Please complete all required fields marked with an asterisk (*).
+            <div className="bg-black/5 border border-black/10 rounded-lg p-4">
+              <h3 className="text-lg font-medium text-black mb-2">Annexure-K Form Instructions</h3>
+              <p className="text-sm text-gray-700 mb-4">
+                This form is required for SEBI compliance reporting. It captures the authorized signatory information that verifies your organization's CCI score for official submission. Please complete all required fields marked with an asterisk (*).
+              </p>
+              <p className="text-sm text-gray-700 mb-4">
+                Once completed, you can export this Annexure-K as a PDF document ready for SEBI submission as part of your compliance documentation.
               </p>
               
               <div className="flex items-center justify-between mb-2">
                 <div className="text-sm font-medium text-gray-700">Form Progress:</div>
                 <div className="text-sm text-gray-600">
                   {Object.keys(errors).length === 0 ? (
-                    <span className="text-green-600 font-medium">Ready for submission</span>
+                    <span className="text-black font-medium">Ready for submission</span>
                   ) : (
-                    <span className="text-yellow-600 font-medium">{Object.keys(errors).length} issue(s) to resolve</span>
+                    <span className="text-gray-600 font-medium">{Object.keys(errors).length} issue(s) to resolve</span>
                   )}
                 </div>
               </div>
               
               <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div 
-                  className={`h-2.5 rounded-full ${Object.keys(errors).length === 0 ? 'bg-green-600' : 'bg-yellow-400'}`}
+                  className="h-2.5 rounded-full bg-black"
                   style={{ width: `${Math.min(100, Math.max(0, (100 - Object.keys(errors).length * 12.5)))}%` }}
                 ></div>
               </div>
@@ -565,7 +476,7 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
                 <button 
                   type="button"
                   onClick={loadSampleData}
-                  className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                  className="text-black hover:text-gray-600 underline flex items-center"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
@@ -579,7 +490,7 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
           {/* Remove the top export button in form mode - it's confusing */}
           <div className="mb-6 flex justify-end items-center">
             <div className="text-xs text-gray-500 flex items-center">
-              <span className="inline-block h-2 w-2 rounded-full bg-green-500 mr-2"></span>
+              <span className="inline-block h-2 w-2 rounded-full bg-black mr-2"></span>
               Form auto-saves as you type
             </div>
           </div>
@@ -587,7 +498,7 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
           <div className="space-y-8">
             <div className="border border-gray-200 rounded-lg p-4">
               <h3 className="text-lg font-medium text-black mb-4">
-                <span className="inline-flex items-center justify-center rounded-full bg-blue-100 h-6 w-6 text-blue-800 mr-2">1</span>
+                <span className="inline-flex items-center justify-center rounded-full bg-black h-6 w-6 text-white mr-2">1</span>
                 Organization Information
               </h3>
               
@@ -722,7 +633,7 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
                   <label htmlFor="rationale" className="block text-sm font-medium text-gray-700 mb-1">
                     Rationale for the Category <span className="text-red-600">*</span>
                   </label>
-                  <div className="mb-2 text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                  <div className="mb-2 text-xs text-gray-600 bg-black/5 p-2 rounded">
                     <p className="font-medium">Guidance:</p>
                     <p>Explain why your entity belongs to the selected category as per SEBI CSCRF classification criteria. Include your cybersecurity posture, systemic importance, and business impact.</p>
                   </div>
@@ -782,7 +693,7 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
 
             <div className="border border-gray-200 rounded-lg p-4">
               <h3 className="text-lg font-medium text-black mb-4">
-                <span className="inline-flex items-center justify-center rounded-full bg-blue-100 h-6 w-6 text-blue-800 mr-2">2</span>
+                <span className="inline-flex items-center justify-center rounded-full bg-black h-6 w-6 text-white mr-2">2</span>
                 Authorised Signatory Declaration
               </h3>
               
@@ -847,16 +758,16 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
                   )}
                 </div>
               </div>
-              <div className="bg-gray-50 border border-gray-200 rounded p-3 text-xs text-gray-600">
+              <div className="bg-black/5 border border-gray-200 rounded p-3 text-xs text-gray-600">
                 <p><strong>Note:</strong> The authorised signatory declaration confirms that the reported CCI score has been verified and the organization takes responsibility for the accuracy of the report. As per SEBI requirements, this must be signed by a person in a position of authority.</p>
               </div>
             </div>
           </div>
           
-          <div className="mt-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <div className="mt-8 bg-black/5 p-4 rounded-lg border border-gray-200">
             <div className="flex items-start mb-4">
               <div className="flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-black" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -879,6 +790,29 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
               </button>
               <button
                 type="button"
+                onClick={handleExportPdf}
+                disabled={isExporting}
+                className={`${isExporting ? 'bg-gray-500' : 'bg-white hover:bg-gray-100'} border border-black text-black py-2 px-6 rounded-md transition duration-200 flex items-center`}
+              >
+                {isExporting ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
+                    </svg>
+                    Export Annexure-K as PDF
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
                 onClick={togglePreview}
                 className="bg-black hover:bg-gray-800 text-white py-2 px-6 rounded-md transition duration-200 flex items-center"
               >
@@ -892,6 +826,9 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
           </div>
         </form>
       )}
+        
+        <CreatorFooter />
+      </div>
     </div>
   );
 };
