@@ -57,7 +57,7 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
   onComplete
 }) => {
   const [formState, setFormState] = useState<FormState>({
-    organization: result.organization || '',
+    organization: '',
     entityType: '',
     entityCategory: '',
     rationale: '',
@@ -77,6 +77,31 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
   const isMII = formState.entityType === 'Stock Exchange' || 
                 formState.entityType === 'Depository' || 
                 formState.entityType === 'Clearing Corporation';
+
+  // Calculate form progress based on filled fields and validation status
+  const calculateFormProgress = (): number => {
+    const totalFields = 7; // Total number of required fields (excluding auditingOrganization if not MII)
+    const requiredFieldCount = isMII ? totalFields + 1 : totalFields; // Add auditingOrganization if MII
+    
+    // Count completed fields (non-empty and valid)
+    let completedFields = 0;
+    
+    if (formState.organization && !errors.organization) completedFields++;
+    if (formState.entityType && !errors.entityType) completedFields++;
+    if (formState.entityCategory && !errors.entityCategory) completedFields++;
+    if (formState.rationale && !errors.rationale) completedFields++;
+    if (formState.period && !errors.period) completedFields++;
+    if (formState.signatoryName && !errors.signatoryName) completedFields++;
+    if (formState.designation && !errors.designation) completedFields++;
+    
+    // Only count auditingOrganization if entity is MII
+    if (isMII) {
+      if (formState.auditingOrganization && !errors.auditingOrganization) completedFields++;
+    }
+    
+    // Calculate percentage (rounded to nearest whole number)
+    return Math.round((completedFields / requiredFieldCount) * 100);
+  };
 
   // Load saved form data from localStorage on component mount
   useEffect(() => {
@@ -249,7 +274,7 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
   const resetForm = () => {
     if (window.confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
       const initialState = {
-        organization: result.organization || '',
+        organization: '',
         entityType: '',
         entityCategory: '',
         rationale: '',
@@ -457,10 +482,10 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
               <div className="flex items-center justify-between mb-2">
                 <div className="text-sm font-medium text-gray-700">Form Progress:</div>
                 <div className="text-sm text-gray-600">
-                  {Object.keys(errors).length === 0 ? (
+                  {Object.keys(errors).length === 0 && calculateFormProgress() === 100 ? (
                     <span className="text-black font-medium">Ready for submission</span>
                   ) : (
-                    <span className="text-gray-600 font-medium">{Object.keys(errors).length} issue(s) to resolve</span>
+                    <span className="text-gray-600 font-medium">{calculateFormProgress()}% complete</span>
                   )}
                 </div>
               </div>
@@ -468,7 +493,7 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
               <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div 
                   className="h-2.5 rounded-full bg-black"
-                  style={{ width: `${Math.min(100, Math.max(0, (100 - Object.keys(errors).length * 12.5)))}%` }}
+                  style={{ width: `${calculateFormProgress()}%` }}
                 ></div>
               </div>
               
@@ -505,7 +530,7 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-1">
-                    Name of the Organisation <span className="text-red-600">*</span>
+                    Organization Name
                   </label>
                   <input
                     type="text"
@@ -514,6 +539,7 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
                     value={formState.organization}
                     onChange={handleInputChange}
                     onBlur={handleBlur}
+                    placeholder="Enter organization name"
                     className={`block w-full rounded-md shadow-sm focus:border-black focus:ring-black sm:text-sm ${
                       hasError('organization') ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300'
                     }`}
