@@ -47,14 +47,14 @@ export default function RootLayout({
         <meta name="geo.placename" content="India" />
         
         {/* Google Analytics Tag */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-V68SRNPYMF"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-K80K2XLT6C"></script>
         <script 
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'G-V68SRNPYMF');
+              gtag('config', 'G-K80K2XLT6C');
             `
           }}
         />
