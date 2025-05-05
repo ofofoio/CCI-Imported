@@ -45,6 +45,19 @@ export default function RootLayout({
         <meta property="og:locale" content="en_IN" />
         <meta name="geo.region" content="IN" />
         <meta name="geo.placename" content="India" />
+        
+        {/* Google Analytics Tag */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-V68SRNPYMF"></script>
+        <script 
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-V68SRNPYMF');
+            `
+          }}
+        />
       </head>
       <body className={inter.className}>
         {children}

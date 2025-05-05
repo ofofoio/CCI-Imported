@@ -78,7 +78,155 @@ export default function SEBICSCRFPage() {
         </div>
       </div>
       
+      {/* Updated April 2025 circular banner */}
+      <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg shadow-md mb-8">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-6 w-6 text-yellow-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-lg font-bold text-gray-800">Latest Update: SEBI Circular (April 30, 2025)</h3>
+            <div className="mt-2 text-gray-700">
+              <p className="mb-2">SEBI has issued revised classifications for Regulated Entities (REs) under the CSCRF framework via circular <a href="https://www.sebi.gov.in/legal/circulars/apr-2025/clarifications-to-cybersecurity-and-cyber-resilience-framework-cscrf-for-sebi-regulated-entities-res-_93734.html" className="text-blue-600 hover:underline font-semibold" target="_blank" rel="noopener noreferrer">SEBI/HO/ITD-1/ITD_CSC_EXT/P/CIR/2025/60</a>.</p>
+              <p>The circular revises thresholds for Stock Brokers, Portfolio Managers, and Investment Advisors with new categorization criteria for compliance requirements.</p>
+              <a 
+                href="#classification-section" 
+                className="mt-2 inline-flex items-center text-sm font-medium text-yellow-700 hover:text-yellow-900"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const section = document.getElementById('classification-section');
+                  if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
+                Learn more about the new classification
+                <svg className="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <SEBICSCRFIntroduction />
+      
+      {/* New Classification Section */}
+      <div id="classification-section" className="mt-12 mb-12 border-t border-gray-200 pt-10">
+        <h2 className="text-2xl font-bold mb-4">SEBI CSCRF Entity Classification (2025 Update)</h2>
+        <p className="mb-6">
+          SEBI has revised the classification thresholds for different types of entities to ensure more appropriate compliance requirements 
+          based on the size and complexity of operations. The classification determines the specific cybersecurity controls and reporting 
+          requirements for each entity.
+        </p>
+        
+        <div className="overflow-x-auto mb-8">
+          <table className="min-w-full bg-white border border-gray-300 rounded-lg">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="py-3 px-4 border-b text-left">Entity Type</th>
+                <th className="py-3 px-4 border-b text-left">Qualified REs</th>
+                <th className="py-3 px-4 border-b text-left">Mid-size REs</th>
+                <th className="py-3 px-4 border-b text-left">Small-size REs</th>
+                <th className="py-3 px-4 border-b text-left">Self-certification REs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="py-3 px-4 border-b font-medium" rowSpan={2}>Stock Brokers</td>
+                <td className="py-3 px-4 border-b">Clients: &gt;10 lakhs</td>
+                <td className="py-3 px-4 border-b">Clients: 1-10 lakhs</td>
+                <td className="py-3 px-4 border-b">Clients: 10,000-1 lakh</td>
+                <td className="py-3 px-4 border-b">Clients: &lt;10,000</td>
+              </tr>
+              <tr>
+                <td className="py-3 px-4 border-b">Trading: &gt;₹10,00,000 Cr</td>
+                <td className="py-3 px-4 border-b">Trading: ₹1,00,000-10,00,000 Cr</td>
+                <td className="py-3 px-4 border-b">Trading: ₹10,000-1,00,000 Cr</td>
+                <td className="py-3 px-4 border-b">Trading: &lt;₹10,000 Cr</td>
+              </tr>
+              <tr>
+                <td className="py-3 px-4 border-b font-medium">Portfolio Managers</td>
+                <td className="py-3 px-4 border-b">Not applicable</td>
+                <td className="py-3 px-4 border-b">AUM: &gt;₹3,000 Cr</td>
+                <td className="py-3 px-4 border-b">Not applicable</td>
+                <td className="py-3 px-4 border-b">AUM: ≤₹3,000 Cr</td>
+              </tr>
+              <tr>
+                <td className="py-3 px-4 border-b font-medium">Investment Advisors</td>
+                <td className="py-3 px-4 border-b">Not applicable</td>
+                <td className="py-3 px-4 border-b">Clients: &gt;500</td>
+                <td className="py-3 px-4 border-b">Clients: 101-500</td>
+                <td className="py-3 px-4 border-b">Clients: ≤100</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div className="bg-gray-50 p-5 rounded-lg border border-gray-200 mb-6">
+          <h3 className="text-lg font-semibold mb-3">Key Compliance Requirements by Classification</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <h4 className="font-medium mb-2 text-indigo-800">Qualified REs & MIIs</h4>
+              <ul className="list-disc pl-6 space-y-1 text-sm">
+                <li>Dedicated Hardware Security Module (HSM)</li>
+                <li>Mandatory Managed Security Operations Center (M-SOC)</li>
+                <li>Comprehensive SBOM management for all critical systems</li>
+                <li>Minimum CCI score of 61 (71 for MIIs)</li>
+                <li>Independent cybersecurity audit every 6 months</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2 text-indigo-800">Mid-size REs</h4>
+              <ul className="list-disc pl-6 space-y-1 text-sm">
+                <li>Shared HSM options permitted</li>
+                <li>Simplified vulnerability management</li>
+                <li>Minimum CCI score of 61</li>
+                <li>Annual independent cybersecurity audit</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2 text-indigo-800">Small-size REs</h4>
+              <ul className="list-disc pl-6 space-y-1 text-sm">
+                <li>Simplified access controls</li>
+                <li>Basic SBOM implementation</li>
+                <li>Minimum CCI score of 51</li>
+                <li>Biennial independent cybersecurity audit</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2 text-indigo-800">Self-certification REs</h4>
+              <ul className="list-disc pl-6 space-y-1 text-sm">
+                <li>Self-assessment of cybersecurity controls</li>
+                <li>M-SOC exemption for REs with &lt;100 clients</li>
+                <li>No mandatory CCI score</li>
+                <li>Self-certification with board approval</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+          <p className="text-sm">
+            <strong>Note:</strong> Entity category is determined at the beginning of each financial year based on the previous year's data 
+            and remains fixed throughout the year regardless of parameter changes during the period. The category must be validated by 
+            the respective reporting authority at the time of compliance submission.
+          </p>
+          <p className="text-sm mt-2">
+            <strong>Reference:</strong> For complete details, please refer to the 
+            <a href="https://www.sebi.gov.in/legal/circulars/apr-2025/clarifications-to-cybersecurity-and-cyber-resilience-framework-cscrf-for-sebi-regulated-entities-res-_93734.html" 
+               className="text-blue-600 hover:underline ml-1" 
+               target="_blank" 
+               rel="noopener noreferrer">
+              official SEBI circular SEBI/HO/ITD-1/ITD_CSC_EXT/P/CIR/2025/60
+            </a> 
+            dated April 30, 2025.
+          </p>
+        </div>
+      </div>
       
       {/* Implementation Evidence Guide */}
       <div className="mt-12 mb-12 border-t border-gray-200 pt-10">
@@ -185,6 +333,12 @@ export default function SEBICSCRFPage() {
           <a href="mailto:sebicscrf@sebi.gov.in" className="text-blue-600 hover:underline"> sebicscrf@sebi.gov.in</a> or 
           visit the official SEBI website at 
           <a href="https://www.sebi.gov.in" className="text-blue-600 hover:underline"> www.sebi.gov.in</a>.
+        </p>
+        <p className="mt-2">
+          <strong>Relevant Documentation:</strong> 
+          <a href="https://www.sebi.gov.in/legal/circulars/apr-2025/clarifications-to-cybersecurity-and-cyber-resilience-framework-cscrf-for-sebi-regulated-entities-res-_93734.html" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+            SEBI Circular on CSCRF Clarifications (April 30, 2025)
+          </a>
         </p>
         <p className="mt-2">
           <strong>Disclaimer:</strong> This SEBI CCI Index Calculator is for informational purposes only and does not constitute legal advice. 

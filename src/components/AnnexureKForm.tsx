@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CCIResult, CCIParameter, AnnexureKData } from '../app/types';
+import { CCIResult, CCIParameter, AnnexureKData, entityTypes, entityCategories, getEntityCategory } from '../app/types';
 import AnnexureKReport from './AnnexureKReport';
 import { saveAs } from 'file-saver';
 import { generateAnnexureKSampleData } from '../app/data/cciParameters';
@@ -67,11 +67,19 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
     designation: ''
   });
 
+  // Added state for entity metrics
+  const [entityMetrics, setEntityMetrics] = useState({
+    clientCount: 0,
+    tradingValue: 0,
+    aum: 0
+  });
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [previewMode, setPreviewMode] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [showClassificationHelper, setShowClassificationHelper] = useState(false);
   
   // Form field is required only if it's a MII
   const isMII = formState.entityType === 'Stock Exchange' || 
@@ -125,6 +133,26 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
       localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formState));
     }
   }, [formState]);
+
+  // Effect to automatically determine entity category based on the entity type and metrics
+  useEffect(() => {
+    if (formState.entityType) {
+      const suggestedCategory = getEntityCategory(
+        formState.entityType,
+        entityMetrics.clientCount,
+        entityMetrics.tradingValue,
+        entityMetrics.aum
+      );
+      
+      // Only update if user hasn't manually selected a category
+      if (!touched.entityCategory || !formState.entityCategory) {
+        setFormState(prev => ({
+          ...prev,
+          entityCategory: suggestedCategory
+        }));
+      }
+    }
+  }, [formState.entityType, entityMetrics, touched.entityCategory]);
 
   // Validate form fields
   const validateForm = (): FormErrors => {
@@ -189,6 +217,17 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
         [name]: undefined
       }));
     }
+  };
+
+  // Handle entity metrics changes
+  const handleMetricsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const numValue = value === '' ? 0 : parseFloat(value);
+    
+    setEntityMetrics(prev => ({
+      ...prev,
+      [name]: numValue
+    }));
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -381,6 +420,11 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
     return (touched[fieldName] || formSubmitted) && errors[fieldName];
   };
 
+  // New helper to toggle classification helper visibility
+  const toggleClassificationHelper = () => {
+    setShowClassificationHelper(prev => !prev);
+  };
+
   return (
     <div className="animate-fadeIn">
       <div className="bg-black p-6 rounded-t-xl relative">
@@ -569,21 +613,9 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
                     aria-describedby={hasError('entityType') ? 'entityType-error' : undefined}
                   >
                     <option value="">Select Entity Type</option>
-                    <optgroup label="Market Infrastructure Institutions (MIIs)">
-                      <option value="Stock Exchange">Stock Exchange</option>
-                      <option value="Depository">Depository</option>
-                      <option value="Clearing Corporation">Clearing Corporation</option>
-                    </optgroup>
-                    <optgroup label="Qualified Registered Entities (REs)">
-                      <option value="Stock Broker">Stock Broker</option>
-                      <option value="Depository Participant">Depository Participant</option>
-                      <option value="Mutual Fund">Mutual Fund</option>
-                      <option value="Registrar and Transfer Agent">Registrar and Transfer Agent</option>
-                      <option value="Portfolio Manager">Portfolio Manager</option>
-                      <option value="Investment Advisor">Investment Advisor</option>
-                      <option value="Research Analyst">Research Analyst</option>
-                      <option value="Other RE">Other Qualified RE</option>
-                    </optgroup>
+                    {entityTypes.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
                   </select>
                   {hasError('entityType') ? (
                     <p className="mt-1 text-sm text-red-600" id="entityType-error">{errors.entityType}</p>
@@ -592,6 +624,133 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
                   )}
                 </div>
               </div>
+
+              {/* New section for entity metrics based on entity type */}
+              {formState.entityType && (
+                <div className="col-span-2 bg-gray-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-md font-medium">Entity Classification Metrics (April 2025 Update)</h3>
+                    <button 
+                      type="button"
+                      onClick={toggleClassificationHelper}
+                      className="text-sm text-indigo-600 hover:text-indigo-800"
+                    >
+                      {showClassificationHelper ? 'Hide Details' : 'Show Details'}
+                    </button>
+                  </div>
+                  
+                  {showClassificationHelper && (
+                    <div className="mb-4 text-sm bg-blue-50 p-3 rounded">
+                      <p className="mb-2">
+                        As per SEBI Circular <a href="https://www.sebi.gov.in/legal/circulars/apr-2025/clarifications-to-cybersecurity-and-cyber-resilience-framework-cscrf-for-sebi-regulated-entities-res-_93734.html" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">SEBI/HO/ITD-1/ITD_CSC_EXT/P/CIR/2025/60</a> dated April 30, 2025, entities are classified based on specific criteria.
+                        Classification is determined at the beginning of each financial year based on previous year's data.
+                      </p>
+                      {formState.entityType === 'Stock Broker' && (
+                        <div>
+                          <p className="font-medium mt-2">Stock Brokers Classification:</p>
+                          <ul className="list-disc pl-4">
+                            <li>Qualified RE: Clients &gt;10 lakhs OR Trading Value &gt;₹10,00,000 Cr</li>
+                            <li>Mid-size RE: Clients 1-10 lakhs OR Trading Value ₹1,00,000-10,00,000 Cr</li>
+                            <li>Small-size RE: Clients 10,000-1 lakh OR Trading Value ₹10,000-1,00,000 Cr</li>
+                            <li>Self-certification RE: Clients &lt;10,000 AND Trading Value &lt;₹10,000 Cr</li>
+                          </ul>
+                        </div>
+                      )}
+                      {formState.entityType === 'Portfolio Manager' && (
+                        <div>
+                          <p className="font-medium mt-2">Portfolio Managers Classification:</p>
+                          <ul className="list-disc pl-4">
+                            <li>Mid-size RE: AUM &gt;₹3,000 Cr</li>
+                            <li>Self-certification RE: AUM ≤₹3,000 Cr</li>
+                          </ul>
+                        </div>
+                      )}
+                      {formState.entityType === 'Investment Advisor' && (
+                        <div>
+                          <p className="font-medium mt-2">Investment Advisors Classification:</p>
+                          <ul className="list-disc pl-4">
+                            <li>Mid-size RE: Clients &gt;500</li>
+                            <li>Small-size RE: Clients 101-500</li>
+                            <li>Self-certification RE: Clients ≤100</li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-2">
+                    {/* Stock Broker metrics */}
+                    {formState.entityType === 'Stock Broker' && (
+                      <>
+                        <div>
+                          <label htmlFor="clientCount" className="block text-sm font-medium text-gray-700 mb-1">
+                            Number of Registered Clients
+                          </label>
+                          <input
+                            type="number"
+                            id="clientCount"
+                            name="clientCount"
+                            value={entityMetrics.clientCount || ''}
+                            onChange={handleMetricsChange}
+                            className="mt-1 block w-full rounded-md shadow-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                            placeholder="e.g. 50000"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="tradingValue" className="block text-sm font-medium text-gray-700 mb-1">
+                            Trading Value (in Cr)
+                          </label>
+                          <input
+                            type="number"
+                            id="tradingValue"
+                            name="tradingValue"
+                            value={entityMetrics.tradingValue || ''}
+                            onChange={handleMetricsChange}
+                            className="mt-1 block w-full rounded-md shadow-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                            placeholder="e.g. 25000"
+                          />
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* Portfolio Manager metrics */}
+                    {formState.entityType === 'Portfolio Manager' && (
+                      <div>
+                        <label htmlFor="aum" className="block text-sm font-medium text-gray-700 mb-1">
+                          Assets Under Management (in Cr)
+                        </label>
+                        <input
+                          type="number"
+                          id="aum"
+                          name="aum"
+                          value={entityMetrics.aum || ''}
+                          onChange={handleMetricsChange}
+                          className="mt-1 block w-full rounded-md shadow-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                          placeholder="e.g. 1500"
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Investment Advisor metrics */}
+                    {formState.entityType === 'Investment Advisor' && (
+                      <div>
+                        <label htmlFor="clientCount" className="block text-sm font-medium text-gray-700 mb-1">
+                          Number of Clients
+                        </label>
+                        <input
+                          type="number"
+                          id="clientCount"
+                          name="clientCount"
+                          value={entityMetrics.clientCount || ''}
+                          onChange={handleMetricsChange}
+                          className="mt-1 block w-full rounded-md shadow-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                          placeholder="e.g. 200"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
@@ -612,10 +771,9 @@ const AnnexureKForm: React.FC<AnnexureKFormProps> = ({
                     aria-describedby={hasError('entityCategory') ? 'entityCategory-error' : undefined}
                   >
                     <option value="">Select Category</option>
-                    <option value="Market Infrastructure Institution (MII)">Market Infrastructure Institution (MII)</option>
-                    <option value="Critical">Critical</option>
-                    <option value="Major">Major</option>
-                    <option value="Minor">Minor</option>
+                    {entityCategories.map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
                   </select>
                   {hasError('entityCategory') ? (
                     <p className="mt-1 text-sm text-red-600" id="entityCategory-error">{errors.entityCategory}</p>
