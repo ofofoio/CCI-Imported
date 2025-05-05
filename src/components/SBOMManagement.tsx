@@ -539,810 +539,819 @@ export default function SBOMManagement({ organizationName, onBack, onExportSBOM 
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8 animate-fadeIn">
-      <div className="p-6 bg-black border-b flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-white">Software Bill of Materials (SBOM) Management</h2>
-        {onBack && (
+    <div className="max-w-6xl mx-auto">
+      {/* SEO-optimized content with structured data */}
+      <div itemScope itemType="https://schema.org/SoftwareApplication" className="hidden">
+        <meta itemProp="name" content="SBOM Management for SEBI CSCRF Compliance" />
+        <meta itemProp="description" content="Software Bill of Materials (SBOM) management tool for tracking software components and ensuring compliance with SEBI CSCRF requirements." />
+        <meta itemProp="applicationCategory" content="Compliance Tool" />
+        <meta itemProp="keywords" content="SBOM, Software Bill of Materials, SEBI CSCRF, cybersecurity compliance, software component tracking, vulnerability management, supply chain security" />
+      </div>
+
+      <div className="prose lg:prose-xl mx-auto mb-6">
+        <p>Software Bill of Materials (SBOM) is a crucial part of the SEBI CSCRF requirements. Maintain an inventory of software components, versions, and dependencies to track security vulnerabilities and compliance status.</p>
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 text-sm mt-4">
+          <p className="font-semibold">Important Update: SEBI Circular (SEBI/HO/ITD-1/ITD_CSC_EXT/P/CIR/2025/60) dated April 30, 2025</p>
+          <p className="mt-2">SEBI has issued revised classifications for Regulated Entities (REs) under the CSCRF framework. Key changes include:</p>
+          <ul className="list-disc pl-5 mt-2">
+            <li>New thresholds for Stock Brokers based on client numbers and trading volume</li>
+            <li>Recategorization of KYC Registration Agencies (KRAs) from MIIs to Qualified REs</li>
+            <li>Updated criteria for Portfolio Managers based on AUM</li>
+            <li>Consolidated approach for AIFs and VCFs with categorization at the manager level</li>
+            <li>Merchant Bankers classified based on their engagement in issue management activities</li>
+          </ul>
+          <p className="mt-2">The compliance deadline is June 30, 2025. SBOMs must be maintained according to your entity's classification.</p>
+        </div>
+      </div>
+
+      {/* Top Banner - similar to SEBI page */}
+      <div className="bg-black text-white p-4 rounded-lg shadow-lg mb-10">
+        <div className="flex flex-col md:flex-row items-center justify-between">
+          <div className="flex items-center mb-3 md:mb-0">
+            <div className="bg-white text-black rounded-full p-2 mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-bold">SEBI CSCRF Compliance: SBOM Management</p>
+              <p className="text-sm">SEBI CSCRF Standard 5 under GV.SC mandates SBOMs for critical systems</p>
+            </div>
+          </div>
           <button 
             onClick={onBack}
-            className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm flex items-center"
+            className="bg-white hover:bg-gray-200 text-black py-2 px-6 rounded-md transition duration-200 font-bold flex items-center"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-            </svg>
-            Back
-          </button>
-        )}
-      </div>
-      
-      <div className="p-6">
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-md">
-          <h3 className="text-md font-semibold text-blue-800 mb-1">SBOM for {organizationName}</h3>
-          <p className="text-sm text-blue-700">
-            A Software Bill of Materials (SBOM) is a formal record containing the details and supply chain relationships of various components used in building software. 
-            SBOMs are critical for compliance with SEBI CSCRF and other security frameworks.
-          </p>
-          <button 
-            className="mt-2 text-blue-700 underline text-sm font-medium flex items-center"
-            onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            View SBOM Guide
+            Back to Dashboard
           </button>
         </div>
+      </div>
 
-        <div className="mb-6">
-          <div className="flex space-x-4 mb-4">
+      <h2 className="text-3xl font-bold mb-8 text-center">
+        SBOM Management for {organizationName}
+      </h2>
+
+      <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8 animate-fadeIn">
+        <div className="p-6 bg-black border-b flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-white">Software Bill of Materials (SBOM) Management</h2>
+          {onBack && (
             <button 
-              className={`px-4 py-2 font-semibold rounded ${activeTab === 'registry' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              onClick={() => setActiveTab('registry')}
+              onClick={onBack}
+              className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm flex items-center"
             >
-              SBOM Registry
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+              </svg>
+              Back
             </button>
+          )}
+        </div>
+        
+        <div className="p-6">
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-md">
+            <h3 className="text-md font-semibold text-blue-800 mb-1">SBOM for {organizationName}</h3>
+            <p className="text-sm text-blue-700">
+              A Software Bill of Materials (SBOM) is a formal record containing the details and supply chain relationships of various components used in building software. 
+              SBOMs are critical for compliance with SEBI CSCRF and other security frameworks.
+            </p>
             <button 
-              className={`px-4 py-2 font-semibold rounded ${activeTab === 'document' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              onClick={() => {
-                if (editMode || currentDocument.id) {
-                  setActiveTab('document');
-                } else {
-                  setCurrentDocument(DEFAULT_SBOM_DOCUMENT);
-                  setActiveTab('document');
-                }
-              }}
+              className="mt-2 text-blue-700 underline text-sm font-medium flex items-center"
+              onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
             >
-              {editMode ? 'Edit SBOM Document' : 'New SBOM Document'}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              View SBOM Guide
             </button>
-            {activeTab === 'document' && (
+          </div>
+
+          <div className="mb-6">
+            <div className="flex space-x-4 mb-4">
               <button 
-                className={`px-4 py-2 font-semibold rounded ${(activeTab as string) === 'component' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                className={`px-4 py-2 font-semibold rounded ${activeTab === 'registry' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                onClick={() => setActiveTab('registry')}
+              >
+                SBOM Registry
+              </button>
+              <button 
+                className={`px-4 py-2 font-semibold rounded ${activeTab === 'document' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
                 onClick={() => {
-                  if (editMode && currentComponent.id) {
-                    setActiveTab('component');
+                  if (editMode || currentDocument.id) {
+                    setActiveTab('document');
                   } else {
-                    setCurrentComponent(DEFAULT_SBOM_COMPONENT);
-                    setActiveTab('component');
+                    setCurrentDocument(DEFAULT_SBOM_DOCUMENT);
+                    setActiveTab('document');
                   }
                 }}
               >
-                {editMode && currentComponent.id ? 'Edit Component' : 'Add Component'}
+                {editMode ? 'Edit SBOM Document' : 'New SBOM Document'}
               </button>
-            )}
-          </div>
-        </div>
-
-        {activeTab === 'registry' && (
-          <div>
-            <div className="mb-6 p-4 border rounded bg-gray-50">
-              <h2 className="text-xl font-semibold mb-4">Critical Systems</h2>
-              <p className="mb-4 text-sm">
-                According to SEBI CSCRF guidelines, SBOMs are mandatory for critical systems. List your critical systems here.
-              </p>
-              
-              <div className="flex mb-4">
-                <input
-                  type="text"
-                  className="flex-grow px-3 py-2 border rounded"
-                  placeholder="Enter critical system name"
-                  value={criticalSystem}
-                  onChange={(e) => setCriticalSystem(e.target.value)}
-                />
-                <button
-                  className="ml-2 px-4 py-2 bg-blue-600 text-white rounded"
-                  onClick={handleAddCriticalSystem}
+              {activeTab === 'document' && (
+                <button 
+                  className={`px-4 py-2 font-semibold rounded ${(activeTab as string) === 'component' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                  onClick={() => {
+                    if (editMode && currentComponent.id) {
+                      setActiveTab('component');
+                    } else {
+                      setCurrentComponent(DEFAULT_SBOM_COMPONENT);
+                      setActiveTab('component');
+                    }
+                  }}
                 >
-                  Add
+                  {editMode && currentComponent.id ? 'Edit Component' : 'Add Component'}
                 </button>
-              </div>
-              
-              <div className="space-y-2">
-                {registry.criticalSystems.map((system, index) => (
-                  <div key={index} className="flex items-center bg-white p-2 rounded border">
-                    <span className="flex-grow">{system}</span>
-                    <button
-                      className="text-red-600"
-                      onClick={() => handleRemoveCriticalSystem(system)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                {registry.criticalSystems.length === 0 && (
-                  <p className="text-gray-500 italic">No critical systems added yet</p>
-                )}
-              </div>
-              
-              {registry.criticalSystems.length > 0 && (
-                <div className="mt-4 p-3 bg-blue-50 rounded">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-medium text-sm">SBOM Coverage:</span>
-                    <span className="text-sm">
-                      {registry.sbomDocuments.length}/{registry.criticalSystems.length} systems
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div 
-                      className={`h-2.5 rounded-full ${registry.sbomDocuments.length >= registry.criticalSystems.length ? 'bg-green-600' : 'bg-yellow-500'}`}
-                      style={{ width: `${Math.min(100, (registry.sbomDocuments.length / Math.max(1, registry.criticalSystems.length)) * 100)}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs mt-1 text-gray-600">
-                    {registry.sbomDocuments.length >= registry.criticalSystems.length 
-                      ? '✓ All critical systems have SBOMs' 
-                      : `${registry.criticalSystems.length - registry.sbomDocuments.length} critical systems need SBOMs`}
-                  </p>
-                </div>
               )}
             </div>
-
-            <div className="flex justify-between mb-4">
-              <h2 className="text-xl font-semibold">SBOM Documents</h2>
-              <div>
-                <button
-                  className="px-4 py-2 bg-purple-600 text-white rounded mr-2"
-                  onClick={loadSampleData}
-                >
-                  Load Sample Data
-                </button>
-                <button
-                  className="px-4 py-2 bg-green-600 text-white rounded mr-2"
-                  onClick={importSBOM}
-                >
-                  Import SBOM
-                </button>
-                <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded"
-                  onClick={() => {
-                    setCurrentDocument(DEFAULT_SBOM_DOCUMENT);
-                    setEditMode(false);
-                    setActiveTab('document');
-                  }}
-                >
-                  Create SBOM
-                </button>
-              </div>
-            </div>
-            
-            {/* Export to SEBI button */}
-            {registry.sbomDocuments.length > 0 && (
-              <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-r flex justify-between items-center">
-                <div>
-                  <h3 className="text-md font-semibold text-indigo-800">Ready to submit to SEBI?</h3>
-                  <p className="text-sm text-indigo-700">
-                    Generate a comprehensive SBOM report formatted according to SEBI CSCRF requirements.
-                  </p>
-                </div>
-                <button
-                  onClick={onExportSBOM}
-                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-md flex items-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                  </svg>
-                  Export for SEBI
-                </button>
-              </div>
-            )}
-            
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="px-4 py-2 border">Name</th>
-                    <th className="px-4 py-2 border">Version</th>
-                    <th className="px-4 py-2 border">Supplier</th>
-                    <th className="px-4 py-2 border">Last Updated</th>
-                    <th className="px-4 py-2 border">Components</th>
-                    <th className="px-4 py-2 border">Completion</th>
-                    <th className="px-4 py-2 border">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {registry.sbomDocuments.map(doc => {
-                    const completionPercentage = calculateDocumentCompletion(doc);
-                    return (
-                      <tr key={doc.id}>
-                        <td className="px-4 py-2 border">{doc.name}</td>
-                        <td className="px-4 py-2 border">{doc.version}</td>
-                        <td className="px-4 py-2 border">{doc.supplier}</td>
-                        <td className="px-4 py-2 border">{doc.lastUpdated}</td>
-                        <td className="px-4 py-2 border">{doc.components.length}</td>
-                        <td className="px-4 py-2 border">
-                          <div className="flex items-center">
-                            <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                              <div 
-                                className={`h-2.5 rounded-full ${getCompletionColor(completionPercentage)}`}
-                                style={{ width: `${completionPercentage}%` }}
-                              ></div>
-                            </div>
-                            <span className="text-xs whitespace-nowrap">{completionPercentage}%</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-2 border">
-                          <button
-                            className="text-blue-600 mr-2"
-                            onClick={() => handleEditDocument(doc.id)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="text-green-600 mr-2"
-                            onClick={() => exportSBOM(doc)}
-                          >
-                            Export
-                          </button>
-                          <button
-                            className="text-red-600"
-                            onClick={() => handleDeleteDocument(doc.id)}
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                  {registry.sbomDocuments.length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="px-4 py-2 border text-center text-gray-500 italic">
-                        No SBOM documents found. Create your first one!
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
           </div>
-        )}
 
-        {activeTab === 'document' && (
-          <div className="bg-white p-6 rounded shadow">
-            <h2 className="text-xl font-semibold mb-4">{editMode ? 'Edit SBOM Document' : 'New SBOM Document'}</h2>
-            
-            {/* Progress indicator */}
-            <div className="mb-6 p-3 bg-gray-50 rounded border">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-medium text-sm">Document Completion:</span>
-                <span className="text-sm">{calculateDocumentCompletion(currentDocument)}% Complete</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div 
-                  className={`h-2.5 rounded-full ${getCompletionColor(calculateDocumentCompletion(currentDocument))}`}
-                  style={{ width: `${calculateDocumentCompletion(currentDocument)}%` }}
-                ></div>
-              </div>
-              <div className="flex mt-2 text-xs text-gray-500 justify-between flex-wrap">
-                <span className={currentDocument.name ? "text-green-600" : "text-red-500"}>Name*</span>
-                <span className={currentDocument.version ? "text-green-600" : "text-red-500"}>Version*</span>
-                <span className={currentDocument.supplier ? "text-green-600" : "text-red-500"}>Supplier*</span>
-                <span className={currentDocument.encryptionUsed ? "text-green-600" : "text-gray-500"}>Encryption</span>
-                <span className={currentDocument.accessControl ? "text-green-600" : "text-gray-500"}>Access Control</span>
-                <span className={currentDocument.errorHandlingMethod ? "text-green-600" : "text-gray-500"}>Error Handling</span>
-                <span className={currentDocument.updateFrequency ? "text-green-600" : "text-gray-500"}>Update Frequency</span>
-                <span className={currentDocument.components.length > 0 ? "text-green-600" : "text-gray-500"}>Components</span>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="text"
-                  className={`w-full px-3 py-2 border rounded ${!currentDocument.name ? 'border-red-300 bg-red-50' : ''}`}
-                  value={currentDocument.name}
-                  onChange={(e) => setCurrentDocument({...currentDocument, name: e.target.value})}
-                  required
-                />
-                {!currentDocument.name && (
-                  <p className="mt-1 text-sm text-red-500">Name is required</p>
-                )}
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Version <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="text"
-                  className={`w-full px-3 py-2 border rounded ${!currentDocument.version ? 'border-red-300 bg-red-50' : ''}`}
-                  value={currentDocument.version}
-                  onChange={(e) => setCurrentDocument({...currentDocument, version: e.target.value})}
-                  placeholder="e.g., 1.0.0, 2.5.3, v3.2"
-                  required
-                />
-                {!currentDocument.version && (
-                  <p className="mt-1 text-sm text-red-500">Version is required</p>
-                )}
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Supplier Name <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="text"
-                  className={`w-full px-3 py-2 border rounded ${!currentDocument.supplier ? 'border-red-300 bg-red-50' : ''}`}
-                  value={currentDocument.supplier}
-                  onChange={(e) => setCurrentDocument({...currentDocument, supplier: e.target.value})}
-                  required
-                />
-                {!currentDocument.supplier && (
-                  <p className="mt-1 text-sm text-red-500">Supplier is required</p>
-                )}
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date Created</label>
-                <input 
-                  type="date"
-                  className="w-full px-3 py-2 border rounded"
-                  value={currentDocument.dateCreated}
-                  onChange={(e) => setCurrentDocument({...currentDocument, dateCreated: e.target.value})}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Last Updated</label>
-                <input 
-                  type="date"
-                  className="w-full px-3 py-2 border rounded"
-                  value={currentDocument.lastUpdated}
-                  onChange={(e) => setCurrentDocument({...currentDocument, lastUpdated: e.target.value})}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Update Frequency</label>
-                <input 
-                  type="text"
-                  className="w-full px-3 py-2 border rounded"
-                  placeholder="e.g., Monthly, Quarterly"
-                  value={currentDocument.updateFrequency}
-                  onChange={(e) => setCurrentDocument({...currentDocument, updateFrequency: e.target.value})}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Encryption Used</label>
-                <input 
-                  type="text"
-                  className="w-full px-3 py-2 border rounded"
-                  placeholder="e.g., AES-256"
-                  value={currentDocument.encryptionUsed}
-                  onChange={(e) => setCurrentDocument({...currentDocument, encryptionUsed: e.target.value})}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Access Control</label>
-                <input 
-                  type="text"
-                  className="w-full px-3 py-2 border rounded"
-                  placeholder="e.g., Role-based access control"
-                  value={currentDocument.accessControl}
-                  onChange={(e) => setCurrentDocument({...currentDocument, accessControl: e.target.value})}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Error Handling Method</label>
-                <input 
-                  type="text"
-                  className="w-full px-3 py-2 border rounded"
-                  placeholder="Methods for accommodating occasional incidental errors"
-                  value={currentDocument.errorHandlingMethod}
-                  onChange={(e) => setCurrentDocument({...currentDocument, errorHandlingMethod: e.target.value})}
-                />
-              </div>
-            </div>
-            
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium text-gray-700">Known Unknowns</label>
-                <button 
-                  className="text-sm text-blue-600"
-                  onClick={handleAddKnownUnknown}
-                >
-                  + Add Known Unknown
-                </button>
-              </div>
-              <div className="space-y-2">
-                {currentDocument.knownUnknowns.map((item, index) => (
-                  <div key={index} className="flex items-center bg-gray-50 p-2 rounded border">
-                    <span className="flex-grow">{item}</span>
-                    <button
-                      className="text-red-600"
-                      onClick={() => handleRemoveKnownUnknown(index)}
-                    >
-                      Remove
-                    </button>
+          {activeTab === 'registry' && (
+            <div>
+              <div className="mb-6 p-4 border rounded bg-gray-50">
+                <h2 className="text-xl font-semibold mb-4">Critical Systems</h2>
+                <p className="mb-4 text-sm">
+                  According to SEBI CSCRF guidelines, SBOMs are mandatory for critical systems. List your critical systems here.
+                </p>
+                
+                <div className="flex mb-4">
+                  <input
+                    type="text"
+                    className="flex-grow px-3 py-2 border rounded"
+                    placeholder="Enter critical system name"
+                    value={criticalSystem}
+                    onChange={(e) => setCriticalSystem(e.target.value)}
+                  />
+                  <button
+                    className="ml-2 px-4 py-2 bg-blue-600 text-white rounded"
+                    onClick={handleAddCriticalSystem}
+                  >
+                    Add
+                  </button>
+                </div>
+                
+                <div className="space-y-2">
+                  {registry.criticalSystems.map((system, index) => (
+                    <div key={index} className="flex items-center bg-white p-2 rounded border">
+                      <span className="flex-grow">{system}</span>
+                      <button
+                        className="text-red-600"
+                        onClick={() => handleRemoveCriticalSystem(system)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  {registry.criticalSystems.length === 0 && (
+                    <p className="text-gray-500 italic">No critical systems added yet</p>
+                  )}
+                </div>
+                
+                {registry.criticalSystems.length > 0 && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-medium text-sm">SBOM Coverage:</span>
+                      <span className="text-sm">
+                        {registry.sbomDocuments.length}/{registry.criticalSystems.length} systems
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className={`h-2.5 rounded-full ${registry.sbomDocuments.length >= registry.criticalSystems.length ? 'bg-green-600' : 'bg-yellow-500'}`}
+                        style={{ width: `${Math.min(100, (registry.sbomDocuments.length / Math.max(1, registry.criticalSystems.length)) * 100)}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs mt-1 text-gray-600">
+                      {registry.sbomDocuments.length >= registry.criticalSystems.length 
+                        ? '✓ All critical systems have SBOMs' 
+                        : `${registry.criticalSystems.length - registry.sbomDocuments.length} critical systems need SBOMs`}
+                    </p>
                   </div>
-                ))}
-                {currentDocument.knownUnknowns.length === 0 && (
-                  <p className="text-gray-500 italic">No known unknowns added yet</p>
                 )}
               </div>
-            </div>
-            
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-              <textarea 
-                className="w-full px-3 py-2 border rounded h-24"
-                placeholder="Additional notes about this SBOM"
-                value={currentDocument.notes || ''}
-                onChange={(e) => setCurrentDocument({...currentDocument, notes: e.target.value})}
-              />
-            </div>
-            
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Components</h3>
-                <button 
-                  className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
-                  onClick={() => {
-                    setCurrentComponent(DEFAULT_SBOM_COMPONENT);
-                    setEditMode(false);
-                    setActiveTab('component');
-                  }}
-                >
-                  Add Component
-                </button>
+
+              <div className="flex justify-between mb-4">
+                <h2 className="text-xl font-semibold">SBOM Documents</h2>
+                <div>
+                  <button
+                    className="px-4 py-2 bg-purple-600 text-white rounded mr-2"
+                    onClick={loadSampleData}
+                  >
+                    Load Sample Data
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-green-600 text-white rounded mr-2"
+                    onClick={importSBOM}
+                  >
+                    Import SBOM
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-blue-600 text-white rounded"
+                    onClick={() => {
+                      setCurrentDocument(DEFAULT_SBOM_DOCUMENT);
+                      setEditMode(false);
+                      setActiveTab('document');
+                    }}
+                  >
+                    Create SBOM
+                  </button>
+                </div>
               </div>
               
-              {currentDocument.components.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full bg-white border">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="px-3 py-2 border">Name</th>
-                        <th className="px-3 py-2 border">Version</th>
-                        <th className="px-3 py-2 border">Supplier</th>
-                        <th className="px-3 py-2 border">License</th>
-                        <th className="px-3 py-2 border">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentDocument.components.map(comp => (
-                        <tr key={comp.id}>
-                          <td className="px-3 py-2 border">{comp.name}</td>
-                          <td className="px-3 py-2 border">{comp.version}</td>
-                          <td className="px-3 py-2 border">{comp.supplier}</td>
-                          <td className="px-3 py-2 border">{comp.license}</td>
-                          <td className="px-3 py-2 border">
+              {/* Export to SEBI button */}
+              {registry.sbomDocuments.length > 0 && (
+                <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-r flex justify-between items-center">
+                  <div>
+                    <h3 className="text-md font-semibold text-indigo-800">Ready to submit for SEBI CSCRF compliance?</h3>
+                    <p className="text-sm text-indigo-700">
+                      Generate a comprehensive SBOM report formatted according to SEBI CSCRF regulatory requirements.
+                    </p>
+                  </div>
+                  <button
+                    onClick={onExportSBOM}
+                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-md flex items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Export for SEBI Compliance
+                  </button>
+                </div>
+              )}
+              
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="px-4 py-2 border">Name</th>
+                      <th className="px-4 py-2 border">Version</th>
+                      <th className="px-4 py-2 border">Supplier</th>
+                      <th className="px-4 py-2 border">Last Updated</th>
+                      <th className="px-4 py-2 border">Components</th>
+                      <th className="px-4 py-2 border">Completion</th>
+                      <th className="px-4 py-2 border">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {registry.sbomDocuments.map(doc => {
+                      const completionPercentage = calculateDocumentCompletion(doc);
+                      return (
+                        <tr key={doc.id}>
+                          <td className="px-4 py-2 border">{doc.name}</td>
+                          <td className="px-4 py-2 border">{doc.version}</td>
+                          <td className="px-4 py-2 border">{doc.supplier}</td>
+                          <td className="px-4 py-2 border">{doc.lastUpdated}</td>
+                          <td className="px-4 py-2 border">{doc.components.length}</td>
+                          <td className="px-4 py-2 border">
+                            <div className="flex items-center">
+                              <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                <div 
+                                  className={`h-2.5 rounded-full ${getCompletionColor(completionPercentage)}`}
+                                  style={{ width: `${completionPercentage}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-xs whitespace-nowrap">{completionPercentage}%</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 border">
                             <button
                               className="text-blue-600 mr-2"
-                              onClick={() => handleEditComponent(comp.id)}
+                              onClick={() => handleEditDocument(doc.id)}
                             >
                               Edit
                             </button>
                             <button
+                              className="text-green-600 mr-2"
+                              onClick={() => exportSBOM(doc)}
+                            >
+                              Export
+                            </button>
+                            <button
                               className="text-red-600"
-                              onClick={() => handleDeleteComponent(comp.id)}
+                              onClick={() => handleDeleteDocument(doc.id)}
                             >
                               Delete
                             </button>
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      )
+                    })}
+                    {registry.sbomDocuments.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-2 border text-center text-gray-500 italic">
+                          No SBOM documents found. Create your first one!
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'document' && (
+            <div className="bg-white p-6 rounded shadow">
+              <h2 className="text-xl font-semibold mb-4">{editMode ? 'Edit SBOM Document' : 'New SBOM Document'}</h2>
+              
+              {/* Progress indicator */}
+              <div className="mb-6 p-3 bg-gray-50 rounded border">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-sm">Document Completion:</span>
+                  <span className="text-sm">{calculateDocumentCompletion(currentDocument)}% Complete</span>
                 </div>
-              ) : (
-                <p className="text-gray-500 italic">No components added yet</p>
-              )}
-            </div>
-            
-            <div className="flex justify-end space-x-4">
-              <button 
-                className="px-4 py-2 bg-gray-200 rounded"
-                onClick={() => {
-                  setCurrentDocument(DEFAULT_SBOM_DOCUMENT);
-                  setEditMode(false);
-                  setActiveTab('registry');
-                }}
-              >
-                Cancel
-              </button>
-              <button 
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-                onClick={editMode ? handleUpdateDocument : handleAddDocument}
-              >
-                {editMode ? 'Update SBOM Document' : 'Save SBOM Document'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'component' && (
-          <div className="bg-white p-6 rounded shadow">
-            <h2 className="text-xl font-semibold mb-4">{editMode ? 'Edit Component' : 'Add Component'}</h2>
-            
-            {/* Component completion tracker */}
-            <div className="mb-6 p-3 bg-gray-50 rounded border">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-medium text-sm">Component Details Completion:</span>
-                <span className="text-sm">{calculateComponentCompletion(currentComponent)}% Complete</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div 
-                  className={`h-2.5 rounded-full ${getCompletionColor(calculateComponentCompletion(currentComponent))}`}
-                  style={{ width: `${calculateComponentCompletion(currentComponent)}%` }}
-                ></div>
-              </div>
-              <div className="flex mt-2 text-xs text-gray-500 justify-between flex-wrap">
-                <span className={currentComponent.name ? "text-green-600" : "text-red-500"}>Name*</span>
-                <span className={currentComponent.version ? "text-green-600" : "text-red-500"}>Version*</span>
-                <span className={currentComponent.supplier ? "text-green-600" : "text-gray-500"}>Supplier</span>
-                <span className={currentComponent.license ? "text-green-600" : "text-gray-500"}>License</span>
-                <span className={currentComponent.cryptographicHash ? "text-green-600" : "text-gray-500"}>Hash</span>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="text"
-                  className={`w-full px-3 py-2 border rounded ${!currentComponent.name ? 'border-red-300 bg-red-50' : ''}`}
-                  value={currentComponent.name}
-                  onChange={(e) => setCurrentComponent({...currentComponent, name: e.target.value})}
-                  required
-                />
-                {!currentComponent.name && (
-                  <p className="mt-1 text-sm text-red-500">Component name is required</p>
-                )}
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div 
+                    className={`h-2.5 rounded-full ${getCompletionColor(calculateDocumentCompletion(currentDocument))}`}
+                    style={{ width: `${calculateDocumentCompletion(currentDocument)}%` }}
+                  ></div>
+                </div>
+                <div className="flex mt-2 text-xs text-gray-500 justify-between flex-wrap">
+                  <span className={currentDocument.name ? "text-green-600" : "text-red-500"}>Name*</span>
+                  <span className={currentDocument.version ? "text-green-600" : "text-red-500"}>Version*</span>
+                  <span className={currentDocument.supplier ? "text-green-600" : "text-red-500"}>Supplier*</span>
+                  <span className={currentDocument.encryptionUsed ? "text-green-600" : "text-gray-500"}>Encryption</span>
+                  <span className={currentDocument.accessControl ? "text-green-600" : "text-gray-500"}>Access Control</span>
+                  <span className={currentDocument.errorHandlingMethod ? "text-green-600" : "text-gray-500"}>Error Handling</span>
+                  <span className={currentDocument.updateFrequency ? "text-green-600" : "text-gray-500"}>Update Frequency</span>
+                  <span className={currentDocument.components.length > 0 ? "text-green-600" : "text-gray-500"}>Components</span>
+                </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Version <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="text"
-                  className={`w-full px-3 py-2 border rounded ${!currentComponent.version ? 'border-red-300 bg-red-50' : ''}`}
-                  value={currentComponent.version}
-                  onChange={(e) => setCurrentComponent({...currentComponent, version: e.target.value})}
-                  placeholder="e.g., 1.0.0, 2.5.3, v3.2"
-                  required
-                />
-                {!currentComponent.version && (
-                  <p className="mt-1 text-sm text-red-500">Component version is required</p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    className={`w-full px-3 py-2 border rounded ${!currentDocument.name ? 'border-red-300 bg-red-50' : ''}`}
+                    value={currentDocument.name}
+                    onChange={(e) => setCurrentDocument({...currentDocument, name: e.target.value})}
+                    required
+                  />
+                  {!currentDocument.name && (
+                    <p className="mt-1 text-sm text-red-500">Name is required</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Version <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    className={`w-full px-3 py-2 border rounded ${!currentDocument.version ? 'border-red-300 bg-red-50' : ''}`}
+                    value={currentDocument.version}
+                    onChange={(e) => setCurrentDocument({...currentDocument, version: e.target.value})}
+                    placeholder="e.g., 1.0.0, 2.5.3, v3.2"
+                    required
+                  />
+                  {!currentDocument.version && (
+                    <p className="mt-1 text-sm text-red-500">Version is required</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Supplier Name <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    className={`w-full px-3 py-2 border rounded ${!currentDocument.supplier ? 'border-red-300 bg-red-50' : ''}`}
+                    value={currentDocument.supplier}
+                    onChange={(e) => setCurrentDocument({...currentDocument, supplier: e.target.value})}
+                    required
+                  />
+                  {!currentDocument.supplier && (
+                    <p className="mt-1 text-sm text-red-500">Supplier is required</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date Created</label>
+                  <input 
+                    type="date"
+                    className="w-full px-3 py-2 border rounded"
+                    value={currentDocument.dateCreated}
+                    onChange={(e) => setCurrentDocument({...currentDocument, dateCreated: e.target.value})}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Updated</label>
+                  <input 
+                    type="date"
+                    className="w-full px-3 py-2 border rounded"
+                    value={currentDocument.lastUpdated}
+                    onChange={(e) => setCurrentDocument({...currentDocument, lastUpdated: e.target.value})}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Update Frequency</label>
+                  <input 
+                    type="text"
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="e.g., Monthly, Quarterly"
+                    value={currentDocument.updateFrequency}
+                    onChange={(e) => setCurrentDocument({...currentDocument, updateFrequency: e.target.value})}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Encryption Used</label>
+                  <input 
+                    type="text"
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="e.g., AES-256"
+                    value={currentDocument.encryptionUsed}
+                    onChange={(e) => setCurrentDocument({...currentDocument, encryptionUsed: e.target.value})}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Access Control</label>
+                  <input 
+                    type="text"
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="e.g., Role-based access control"
+                    value={currentDocument.accessControl}
+                    onChange={(e) => setCurrentDocument({...currentDocument, accessControl: e.target.value})}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Error Handling Method</label>
+                  <input 
+                    type="text"
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="Methods for accommodating occasional incidental errors"
+                    value={currentDocument.errorHandlingMethod}
+                    onChange={(e) => setCurrentDocument({...currentDocument, errorHandlingMethod: e.target.value})}
+                  />
+                </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Supplier <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="text"
-                  className={`w-full px-3 py-2 border rounded ${!currentComponent.supplier ? 'border-red-300 bg-red-50' : ''}`}
-                  value={currentComponent.supplier}
-                  onChange={(e) => setCurrentComponent({...currentComponent, supplier: e.target.value})}
-                  required
-                />
-                {!currentComponent.supplier && (
-                  <p className="mt-1 text-sm text-red-500">Supplier is required</p>
-                )}
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">Known Unknowns</label>
+                  <button 
+                    className="text-sm text-blue-600"
+                    onClick={handleAddKnownUnknown}
+                  >
+                    + Add Known Unknown
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {currentDocument.knownUnknowns.map((item, index) => (
+                    <div key={index} className="flex items-center bg-gray-50 p-2 rounded border">
+                      <span className="flex-grow">{item}</span>
+                      <button
+                        className="text-red-600"
+                        onClick={() => handleRemoveKnownUnknown(index)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  {currentDocument.knownUnknowns.length === 0 && (
+                    <p className="text-gray-500 italic">No known unknowns added yet</p>
+                  )}
+                </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  License <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="text"
-                  className={`w-full px-3 py-2 border rounded ${!currentComponent.license ? 'border-red-300 bg-red-50' : ''}`}
-                  value={currentComponent.license}
-                  onChange={(e) => setCurrentComponent({...currentComponent, license: e.target.value})}
-                  required
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea 
+                  className="w-full px-3 py-2 border rounded h-24"
+                  placeholder="Additional notes about this SBOM"
+                  value={currentDocument.notes || ''}
+                  onChange={(e) => setCurrentDocument({...currentDocument, notes: e.target.value})}
                 />
-                {!currentComponent.license && (
-                  <p className="mt-1 text-sm text-red-500">License is required</p>
-                )}
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Cryptographic Hash <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="text"
-                  className={`w-full px-3 py-2 border rounded ${!currentComponent.cryptographicHash ? 'border-red-300 bg-red-50' : ''}`}
-                  value={currentComponent.cryptographicHash}
-                  onChange={(e) => setCurrentComponent({...currentComponent, cryptographicHash: e.target.value})}
-                  required
-                />
-                {!currentComponent.cryptographicHash && (
-                  <p className="mt-1 text-sm text-red-500">Cryptographic hash is required</p>
-                )}
-              </div>
-            </div>
-            
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <textarea 
-                className="w-full px-3 py-2 border rounded h-24"
-                placeholder="Component description"
-                value={currentComponent.description || ''}
-                onChange={(e) => setCurrentComponent({...currentComponent, description: e.target.value})}
-              />
-            </div>
-            
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Dependencies</label>
-              <p className="text-sm text-gray-600 mb-2">
-                If this component depends on other components in this SBOM, select them below:
-              </p>
-              <div className="space-y-2">
-                {currentDocument.components
-                  .filter(comp => comp.id !== currentComponent.id)
-                  .map(comp => (
-                  <div key={comp.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`dep-${comp.id}`}
-                      checked={currentComponent.dependencies.includes(comp.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setCurrentComponent({
-                            ...currentComponent,
-                            dependencies: [...currentComponent.dependencies, comp.id]
-                          });
-                        } else {
-                          setCurrentComponent({
-                            ...currentComponent,
-                            dependencies: currentComponent.dependencies.filter(id => id !== comp.id)
-                          });
-                        }
-                      }}
-                      className="mr-2"
-                    />
-                    <label htmlFor={`dep-${comp.id}`}>{comp.name} ({comp.version})</label>
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Components</h3>
+                  <button 
+                    className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
+                    onClick={() => {
+                      setCurrentComponent(DEFAULT_SBOM_COMPONENT);
+                      setEditMode(false);
+                      setActiveTab('component');
+                    }}
+                  >
+                    Add Component
+                  </button>
+                </div>
+                
+                {currentDocument.components.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white border">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="px-3 py-2 border">Name</th>
+                          <th className="px-3 py-2 border">Version</th>
+                          <th className="px-3 py-2 border">Supplier</th>
+                          <th className="px-3 py-2 border">License</th>
+                          <th className="px-3 py-2 border">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentDocument.components.map(comp => (
+                          <tr key={comp.id}>
+                            <td className="px-3 py-2 border">{comp.name}</td>
+                            <td className="px-3 py-2 border">{comp.version}</td>
+                            <td className="px-3 py-2 border">{comp.supplier}</td>
+                            <td className="px-3 py-2 border">{comp.license}</td>
+                            <td className="px-3 py-2 border">
+                              <button
+                                className="text-blue-600 mr-2"
+                                onClick={() => handleEditComponent(comp.id)}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className="text-red-600"
+                                onClick={() => handleDeleteComponent(comp.id)}
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                ))}
-                {currentDocument.components.length <= 1 && (
-                  <p className="text-gray-500 italic">No other components available to select as dependencies</p>
+                ) : (
+                  <p className="text-gray-500 italic">No components added yet</p>
                 )}
+              </div>
+              
+              <div className="flex justify-end space-x-4">
+                <button 
+                  className="px-4 py-2 bg-gray-200 rounded"
+                  onClick={() => {
+                    setCurrentDocument(DEFAULT_SBOM_DOCUMENT);
+                    setEditMode(false);
+                    setActiveTab('registry');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="px-4 py-2 bg-blue-600 text-white rounded"
+                  onClick={editMode ? handleUpdateDocument : handleAddDocument}
+                >
+                  {editMode ? 'Update SBOM Document' : 'Save SBOM Document'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'component' && (
+            <div className="bg-white p-6 rounded shadow">
+              <h2 className="text-xl font-semibold mb-4">{editMode ? 'Edit Component' : 'Add Component'}</h2>
+              
+              {/* Component completion tracker */}
+              <div className="mb-6 p-3 bg-gray-50 rounded border">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-sm">Component Details Completion:</span>
+                  <span className="text-sm">{calculateComponentCompletion(currentComponent)}% Complete</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div 
+                    className={`h-2.5 rounded-full ${getCompletionColor(calculateComponentCompletion(currentComponent))}`}
+                    style={{ width: `${calculateComponentCompletion(currentComponent)}%` }}
+                  ></div>
+                </div>
+                <div className="flex mt-2 text-xs text-gray-500 justify-between flex-wrap">
+                  <span className={currentComponent.name ? "text-green-600" : "text-red-500"}>Name*</span>
+                  <span className={currentComponent.version ? "text-green-600" : "text-red-500"}>Version*</span>
+                  <span className={currentComponent.supplier ? "text-green-600" : "text-gray-500"}>Supplier</span>
+                  <span className={currentComponent.license ? "text-green-600" : "text-gray-500"}>License</span>
+                  <span className={currentComponent.cryptographicHash ? "text-green-600" : "text-gray-500"}>Hash</span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    className={`w-full px-3 py-2 border rounded ${!currentComponent.name ? 'border-red-300 bg-red-50' : ''}`}
+                    value={currentComponent.name}
+                    onChange={(e) => setCurrentComponent({...currentComponent, name: e.target.value})}
+                    required
+                  />
+                  {!currentComponent.name && (
+                    <p className="mt-1 text-sm text-red-500">Component name is required</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Version <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    className={`w-full px-3 py-2 border rounded ${!currentComponent.version ? 'border-red-300 bg-red-50' : ''}`}
+                    value={currentComponent.version}
+                    onChange={(e) => setCurrentComponent({...currentComponent, version: e.target.value})}
+                    placeholder="e.g., 1.0.0, 2.5.3, v3.2"
+                    required
+                  />
+                  {!currentComponent.version && (
+                    <p className="mt-1 text-sm text-red-500">Component version is required</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Supplier <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    className={`w-full px-3 py-2 border rounded ${!currentComponent.supplier ? 'border-red-300 bg-red-50' : ''}`}
+                    value={currentComponent.supplier}
+                    onChange={(e) => setCurrentComponent({...currentComponent, supplier: e.target.value})}
+                    required
+                  />
+                  {!currentComponent.supplier && (
+                    <p className="mt-1 text-sm text-red-500">Supplier is required</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    License <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    className={`w-full px-3 py-2 border rounded ${!currentComponent.license ? 'border-red-300 bg-red-50' : ''}`}
+                    value={currentComponent.license}
+                    onChange={(e) => setCurrentComponent({...currentComponent, license: e.target.value})}
+                    required
+                  />
+                  {!currentComponent.license && (
+                    <p className="mt-1 text-sm text-red-500">License is required</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cryptographic Hash <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    className={`w-full px-3 py-2 border rounded ${!currentComponent.cryptographicHash ? 'border-red-300 bg-red-50' : ''}`}
+                    value={currentComponent.cryptographicHash}
+                    onChange={(e) => setCurrentComponent({...currentComponent, cryptographicHash: e.target.value})}
+                    required
+                  />
+                  {!currentComponent.cryptographicHash && (
+                    <p className="mt-1 text-sm text-red-500">Cryptographic hash is required</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea 
+                  className="w-full px-3 py-2 border rounded h-24"
+                  placeholder="Component description"
+                  value={currentComponent.description || ''}
+                  onChange={(e) => setCurrentComponent({...currentComponent, description: e.target.value})}
+                />
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Dependencies</label>
+                <p className="text-sm text-gray-600 mb-2">
+                  If this component depends on other components in this SBOM, select them below:
+                </p>
+                <div className="space-y-2">
+                  {currentDocument.components
+                    .filter(comp => comp.id !== currentComponent.id)
+                    .map(comp => (
+                    <div key={comp.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`dep-${comp.id}`}
+                        checked={currentComponent.dependencies.includes(comp.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setCurrentComponent({
+                              ...currentComponent,
+                              dependencies: [...currentComponent.dependencies, comp.id]
+                            });
+                          } else {
+                            setCurrentComponent({
+                              ...currentComponent,
+                              dependencies: currentComponent.dependencies.filter(id => id !== comp.id)
+                            });
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                      <label htmlFor={`dep-${comp.id}`}>{comp.name} ({comp.version})</label>
+                    </div>
+                  ))}
+                  {currentDocument.components.length <= 1 && (
+                    <p className="text-gray-500 italic">No other components available to select as dependencies</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-4">
+                <button 
+                  className="px-4 py-2 bg-gray-200 rounded"
+                  onClick={() => {
+                    setCurrentComponent(DEFAULT_SBOM_COMPONENT);
+                    setEditMode(false);
+                    setActiveTab('document');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="px-4 py-2 bg-blue-600 text-white rounded"
+                  onClick={editMode ? handleUpdateComponent : handleAddComponent}
+                >
+                  {editMode ? 'Update Component' : 'Add Component'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded">
+            <h3 className="font-semibold text-lg mb-2">SEBI CSCRF SBOM Requirements</h3>
+            <p className="mb-4 text-sm">
+              According to SEBI's CSCRF Guidelines Section GV.SC.5, SBOMs are mandatory for all critical systems and must include:
+            </p>
+            <ul className="list-disc pl-6 space-y-1 text-sm">
+              <li><strong>License Information:</strong> Required for compliance verification and legal obligations</li>
+              <li><strong>Supplier Information:</strong> Essential for vendor risk management</li>
+              <li><strong>Component Inventory:</strong> All primary components with transitive dependencies (third-party and open-source)</li>
+              <li><strong>Encryption Details:</strong> Necessary for regulatory review and security assessment</li>
+              <li><strong>Cryptographic Hash:</strong> For component integrity verification</li>
+              <li><strong>Update Frequency:</strong> Critical for maintaining accurate security posture</li>
+              <li><strong>Known Unknowns:</strong> Areas where a SBOM does not include a full dependency graph</li>
+              <li><strong>Access Control:</strong> Required for demonstrating proper security controls</li>
+              <li><strong>Error Handling:</strong> Methods for accommodating occasional incidental errors</li>
+            </ul>
+            <div className="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded-r">
+              <p className="text-sm font-medium text-yellow-800">
+                <strong>SEBI CSCRF Compliance Note:</strong> Failure to maintain SBOMs for critical systems may result in regulatory findings during SEBI audits. These SBOMs must be updated whenever components change.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 p-4 bg-indigo-50 border border-indigo-200 rounded">
+            <h3 className="font-semibold text-lg mb-3">Entity Classification Under SEBI CSCRF (2025 Update)</h3>
+            
+            <div className="mb-4">
+              <h4 className="font-medium text-md mb-2">Entity Classification Categories:</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white p-3 rounded shadow-sm">
+                  <h5 className="font-semibold text-sm mb-1 text-indigo-800">Qualified REs</h5>
+                  <p className="text-xs">Highest compliance requirements including dedicated HSM, M-SOC services, and comprehensive SBOM management</p>
+                </div>
+                <div className="bg-white p-3 rounded shadow-sm">
+                  <h5 className="font-semibold text-sm mb-1 text-indigo-800">Mid-size REs</h5>
+                  <p className="text-xs">Includes Stock Brokers with 1-10 lakh clients, Portfolio Managers with AUM {'>'}₹3000 Cr, and AIF/VCF managers with corpus ≥₹10,000 Cr</p>
+                </div>
+                <div className="bg-white p-3 rounded shadow-sm">
+                  <h5 className="font-semibold text-sm mb-1 text-indigo-800">Small-size REs</h5>
+                  <p className="text-xs">Includes Stock Brokers with 10k-1 lakh clients, AIF/VCF managers with corpus between ₹3,000-10,000 Cr</p>
+                </div>
+                <div className="bg-white p-3 rounded shadow-sm">
+                  <h5 className="font-semibold text-sm mb-1 text-indigo-800">Self-certification REs</h5>
+                  <p className="text-xs">Simplified compliance for smaller entities, with exemptions for M-SOC for those with fewer than 100 clients</p>
+                </div>
               </div>
             </div>
             
-            <div className="flex justify-end space-x-4">
-              <button 
-                className="px-4 py-2 bg-gray-200 rounded"
-                onClick={() => {
-                  setCurrentComponent(DEFAULT_SBOM_COMPONENT);
-                  setEditMode(false);
-                  setActiveTab('document');
-                }}
-              >
-                Cancel
-              </button>
-              <button 
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-                onClick={editMode ? handleUpdateComponent : handleAddComponent}
-              >
-                {editMode ? 'Update Component' : 'Add Component'}
-              </button>
+            <div className="mb-3">
+              <h4 className="font-medium text-md mb-2">Key Classification Factors by Entity Type:</h4>
+              <ul className="list-disc pl-6 space-y-1 text-sm">
+                <li><strong>Stock Brokers:</strong> Classified by client count (up to &gt;10 lakhs) and trading volume (up to &gt;10,00,000 Cr)</li>
+                <li><strong>Portfolio Managers:</strong> Self-certification for AUM ≤₹3000 Cr, Mid-size for AUM &gt;₹3000 Cr</li>
+                <li><strong>AIF & VCF Managers:</strong> Categorized by combined corpus across all funds managed</li>
+                <li><strong>Merchant Bankers:</strong> Mid-size for those handling issues (IPOs, FPOs, etc.), Small-size for others</li>
+                <li><strong>Multiple Registrations:</strong> The highest applicable category applies</li>
+              </ul>
             </div>
-          </div>
-        )}
-
-        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded">
-          <h3 className="font-semibold text-lg mb-2">SEBI CSCRF SBOM Requirements</h3>
-          <p className="mb-4 text-sm">
-            According to SEBI's CSCRF Guidelines, SBOMs must include:
-          </p>
-          <ul className="list-disc pl-6 space-y-1 text-sm">
-            <li>License information</li>
-            <li>Name of the supplier</li>
-            <li>All primary components with transitive dependencies (including third-party and open-source)</li>
-            <li>Encryption used</li>
-            <li>Cryptographic hash of the components</li>
-            <li>Frequency of updates</li>
-            <li>Known unknowns (where a SBOM does not include a full dependency graph)</li>
-            <li>Access control</li>
-            <li>Methods for accommodating occasional incidental errors</li>
-          </ul>
-        </div>
-
-        <div className="mt-8 p-6 bg-gray-50 border border-gray-200 rounded-lg">
-          <h3 className="font-semibold text-xl mb-4">SBOM Creation Guide</h3>
-          
-          <div className="mb-6">
-            <h4 className="font-semibold text-lg text-blue-700 mb-2">Getting Started with SBOMs</h4>
-            <p className="mb-2">For a quick start, click the "Load Sample Data" button to populate your registry with example SBOMs that follow SEBI CSCRF guidelines.</p>
-            <p>Sample data includes critical systems like "Core Trading Engine" and "Settlement Systems" along with complete SBOM documents that show proper implementation.</p>
-          </div>
-          
-          <div className="mb-6">
-            <h4 className="font-semibold text-lg text-blue-700 mb-2">Step-by-Step SBOM Creation</h4>
-            <ol className="list-decimal pl-6 space-y-3">
-              <li>
-                <span className="font-semibold">Identify your critical systems</span>
-                <p className="text-sm mt-1">Start by listing your critical systems in the "Critical Systems" section. According to SEBI CSCRF Standard 5 under GV.SC (Cybersecurity Supply Chain Risk Management), SBOMs are mandatory for all critical systems.</p>
-              </li>
-              <li>
-                <span className="font-semibold">Create an SBOM document for each critical system</span>
-                <p className="text-sm mt-1">Click "Create New SBOM" and fill in the basic information including name, version, and supplier name. Set the date created, last updated, and update frequency fields.</p>
-              </li>
-              <li>
-                <span className="font-semibold">Document security controls</span>
-                <p className="text-sm mt-1">Complete the encryption, access control, and error handling fields as required by SEBI CSCRF. These details help assess the security posture of the software.</p>
-              </li>
-              <li>
-                <span className="font-semibold">Add components</span>
-                <p className="text-sm mt-1">Click "Add Component" to add each software component. For each component, include:</p>
-                <ul className="list-disc pl-6 text-sm mt-1">
-                  <li>Name and version (required)</li>
-                  <li>Supplier information</li>
-                  <li>License information</li>
-                  <li>Cryptographic hash (SHA-256 recommended)</li>
-                  <li>Dependencies on other components</li>
-                </ul>
-              </li>
-              <li>
-                <span className="font-semibold">Document known unknowns</span>
-                <p className="text-sm mt-1">Use the "Add Known Unknown" button to document areas where dependency information might be incomplete, such as dynamically loaded libraries or nested dependencies that aren't fully mapped.</p>
-              </li>
-              <li>
-                <span className="font-semibold">Save and maintain your SBOM</span>
-                <p className="text-sm mt-1">Click "Save SBOM Document" when complete. Remember to update SBOMs whenever components change, especially after patching vulnerabilities like Log4Shell.</p>
-              </li>
-            </ol>
-          </div>
-          
-          <div className="mb-6">
-            <h4 className="font-semibold text-lg text-blue-700 mb-2">Best Practices</h4>
-            <ul className="list-disc pl-6 space-y-2">
-              <li>
-                <span className="font-semibold">Component Details</span>
-                <p className="text-sm mt-1">For each component, provide as much detail as possible, especially for open-source dependencies with known vulnerabilities (like Apache Log4j).</p>
-              </li>
-              <li>
-                <span className="font-semibold">Regular Updates</span>
-                <p className="text-sm mt-1">Update your SBOM whenever software components change, especially after security patches are applied.</p>
-              </li>
-              <li>
-                <span className="font-semibold">Include Transitive Dependencies</span>
-                <p className="text-sm mt-1">Document not just direct dependencies but also indirect (transitive) dependencies where possible.</p>
-              </li>
-              <li>
-                <span className="font-semibold">SBOM Generation Tools</span>
-                <p className="text-sm mt-1">Consider using automated tools like CycloneDX, SPDX, or Syft to generate SBOMs for complex systems, then import them using the "Import SBOM" button.</p>
-              </li>
-              <li>
-                <span className="font-semibold">Vendor Requirements</span>
-                <p className="text-sm mt-1">As per SEBI CSCRF, make SBOMs a requirement for all new software procurements and obtain them from vendors for existing critical systems.</p>
-              </li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="font-semibold text-lg text-blue-700 mb-2">Sample Component List for Trading Platforms</h4>
-            <p className="mb-2 text-sm">A typical trading platform might include the following components that should be documented in an SBOM:</p>
-            <ul className="list-disc pl-6 space-y-1 text-sm">
-              <li>Order matching engine software libraries</li>
-              <li>Market data processing components</li>
-              <li>Messaging middleware (Kafka, RabbitMQ)</li>
-              <li>Database systems (PostgreSQL, MongoDB)</li>
-              <li>Authentication libraries (OpenID, JWT)</li>
-              <li>Encryption libraries (OpenSSL, BouncyCastle)</li>
-              <li>Web frameworks (React, Angular, Spring)</li>
-              <li>Logging frameworks (Log4j, SLF4J)</li>
-              <li>API gateways and load balancers</li>
-              <li>Time synchronization libraries</li>
-            </ul>
+            
+            <p className="text-sm mt-3 bg-white p-2 rounded border border-indigo-200">
+              <strong>Note:</strong> For detailed classification criteria, refer to Circular SEBI/HO/ITD-1/ITD_CSC_EXT/P/CIR/2025/60 dated April 30, 2025. Categories are determined at the beginning of each financial year based on previous year's data.
+            </p>
           </div>
         </div>
+
+        {/* Creator Footer */}
+        <CreatorFooter className="mt-8" />
       </div>
-
-      {/* Creator Footer */}
-      <CreatorFooter className="mt-8" />
     </div>
   );
 } 

@@ -11,6 +11,20 @@ export const SEBICSCRFIntroduction: React.FC = () => {
       <p className="mb-6">
         The framework aims to enhance the cyber resilience of India's financial ecosystem by establishing minimum baseline security requirements while promoting a risk-based approach to cybersecurity.
       </p>
+      
+      {/* Latest Update - April 30, 2025 Circular Information */}
+      <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4">
+        <h3 className="text-lg font-semibold mb-2">Latest Update: SEBI Circular (April 30, 2025)</h3>
+        <p className="mb-2">
+          SEBI has issued revised classifications for Regulated Entities (REs) under the CSCRF framework via circular 
+          <a href="https://www.sebi.gov.in/legal/circulars/apr-2025/clarifications-to-cybersecurity-and-cyber-resilience-framework-cscrf-for-sebi-regulated-entities-res-_93734.html" className="text-blue-600 hover:underline ml-1" target="_blank" rel="noopener noreferrer">SEBI/HO/ITD-1/ITD_CSC_EXT/P/CIR/2025/60</a> dated April 30, 2025.
+        </p>
+        <p>
+          The circular revises thresholds and categorization criteria, with entity categories determined at the beginning of each 
+          financial year based on the previous year's data. Once decided, entities remain in the same category throughout the
+          financial year regardless of parameter changes.
+        </p>
+      </div>
 
       <h2 className="text-2xl font-bold mb-4">Cyber Capability Index (CCI) for Qualified REs and MIIs</h2>
       <p className="mb-4">
@@ -18,6 +32,47 @@ export const SEBICSCRFIntroduction: React.FC = () => {
         Qualified Regulated Entities (REs) and Market Infrastructure Institutions (MIIs) under SEBI's regulatory purview. The CCI framework 
         translates SEBI CSCRF requirements into 23 measurable parameters with specific weightages to provide a standardized assessment approach.
       </p>
+
+      {/* Entity Classification Section - 2025 Update */}
+      <div className="mb-6 bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+        <h3 className="text-xl font-semibold mb-3">Entity Classification Under SEBI CSCRF (2025 Update)</h3>
+        
+        <div className="mb-4">
+          <h4 className="font-medium text-md mb-2">Entity Classification Categories:</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-gray-50 p-3 rounded shadow-sm">
+              <h5 className="font-semibold text-sm mb-1 text-indigo-800">Qualified REs</h5>
+              <p className="text-xs">Highest compliance requirements including dedicated HSM, M-SOC services, and comprehensive SBOM management</p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded shadow-sm">
+              <h5 className="font-semibold text-sm mb-1 text-indigo-800">Mid-size REs</h5>
+              <p className="text-xs">Moderate compliance requirements with shared HSM options and simplified vulnerability management</p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded shadow-sm">
+              <h5 className="font-semibold text-sm mb-1 text-indigo-800">Small-size REs</h5>
+              <p className="text-xs">Reduced compliance requirements with exemptions for certain technical controls</p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded shadow-sm">
+              <h5 className="font-semibold text-sm mb-1 text-indigo-800">Self-certification REs</h5>
+              <p className="text-xs">Simplified compliance for smaller entities, with exemptions for M-SOC for those with &lt;100 clients</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mb-4">
+          <h4 className="font-medium text-md mb-2">Entity Types and Their Classification Criteria:</h4>
+          <ul className="list-disc pl-6 text-sm space-y-2">
+            <li><strong>Stock Brokers:</strong> Classified by client count (up to &gt;10 lakhs) and trading volume (up to &gt;₹10,00,000 Cr)</li>
+            <li><strong>Portfolio Managers:</strong> Self-certification for AUM ≤₹3000 Cr, Mid-size for AUM &gt;₹3000 Cr</li>
+            <li><strong>Investment Advisors:</strong> Classification based on client count (&lt;100, 100-500, &gt;500)</li>
+            <li><strong>MIIs:</strong> Stock Exchanges, Depositories, and Clearing Corporations remain as MIIs with the highest compliance requirements</li>
+          </ul>
+        </div>
+        
+        <div className="bg-blue-50 p-3 rounded text-sm mt-4">
+          <p><strong>Note:</strong> Entity category is determined at the beginning of each financial year based on the previous year's data and remains fixed throughout the year regardless of parameter changes during the period.</p>
+        </div>
+      </div>
 
       <div className="mb-6 bg-gray-50 p-4 rounded-lg">
         <h3 className="text-xl font-semibold mb-3">CCI Framework Architecture</h3>
@@ -115,8 +170,13 @@ export const SEBICSCRFIntroduction: React.FC = () => {
         <span>SEBI compliance</span>
         <span>Indian financial markets</span>
         <span>SEBI/HO/ITD-1/ITD_CSC_EXT/P/CIR/2024/113</span>
+        <span>SEBI/HO/ITD-1/ITD_CSC_EXT/P/CIR/2025/60</span>
         <span>maturity levels</span>
         <span>NIST Cybersecurity Framework</span>
+        <span>entity classification</span>
+        <span>stock brokers</span>
+        <span>portfolio managers</span>
+        <span>investment advisors</span>
       </div>
     </div>
   );
