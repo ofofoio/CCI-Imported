@@ -8,7 +8,7 @@ The Cyber Capability Index (CCI) is an index-framework to rate the preparedness 
 
 ## SEBI CSCRF Overview
 
-The SEBI CSCRF ([SEBI Circular SEBI/HO/MIRSD/CIR/P/2018/147](https://www.sebi.gov.in/legal/circulars/dec-2018/cyber-security-and-cyber-resilience-framework-for-stock-brokers-depository-participants_41215.html)) establishes cybersecurity requirements for Indian financial market participants. It covers key areas including:
+The SEBI CSCRF ([SEBI Circular](https://www.sebi.gov.in/legal/circulars/aug-2024/cybersecurity-and-cyber-resilience-framework-cscrf-for-sebi-regulated-entities-res-_85964.html)) establishes cybersecurity requirements for Indian financial market participants. It covers key areas including:
 
 - **Governance and Organizational Structure**: Board-approved cybersecurity policy, designated CISO role, and clear reporting structures
 - **Risk Assessment and Management**: Comprehensive asset inventory, regular risk assessments, and vendor risk management
@@ -117,11 +117,6 @@ This tool helps organizations:
 - Track progress over time against regulatory expectations
 - Meet the June 30, 2025 compliance deadline for Qualified REs and MIIs
 
-## Resources
-
-- [SEBI CSCRF Circular](https://www.sebi.gov.in/legal/circulars/dec-2018/cyber-security-and-cyber-resilience-framework-for-stock-brokers-depository-participants_41215.html)
-- [CERT-In Empanelled Auditors](https://www.cert-in.org.in/)
-- [National Cyber Security Coordinator Guidelines](https://ncsc.gov.in/)
 
 ## License
 
