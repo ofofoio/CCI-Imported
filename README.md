@@ -107,17 +107,6 @@ The CCI framework evaluates cybersecurity maturity across 23 parameters organize
 - **Bare Minimum Cybersecurity Maturity**: 51-60 - Minimal compliance with critical gaps
 - **Fail**: 50.99 or below - Non-compliant, requires immediate remediation
 
-## Implementation Timeline
-
-According to SEBI guidelines, regulated entities must comply with the following implementation timeline:
-
-| Milestone | Deadline | Requirements |
-|-----------|----------|--------------|
-| Initial Assessment | 3 months from framework adoption | Complete gap analysis against CSCRF requirements |
-| Remediation Plan | 6 months from framework adoption | Develop comprehensive implementation roadmap |
-| Critical Controls Implementation | 9 months from framework adoption | Implement high-priority security controls |
-| Full Implementation | 12 months from framework adoption | Complete implementation of all required controls |
-| Bi-Annual Audit | Every 6 months following implementation | Independent audit of CSCRF compliance |
 
 ## Compliance Benefits
 
