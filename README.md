@@ -8,16 +8,47 @@ The Cyber Capability Index (CCI) is an index-framework to rate the preparedness 
 
 ## SEBI CSCRF Overview
 
-The SEBI CSCRF establishes cybersecurity requirements for Indian financial market participants. It covers key areas including:
+The SEBI CSCRF ([SEBI Circular SEBI/HO/MIRSD/CIR/P/2018/147](https://www.sebi.gov.in/legal/circulars/dec-2018/cyber-security-and-cyber-resilience-framework-for-stock-brokers-depository-participants_41215.html)) establishes cybersecurity requirements for Indian financial market participants. It covers key areas including:
 
-- Governance and organizational structure
-- Risk assessment and management
-- Access controls and cyber resilience
-- Security operations and monitoring
-- Incident response and recovery
-- Regular audits and compliance reporting
+- **Governance and Organizational Structure**: Board-approved cybersecurity policy, designated CISO role, and clear reporting structures
+- **Risk Assessment and Management**: Comprehensive asset inventory, regular risk assessments, and vendor risk management
+- **Access Controls and Cyber Resilience**: Multi-factor authentication, least privilege principles, and data protection measures
+- **Security Operations and Monitoring**: SIEM implementation, 24x7 monitoring capabilities, and vulnerability management
+- **Incident Response and Recovery**: Documented incident response plans, regular testing exercises, and recovery procedures
+- **Regular Audits and Compliance Reporting**: Bi-annual audits by CERT-In empanelled organizations and quarterly vulnerability assessments
 
 The CCI calculator helps entities measure their compliance with these requirements through quantifiable metrics.
+
+## Key CCI Parameters
+
+The CCI framework evaluates cybersecurity maturity across 23 parameters organized into the following categories:
+
+### Governance (GV)
+- **GV.PO.S1**: Policy Document (5% weightage)
+- **GV.RR.S4**: Security Budget (8% weightage)
+- **GV.SC.S3**: Third-Party Management (4% weightage)
+
+### Identify (ID)
+- **ID.AM.S1/S2**: Critical Assets Identification (9% weightage)
+- **ID.RA.S2**: Risk Assessment (8% weightage)
+
+### Protect (PR)
+- **PR.AA.S7**: User Account Management (5% weightage)
+- **PR.AA.S12**: Remote Access Security (4% weightage)
+- **PR.AT.S1**: Security Training (6% weightage)
+- **PR.DS.S3**: Data Protection (7% weightage)
+
+### Detect (DE)
+- **DE.CM.S1**: Audit Records (5% weightage)
+- **DE.CM.S5**: Vulnerability Management (18% weightage)
+
+### Respond (RS)
+- **RS.CO.S2**: Incident Reporting (6% weightage)
+- **RS.MA.S3**: Contingency Testing (5% weightage)
+
+### Recover (RC)
+- **RC.RP.S1**: Recovery Planning (5% weightage)
+- **RC.IM.S1**: Recovery Improvements (5% weightage)
 
 ## Features
 
@@ -76,6 +107,18 @@ The CCI calculator helps entities measure their compliance with these requiremen
 - **Bare Minimum Cybersecurity Maturity**: 51-60.99 - Minimal compliance with critical gaps
 - **Fail**: 50.99 or below - Non-compliant, requires immediate remediation
 
+## Implementation Timeline
+
+According to SEBI guidelines, regulated entities must comply with the following implementation timeline:
+
+| Milestone | Deadline | Requirements |
+|-----------|----------|--------------|
+| Initial Assessment | 3 months from framework adoption | Complete gap analysis against CSCRF requirements |
+| Remediation Plan | 6 months from framework adoption | Develop comprehensive implementation roadmap |
+| Critical Controls Implementation | 9 months from framework adoption | Implement high-priority security controls |
+| Full Implementation | 12 months from framework adoption | Complete implementation of all required controls |
+| Bi-Annual Audit | Every 6 months following implementation | Independent audit of CSCRF compliance |
+
 ## Compliance Benefits
 
 This tool helps organizations:
@@ -83,6 +126,13 @@ This tool helps organizations:
 - Document cybersecurity capabilities for SEBI reporting
 - Identify improvement areas to enhance cyber resilience
 - Track progress over time against regulatory expectations
+- Meet the June 30, 2025 compliance deadline for Qualified REs and MIIs
+
+## Resources
+
+- [SEBI CSCRF Circular](https://www.sebi.gov.in/legal/circulars/dec-2018/cyber-security-and-cyber-resilience-framework-for-stock-brokers-depository-participants_41215.html)
+- [CERT-In Empanelled Auditors](https://www.cert-in.org.in/)
+- [National Cyber Security Coordinator Guidelines](https://ncsc.gov.in/)
 
 ## License
 

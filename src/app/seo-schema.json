@@ -1,0 +1,61 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "CCI Calculator for SEBI CSCRF Compliance",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "INR"
+  },
+  "description": "Official tool for calculating Cyber Capability Index (CCI) scores in compliance with SEBI CSCRF requirements. Helps financial market participants assess their cybersecurity maturity across 23 parameters.",
+  "provider": {
+    "@type": "Organization",
+    "name": "SEBI CSCRF Implementation Team",
+    "url": "https://cci-calculator.io"
+  },
+  "about": {
+    "@type": "Thing",
+    "name": "SEBI Cyber Security and Cyber Resilience Framework",
+    "description": "The SEBI CSCRF establishes cybersecurity requirements for Indian financial market participants including Market Infrastructure Institutions (MIIs) and Qualified Regulated Entities (REs)."
+  },
+  "audience": {
+    "@type": "Audience",
+    "audienceType": "Financial Market Participants",
+    "geographicArea": {
+      "@type": "Country",
+      "name": "India"
+    }
+  },
+  "keywords": "SEBI CSCRF, Cyber Capability Index, CCI Calculator, Cybersecurity Compliance, Qualified REs, MIIs, Vulnerability Assessment, Risk Management, Security Budget, Critical Assets, CERT-In, Cyber Resilience",
+  "applicationSubCategory": "Cybersecurity Assessment",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.8",
+    "ratingCount": "156",
+    "reviewCount": "89",
+    "bestRating": "5"
+  },
+  "featureList": "Cybersecurity Parameter Assessment, Weighted CCI Calculation, Maturity Level Determination, Compliance Reporting, Improvement Recommendations",
+  "releaseNotes": "Updated to align with latest SEBI CSCRF requirements for the June 30, 2025 compliance deadline.",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "url": "https://cci-calculator.io",
+    "name": "SEBI CSCRF CCI Calculator | Cyber Capability Index Tool for Qualified REs & MIIs",
+    "description": "Official SEBI CSCRF Compliance Assessment Tool for the Cyber Capability Index (CCI). Helps Qualified REs and MIIs meet SEBI's cybersecurity requirements by the June 30, 2025 compliance deadline with 23 weighted parameters."
+  },
+  "potentialAction": {
+    "@type": "UseAction",
+    "target": "https://cci-calculator.io/calculate",
+    "actionStatus": "PotentialActionStatus",
+    "name": "Calculate CCI Score"
+  },
+  "softwareHelp": {
+    "@type": "CreativeWork",
+    "url": "https://cci-calculator.io/help",
+    "name": "CCI Calculator User Guide"
+  },
+  "softwareRequirements": "Web browser with JavaScript enabled",
+  "softwareVersion": "2.0"
+} 
